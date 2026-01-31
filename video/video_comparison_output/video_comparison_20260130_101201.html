@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频生成模型对比 - A futuristic city with flying cars</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .prompt-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .prompt-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .model-section {
+            margin-bottom: 40px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 25px;
+            background: #f9f9f9;
+        }
+
+        .model-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .model-title {
+            font-size: 1.8em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .model-meta {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .video-container {
+            position: relative;
+            background: black;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .video-container video,
+        .video-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .rank-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); }
+        .rank-2 { background: linear-gradient(135deg, #C0C0C0 0%, #808080 100%); }
+        .rank-3 { background: linear-gradient(135deg, #CD7F32 0%, #8B4513 100%); }
+
+        .video-info {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .info-value {
+            color: #333;
+        }
+
+        .status-success {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .status-error {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .ai-evaluation {
+            background: #e8f5e9;
+            border-left: 5px solid #4caf50;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 10px;
+        }
+
+        .ai-evaluation h2 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+
+        .ranking-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .ranking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .ranking-model {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .ranking-score {
+            background: #4caf50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .ranking-reason {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 视频生成模型对比测试</h1>
+        <p class="subtitle">生成时间: 2026-01-30 10:12:19</p>
+
+        <div class="prompt-section">
+            <h2>📝 提示词</h2>
+            <p class="prompt-text">A futuristic city with flying cars</p>
+        </div>
+
+        <div class="model-section">
+            <div class="model-header">
+                <div class="model-title">DALL-E 3 + FFmpeg动画</div>
+                <div class="model-meta">
+                    提供商: OpenAI + FFmpeg |
+                    类型: img-to-video
+                </div>
+            </div>
+
+            <div class="video-info">
+                <div class="info-row">
+                    <span class="info-label">状态:</span>
+                    <span class="info-value status-error">✗ 失败</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">错误:</span>
+                    <span class="info-value">生成失败: Upstream error 429 Too Many Requests: {
+  "error": {
+    "code": 429,
+    "message": "You have exhau</span>
+                </div>
+            </div>
+        
+        </div>
+
+        <footer>
+            <p>测试完成时间: 2026-01-30 10:12:19</p>
+            <p>视频生成对比工具 | 支持多种视频生成模型</p>
+        </footer>
+    </div>
+</body>
+</html>

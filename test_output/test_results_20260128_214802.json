@@ -1,0 +1,23 @@
+[
+  {
+    "prompt": "A beautiful landscape painting of mountains and lakes, impressionist style",
+    "filename": "test_output/gemini_test_20260128_214802_1.png",
+    "size": 998331,
+    "format": "PNG (base64)",
+    "status": "success"
+  },
+  {
+    "prompt": "A cute cat sitting on a windowsill, warm sunlight, realistic style",
+    "filename": "test_output/gemini_test_20260128_214802_2.png",
+    "size": 862956,
+    "format": "PNG (base64)",
+    "status": "success"
+  },
+  {
+    "prompt": "A futuristic cityscape at night with neon lights, cyberpunk style",
+    "filename": "test_output/gemini_test_20260128_214802_3.png",
+    "size": 1122088,
+    "format": "PNG (base64)",
+    "status": "success"
+  }
+]

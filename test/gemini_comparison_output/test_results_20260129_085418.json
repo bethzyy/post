@@ -1,0 +1,248 @@
+{
+  "gemini-3-pro-image-4k": {
+    "model_info": {
+      "name": "Gemini 3 Pro Image 4K",
+      "description": "最高分辨率,细节最丰富",
+      "size": "1024x1024"
+    },
+    "results": [
+      {
+        "prompt_title": "中国传统山水画",
+        "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+        "category": "art",
+        "filename": "gemini_comparison_output/gemini-3-pro-image-4k_art_1.png",
+        "size": 868294,
+        "status": "success"
+      },
+      {
+        "prompt_title": "可爱猫咪",
+        "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+        "category": "animal",
+        "filename": "gemini_comparison_output/gemini-3-pro-image-4k_animal_2.png",
+        "size": 962134,
+        "status": "success"
+      },
+      {
+        "prompt_title": "未来城市",
+        "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+        "category": "scifi",
+        "filename": "gemini_comparison_output/gemini-3-pro-image-4k_scifi_3.png",
+        "size": 1146860,
+        "status": "success"
+      },
+      {
+        "prompt_title": "美食",
+        "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+        "category": "food",
+        "filename": "gemini_comparison_output/gemini-3-pro-image-4k_food_4.png",
+        "size": 769054,
+        "status": "success"
+      },
+      {
+        "prompt_title": "花鸟画",
+        "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+        "category": "art",
+        "filename": "gemini_comparison_output/gemini-3-pro-image-4k_art_5.png",
+        "size": 907013,
+        "status": "success"
+      }
+    ],
+    "success_count": 5,
+    "total_count": 5
+  },
+  "gemini-3-pro-image-2k": {
+    "model_info": {
+      "name": "Gemini 3 Pro Image 2K",
+      "description": "高分辨率,平衡质量和速度",
+      "size": "1024x1024"
+    },
+    "results": [
+      {
+        "prompt_title": "中国传统山水画",
+        "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+        "category": "art",
+        "filename": "gemini_comparison_output/gemini-3-pro-image-2k_art_1.png",
+        "size": 923528,
+        "status": "success"
+      },
+      {
+        "prompt_title": "可爱猫咪",
+        "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+        "category": "animal",
+        "filename": "gemini_comparison_output/gemini-3-pro-image-2k_animal_2.png",
+        "size": 913765,
+        "status": "success"
+      },
+      {
+        "prompt_title": "未来城市",
+        "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+        "category": "scifi",
+        "filename": "gemini_comparison_output/gemini-3-pro-image-2k_scifi_3.png",
+        "size": 1043739,
+        "status": "success"
+      },
+      {
+        "prompt_title": "美食",
+        "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+        "category": "food",
+        "filename": "gemini_comparison_output/gemini-3-pro-image-2k_food_4.png",
+        "size": 737447,
+        "status": "success"
+      },
+      {
+        "prompt_title": "花鸟画",
+        "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+        "category": "art",
+        "filename": "gemini_comparison_output/gemini-3-pro-image-2k_art_5.png",
+        "size": 938860,
+        "status": "success"
+      }
+    ],
+    "success_count": 5,
+    "total_count": 5
+  },
+  "gemini-3-flash-image": {
+    "model_info": {
+      "name": "Gemini 3 Flash Image",
+      "description": "快速生成,适合批量处理",
+      "size": "1024x1024"
+    },
+    "results": [
+      {
+        "prompt_title": "中国传统山水画",
+        "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+        "category": "art",
+        "filename": "gemini_comparison_output/gemini-3-flash-image_art_1.png",
+        "size": 862158,
+        "status": "success"
+      },
+      {
+        "prompt_title": "可爱猫咪",
+        "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+        "category": "animal",
+        "filename": "gemini_comparison_output/gemini-3-flash-image_animal_2.png",
+        "size": 955121,
+        "status": "success"
+      },
+      {
+        "prompt_title": "未来城市",
+        "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+        "category": "scifi",
+        "filename": "gemini_comparison_output/gemini-3-flash-image_scifi_3.png",
+        "size": 1182624,
+        "status": "success"
+      },
+      {
+        "prompt_title": "美食",
+        "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+        "category": "food",
+        "filename": "gemini_comparison_output/gemini-3-flash-image_food_4.png",
+        "size": 778964,
+        "status": "success"
+      },
+      {
+        "prompt_title": "花鸟画",
+        "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+        "category": "art",
+        "filename": "gemini_comparison_output/gemini-3-flash-image_art_5.png",
+        "size": 905743,
+        "status": "success"
+      }
+    ],
+    "success_count": 5,
+    "total_count": 5
+  },
+  "gemini-2-pro-image": {
+    "model_info": {
+      "name": "Gemini 2 Pro Image",
+      "description": "第二代专业图像模型",
+      "size": "1024x1024"
+    },
+    "results": [
+      {
+        "prompt_title": "中国传统山水画",
+        "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+        "category": "art",
+        "filename": "gemini_comparison_output/gemini-2-pro-image_art_1.png",
+        "size": 916344,
+        "status": "success"
+      },
+      {
+        "prompt_title": "可爱猫咪",
+        "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+        "category": "animal",
+        "status": "error",
+        "error": "Upstream error 429 Too Many Requests: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You have exhausted your capacity on this model. Your quota will reset after 4h52m47s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"QUOTA_EXHAUSTED\",\n        \"domain\": \"cloudcode-pa.googleapis.com\",\n        \"metadata\": {\n          \"uiMessage\": \"true\",\n          \"model\": \"gemini-3-pro-image\",\n          \"quotaResetDelay\": \"4h52m47.511378977s\",\n          \"quotaResetTimeStamp\": \"2026-01-29T05:53:51Z\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RetryInfo\",\n        \"retryDelay\": \"17567.511378977s\"\n      }\n    ]\n  }\n}"
+      },
+      {
+        "prompt_title": "未来城市",
+        "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+        "category": "scifi",
+        "status": "error",
+        "error": "Upstream error 429 Too Many Requests: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You have exhausted your capacity on this model. Your quota will reset after 4h52m40s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"QUOTA_EXHAUSTED\",\n        \"domain\": \"cloudcode-pa.googleapis.com\",\n        \"metadata\": {\n          \"uiMessage\": \"true\",\n          \"model\": \"gemini-3-pro-image\",\n          \"quotaResetDelay\": \"4h52m40.806795009s\",\n          \"quotaResetTimeStamp\": \"2026-01-29T05:53:51Z\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RetryInfo\",\n        \"retryDelay\": \"17560.806795009s\"\n      }\n    ]\n  }\n}"
+      },
+      {
+        "prompt_title": "美食",
+        "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+        "category": "food",
+        "status": "error",
+        "error": "Upstream error 429 Too Many Requests: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You have exhausted your capacity on this model. Your quota will reset after 4h52m33s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"QUOTA_EXHAUSTED\",\n        \"domain\": \"cloudcode-pa.googleapis.com\",\n        \"metadata\": {\n          \"uiMessage\": \"true\",\n          \"model\": \"gemini-3-pro-image\",\n          \"quotaResetDelay\": \"4h52m33.420840385s\",\n          \"quotaResetTimeStamp\": \"2026-01-29T05:53:51Z\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RetryInfo\",\n        \"retryDelay\": \"17553.420840385s\"\n      }\n    ]\n  }\n}"
+      },
+      {
+        "prompt_title": "花鸟画",
+        "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+        "category": "art",
+        "status": "error",
+        "error": "Upstream error 429 Too Many Requests: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You have exhausted your capacity on this model. Your quota will reset after 4h52m26s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"QUOTA_EXHAUSTED\",\n        \"domain\": \"cloudcode-pa.googleapis.com\",\n        \"metadata\": {\n          \"quotaResetTimeStamp\": \"2026-01-29T05:53:51Z\",\n          \"uiMessage\": \"true\",\n          \"model\": \"gemini-3-pro-image\",\n          \"quotaResetDelay\": \"4h52m26.619028659s\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RetryInfo\",\n        \"retryDelay\": \"17546.619028659s\"\n      }\n    ]\n  }\n}"
+      }
+    ],
+    "success_count": 1,
+    "total_count": 5
+  },
+  "gemini-2-flash-image": {
+    "model_info": {
+      "name": "Gemini 2 Flash Image",
+      "description": "第二代快速图像模型",
+      "size": "1024x1024"
+    },
+    "results": [
+      {
+        "prompt_title": "中国传统山水画",
+        "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+        "category": "art",
+        "status": "error",
+        "error": "Upstream error 429 Too Many Requests: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You have exhausted your capacity on this model. Your quota will reset after 4h52m19s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"QUOTA_EXHAUSTED\",\n        \"domain\": \"cloudcode-pa.googleapis.com\",\n        \"metadata\": {\n          \"quotaResetDelay\": \"4h52m19.522104265s\",\n          \"quotaResetTimeStamp\": \"2026-01-29T05:53:51Z\",\n          \"uiMessage\": \"true\",\n          \"model\": \"gemini-3-pro-image\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RetryInfo\",\n        \"retryDelay\": \"17539.522104265s\"\n      }\n    ]\n  }\n}"
+      },
+      {
+        "prompt_title": "可爱猫咪",
+        "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+        "category": "animal",
+        "status": "error",
+        "error": "Upstream error 429 Too Many Requests: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You have exhausted your capacity on this model. Your quota will reset after 4h52m12s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"QUOTA_EXHAUSTED\",\n        \"domain\": \"cloudcode-pa.googleapis.com\",\n        \"metadata\": {\n          \"uiMessage\": \"true\",\n          \"model\": \"gemini-3-pro-image\",\n          \"quotaResetDelay\": \"4h52m12.527257947s\",\n          \"quotaResetTimeStamp\": \"2026-01-29T05:53:51Z\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RetryInfo\",\n        \"retryDelay\": \"17532.527257947s\"\n      }\n    ]\n  }\n}"
+      },
+      {
+        "prompt_title": "未来城市",
+        "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+        "category": "scifi",
+        "status": "error",
+        "error": "Upstream error 429 Too Many Requests: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You have exhausted your capacity on this model. Your quota will reset after 4h52m2s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"QUOTA_EXHAUSTED\",\n        \"domain\": \"cloudcode-pa.googleapis.com\",\n        \"metadata\": {\n          \"quotaResetTimeStamp\": \"2026-01-29T05:53:51Z\",\n          \"uiMessage\": \"true\",\n          \"model\": \"gemini-3-pro-image\",\n          \"quotaResetDelay\": \"4h52m2.41368689s\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RetryInfo\",\n        \"retryDelay\": \"17522.413686890s\"\n      }\n    ]\n  }\n}"
+      },
+      {
+        "prompt_title": "美食",
+        "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+        "category": "food",
+        "status": "error",
+        "error": "Upstream error 429 Too Many Requests: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You have exhausted your capacity on this model. Your quota will reset after 4h51m54s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"QUOTA_EXHAUSTED\",\n        \"domain\": \"cloudcode-pa.googleapis.com\",\n        \"metadata\": {\n          \"uiMessage\": \"true\",\n          \"model\": \"gemini-3-pro-image\",\n          \"quotaResetDelay\": \"4h51m54.324259339s\",\n          \"quotaResetTimeStamp\": \"2026-01-29T05:53:51Z\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RetryInfo\",\n        \"retryDelay\": \"17514.324259339s\"\n      }\n    ]\n  }\n}"
+      },
+      {
+        "prompt_title": "花鸟画",
+        "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+        "category": "art",
+        "status": "error",
+        "error": "Upstream error 429 Too Many Requests: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You have exhausted your capacity on this model. Your quota will reset after 4h51m46s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"QUOTA_EXHAUSTED\",\n        \"domain\": \"cloudcode-pa.googleapis.com\",\n        \"metadata\": {\n          \"uiMessage\": \"true\",\n          \"model\": \"gemini-3-pro-image\",\n          \"quotaResetDelay\": \"4h51m46.52224157s\",\n          \"quotaResetTimeStamp\": \"2026-01-29T05:53:51Z\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.RetryInfo\",\n        \"retryDelay\": \"17506.522241570s\"\n      }\n    ]\n  }\n}"
+      }
+    ],
+    "success_count": 0,
+    "total_count": 5
+  }
+}

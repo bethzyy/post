@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI发文工具管理器 v2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+            background: #1e1e2e;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 顶部标题栏 */
+        .header {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.15);
+            padding: 5px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* 主容器 - 三栏布局 */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+
+        /* 左侧树状导航 */
+        .sidebar {
+            width: 400px;
+            min-width: 250px;
+            max-width: 600px;
+            background: #252538;
+            border-right: 1px solid #3a3a5c;
+            display: flex;
+            flex-direction: column;
+            resize: horizontal;
+            overflow: hidden;
+        }
+
+        /* 分隔条 */
+        .resizer {
+            width: 5px;
+            background: #3a3a5c;
+            cursor: col-resize;
+            transition: background 0.2s;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .resizer:hover,
+        .resizer.resizing {
+            background: #5a67d8;
+        }
+
+        .resizer::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 2px;
+            height: 30px;
+            background: #5a67d8;
+            border-radius: 1px;
+            opacity: 0.5;
+        }
+
+        .resizer:hover::after,
+        .resizer.resizing::after {
+            opacity: 1;
+        }
+
+        .sidebar-header {
+            padding: 15px 20px;
+            background: #2d2d45;
+            font-weight: 600;
+            font-size: 1.1em;
+            border-bottom: 1px solid #3a3a5c;
+            color: #c5c5e0;
+        }
+
+        .tree-view {
+            flex: 1;
+            padding: 10px 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* 美化滚动条 */
+        .tree-view::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .tree-view::-webkit-scrollbar-track {
+            background: #1e1e2e;
+        }
+
+        .tree-view::-webkit-scrollbar-thumb {
+            background: #5a67d8;
+            border-radius: 4px;
+        }
+
+        .tree-view::-webkit-scrollbar-thumb:hover {
+            background: #6b46c1;
+        }
+
+        /* 树节点样式 */
+        .tree-node {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .tree-category {
+            padding: 12px 15px 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #c5c5e0;
+            border-bottom: 1px solid #3a3a5c;
+            transition: background 0.2s;
+        }
+
+        .tree-category:hover {
+            background: #2d2d45;
+        }
+
+        .tree-category.expanded {
+            background: #3a3a5c;
+        }
+
+        .tree-icon {
+            font-size: 1.2em;
+            transition: transform 0.2s;
+        }
+
+        .tree-category.expanded .tree-icon {
+            transform: rotate(90deg);
+        }
+
+        .tree-count {
+            margin-left: auto;
+            background: #5a67d8;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            color: #e0e0e0;
+        }
+
+        .tree-tools {
+            display: none;
+            background: #1e1e2e;
+        }
+
+        .tree-category.expanded + .tree-tools {
+            display: block;
+        }
+
+        .tree-tool {
+            padding: 10px 15px 10px 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            color: #ddd;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .tree-tool span:first-child {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .tree-tool:hover {
+            background: #2d2d45;
+            border-left-color: #5a67d8;
+        }
+
+        .tree-tool.selected {
+            background: #5a67d8;
+            border-left-color: #a5b4fc;
+            color: white;
+        }
+
+        .tree-tool.running {
+            border-left-color: #48bb78;
+            background: rgba(72, 187, 120, 0.15);
+        }
+
+        .tree-tool.completed {
+            border-left-color: #17a2b8;
+        }
+
+        .tree-tool.failed {
+            border-left-color: #dc3545;
+        }
+
+        .tree-run-btn {
+            margin-left: auto;
+            background: #5a67d8;
+            border: none;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: none;
+        }
+
+        .tree-tool:hover .tree-run-btn,
+        .tree-tool:hover .tree-delete-btn {
+            display: block;
+        }
+
+        .tree-delete-btn {
+            background: #dc3545;
+            border: none;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: none;
+            margin-left: 5px;
+        }
+
+        .tree-delete-btn:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .tree-run-btn:hover {
+            background: #6b46c1;
+            transform: scale(1.05);
+        }
+
+        .tree-run-btn.running {
+            background: #48bb78;
+            display: block !important;
+        }
+
+        .tree-status-icon {
+            margin-left: 5px;
+            font-size: 1em;
+        }
+
+        /* 中间内容区 */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1e1e2e;
+            border-right: 1px solid #3a3a5c;
+        }
+
+        .content-header {
+            padding: 20px;
+            background: #252538;
+            border-bottom: 1px solid #3a3a5c;
+        }
+
+        .content-header h2 {
+            color: #c5c5e0;
+            margin-bottom: 10px;
+        }
+
+        .content-header p {
+            color: #9ca3af;
+            font-size: 0.9em;
+        }
+
+        .tool-details {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .detail-card {
+            background: #252538;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #3a3a5c;
+        }
+
+        .detail-card h3 {
+            color: #c5c5e0;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .meta-info {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .meta-item {
+            background: #1e1e2e;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 1px solid #3a3a5c;
+        }
+
+        .meta-label {
+            color: #9ca3af;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            color: #c5c5e0;
+            font-weight: 600;
+        }
+
+        .run-button {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .run-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(90, 103, 216, 0.4);
+        }
+
+        .run-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .run-button.running {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        /* 右侧日志区 */
+        .log-panel {
+            width: 450px;
+            min-width: 300px;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            background: #1a1a24;
+            resize: horizontal;
+            overflow: hidden;
+        }
+
+        .log-header {
+            padding: 15px 20px;
+            background: #252538;
+            border-bottom: 1px solid #3a3a5c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-header h3 {
+            color: #c5c5e0;
+            font-size: 1em;
+        }
+
+        .clear-button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .clear-button:hover {
+            background: #c82333;
+        }
+
+        .log-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            background: #252538;
+            border-left: 3px solid #5a67d8;
+        }
+
+        .log-entry.info {
+            border-left-color: #4299e1;
+            background: rgba(66, 153, 225, 0.1);
+        }
+
+        .log-entry.success {
+            border-left-color: #48bb78;
+            background: rgba(72, 187, 120, 0.1);
+        }
+
+        .log-entry.error {
+            border-left-color: #f56565;
+            background: rgba(245, 101, 101, 0.1);
+        }
+
+        .log-entry.warning {
+            border-left-color: #ecc94b;
+            background: rgba(236, 201, 75, 0.1);
+        }
+
+        .log-time {
+            color: #9ca3af;
+            font-size: 0.85em;
+            margin-right: 8px;
+        }
+
+        .log-message {
+            color: #c5c5e0;
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e1e2e;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3a3a5c;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5a67d8;
+        }
+
+        /* 主题输入框 */
+        .theme-input-container {
+            margin-top: 15px;
+        }
+
+        .theme-input {
+            width: 100%;
+            padding: 12px;
+            background: #1e1e2e;
+            border: 1px solid #3a3a5c;
+            border-radius: 5px;
+            color: #c5c5e0;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .theme-input:focus {
+            outline: none;
+            border-color: #5a67d8;
+        }
+
+        .example-themes {
+            color: #9ca3af;
+            font-size: 0.85em;
+            line-height: 1.8;
+        }
+
+        /* 状态指示器 */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.running {
+            background: #28a745;
+        }
+
+        .status-indicator.completed {
+            background: #17a2b8;
+            animation: none;
+        }
+
+        .status-indicator.failed {
+            background: #dc3545;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        /* Tooltip样式 */
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 10px;
+            padding: 8px 12px;
+            background: #3a3a5c;
+            color: #e0e0e0;
+            border-radius: 5px;
+            font-size: 0.85em;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            pointer-events: none;
+            max-width: 400px;
+            white-space: normal;
+            width: max-content;
+        }
+
+        .update-docs-button {
+            background: linear-gradient(135deg, #5a67d8, #6b46c1);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .update-docs-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #6b46c1, #5a67d8);
+        }
+
+        .update-docs-button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <div class="header">
+        <h1>📝 AI发文工具管理器 v2.0</h1>
+        <div class="header-stats">
+            <div class="stat-item">📁 <span id="total-categories">0</span> 分类</div>
+            <div class="stat-item">🔧 <span id="total-tools">0</span> 工具</div>
+            <div class="stat-item">🔄 <span id="running-count">0</span> 运行中</div>
+            <button class="update-docs-button" onclick="updateDocumentation()" title="重新生成所有工具的文档">📖 更新文档</button>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧树状导航 -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">📂 工具分类</div>
+            <div class="tree-view" id="tree-view">
+                <!-- 树状结构将通过JavaScript动态生成 -->
+            </div>
+        </div>
+
+        <!-- 分隔条1 -->
+        <div class="resizer" id="resizer-1"></div>
+
+        <!-- 中间内容区 -->
+        <div class="content-area">
+            <div class="content-header">
+                <h2 id="tool-title">请选择一个工具</h2>
+                <p id="tool-description">从左侧目录树中选择要运行的工具</p>
+            </div>
+            <div class="tool-details" id="tool-details">
+                <div class="empty-state">
+                    <div class="empty-state-icon">👈</div>
+                    <p>点击左侧目录选择工具</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分隔条2 -->
+        <div class="resizer" id="resizer-2"></div>
+
+        <!-- 右侧日志区 -->
+        <div class="log-panel" id="log-panel">
+            <div class="log-header">
+                <h3>📋 运行日志</h3>
+                <button class="clear-button" onclick="clearLogs()">清空</button>
+            </div>
+            <div class="log-content" id="log-content">
+                <div class="log-entry info">
+                    <span class="log-time">[系统]</span>
+                    <span class="log-message">欢迎使用AI发文工具管理器</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentTool = null;
+        let currentProcessId = null;
+        let statusCheckInterval = null;
+
+        // 工具数据
+        const toolsData = {{ tools|tojson }};
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            buildTreeView();
+            updateStats();
+            initResizers();
+        });
+
+        // 初始化拖动调整大小功能
+        function initResizers() {
+            const resizer1 = document.getElementById('resizer-1');
+            const sidebar = document.getElementById('sidebar');
+            const contentArea = document.querySelector('.content-area');
+
+            const resizer2 = document.getElementById('resizer-2');
+            const logPanel = document.getElementById('log-panel');
+
+            // 分隔条1 - 调整左侧边栏宽度
+            initResizer(resizer1, sidebar, contentArea, 'left');
+
+            // 分隔条2 - 调整右侧日志面板宽度
+            initResizer(resizer2, logPanel, contentArea, 'right');
+        }
+
+        function initResizer(resizer, targetPanel, siblingPanel, direction) {
+            let startX, startWidth, siblingStartWidth;
+
+            resizer.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                startX = e.clientX;
+                startWidth = targetPanel.offsetWidth;
+                siblingStartWidth = siblingPanel.offsetWidth;
+
+                resizer.classList.add('resizing');
+
+                document.addEventListener('mousemove', resize);
+                document.addEventListener('mouseup', stopResize);
+            });
+
+            function resize(e) {
+                const dx = e.clientX - startX;
+
+                if (direction === 'left') {
+                    // 调整左侧面板
+                    const newWidth = startWidth + dx;
+                    if (newWidth >= 250 && newWidth <= 600) {
+                        targetPanel.style.width = newWidth + 'px';
+                    }
+                } else if (direction === 'right') {
+                    // 调整右侧面板
+                    const newWidth = startWidth - dx;
+                    if (newWidth >= 300 && newWidth <= 800) {
+                        targetPanel.style.width = newWidth + 'px';
+                    }
+                }
+            }
+
+            function stopResize() {
+                resizer.classList.remove('resizing');
+                document.removeEventListener('mousemove', resize);
+                document.removeEventListener('mouseup', stopResize);
+            }
+        }
+
+        // 构建树状视图
+        function buildTreeView() {
+            const treeView = document.getElementById('tree-view');
+            treeView.innerHTML = '';
+
+            for (const [category, tools] of Object.entries(toolsData)) {
+                // 创建分类节点
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'tree-node';
+
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'tree-category';
+                categoryHeader.innerHTML = `
+                    <span class="tree-icon">▶</span>
+                    <span>${category}</span>
+                    <span class="tree-count">${tools.length}</span>
+                `;
+
+                // 点击展开/折叠
+                categoryHeader.onclick = () => {
+                    categoryHeader.classList.toggle('expanded');
+                };
+
+                // 创建工具列表
+                const toolsDiv = document.createElement('div');
+                toolsDiv.className = 'tree-tools';
+
+                tools.forEach(tool => {
+                    const toolDiv = document.createElement('div');
+                    toolDiv.className = 'tree-tool';
+                    toolDiv.dataset.filename = tool.filename;
+                    toolDiv.dataset.tooltip = tool.description;
+
+                    // 工具名称 - 提取简化版本的功能描述
+                    // 格式: "类型 - 名称 (详细说明)" -> "名称"
+                    let shortName = tool.description;
+                    if (shortName.includes(' - ')) {
+                        // 移除类型前缀
+                        shortName = shortName.split(' - ')[1];
+                    }
+                    if (shortName.includes(' (')) {
+                        // 移除括号中的详细说明
+                        shortName = shortName.split(' (')[0];
+                    }
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = shortName;
+                    nameSpan.title = tool.description;
+                    toolDiv.appendChild(nameSpan);
+
+                    // 运行按钮
+                    const runBtn = document.createElement('button');
+                    runBtn.className = 'tree-run-btn';
+                    runBtn.textContent = '▶';
+                    runBtn.title = '运行工具';
+                    runBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        runToolDirect(tool, toolDiv, runBtn);
+                    };
+                    toolDiv.appendChild(runBtn);
+
+                    // 删除按钮
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'tree-delete-btn';
+                    deleteBtn.textContent = '🗑';
+                    deleteBtn.title = '删除工具';
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        deleteTool(tool, toolDiv);
+                    };
+                    toolDiv.appendChild(deleteBtn);
+
+                    // 点击选择
+                    toolDiv.onclick = () => {
+                        selectTool(tool, toolDiv);
+                    };
+
+                    toolsDiv.appendChild(toolDiv);
+                });
+
+                categoryDiv.appendChild(categoryHeader);
+                categoryDiv.appendChild(toolsDiv);
+                treeView.appendChild(categoryDiv);
+            }
+        }
+
+        // 运行工具(从左侧树直接运行)
+        async function runToolDirect(tool, element, btn) {
+            btn.disabled = true;
+            btn.textContent = '⏳';
+            btn.classList.add('running');
+
+            // 同时选中该工具
+            selectTool(tool, element);
+
+            // 添加日志
+            addLog('info', `开始运行: ${tool.description}`);
+
+            try {
+                const requestData = {
+                    filename: tool.filename
+                };
+
+                const response = await fetch('/api/run', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentProcessId = data.process_id;
+                    addLog('success', `工具已启动`);
+
+                    // 更新树节点状态
+                    element.classList.add('running');
+                    btn.textContent = '🔄';
+
+                    // 开始检查状态
+                    checkStatusDirect(tool, element, btn);
+
+                } else {
+                    addLog('error', `启动失败: ${data.error}`);
+                    btn.disabled = false;
+                    btn.textContent = '▶ 运行';
+                    btn.classList.remove('running');
+                }
+
+            } catch (error) {
+                addLog('error', `请求失败: ${error.message}`);
+                btn.disabled = false;
+                btn.textContent = '▶ 运行';
+                btn.classList.remove('running');
+            }
+        }
+
+        // 检查运行状态(直接运行版本)
+        async function checkStatusDirect(tool, element, btn) {
+            if (!currentProcessId) return;
+
+            try {
+                const response = await fetch(`/api/status/${currentProcessId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.status === 'running') {
+                        statusCheckInterval = setTimeout(() => checkStatusDirect(tool, element, btn), 2000);
+                    } else {
+                        // 完成
+                        clearInterval(statusCheckInterval);
+
+                        element.classList.remove('running');
+                        element.classList.add(data.status);
+
+                        if (data.status === 'completed') {
+                            addLog('success', `✓ 运行完成! 耗时: ${data.elapsed_time}秒`);
+                            btn.textContent = '✓';
+                            btn.style.background = '#48bb78';
+                            if (data.output) {
+                                addLog('info', '输出结果:\n' + data.output);
+                            }
+                        } else {
+                            addLog('error', `✗ 运行失败`);
+                            btn.textContent = '✗';
+                            btn.style.background = '#f56565';
+                            if (data.output) {
+                                addLog('error', '错误输出:\n' + data.output);
+                            }
+                        }
+
+                        btn.disabled = false;
+                        updateStats();
+
+                        // 3秒后重置按钮
+                        setTimeout(() => {
+                            btn.textContent = '▶ 运行';
+                            btn.style.background = '';
+                            element.classList.remove(data.status);
+                        }, 3000);
+                    }
+                }
+
+            } catch (error) {
+                addLog('error', `状态检查失败: ${error.message}`);
+            }
+        }
+
+        // 选择工具
+        async function selectTool(tool, element) {
+            // 移除其他选中状态
+            document.querySelectorAll('.tree-tool').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // 添加选中状态
+            element.classList.add('selected');
+
+            currentTool = tool;
+
+            // 更新内容区
+            document.getElementById('tool-title').textContent = tool.description;
+            document.getElementById('tool-description').textContent = `文件: ${tool.filename}`;
+
+            const detailsDiv = document.getElementById('tool-details');
+
+            // 显示加载状态
+            detailsDiv.innerHTML = '<div style="padding: 20px; text-align: center; color: #c5c5e0;">📊 正在加载工具详情...</div>';
+
+            // 解析描述，获取功能名称和详细说明
+            const descParts = tool.description.split(' - ');
+            const toolName = descParts[0];
+            const toolDesc = descParts.length > 1 ? descParts.slice(1).join(' - ') : '暂无详细描述';
+
+            // 从文档API获取详细信息
+            let docInfo = null;
+            try {
+                const response = await fetch('/api/documentation');
+                const data = await response.json();
+                if (data.success && data.documentation) {
+                    // 从文件路径提取分类和文件名
+                    const pathParts = tool.filename.replace(/\\/g, '/').split('/');
+                    const category = pathParts[0];
+                    const filename = pathParts[pathParts.length - 1];
+
+                    if (data.documentation[category] && data.documentation[category][filename]) {
+                        docInfo = data.documentation[category][filename];
+                    }
+                }
+            } catch (error) {
+                console.error('加载文档失败:', error);
+            }
+
+            // 优先使用 details 中的详细信息
+            let toolDetails = tool.details || {};
+
+            // 提取详细信息
+            let detailedDescription = toolDetails['功能'] || toolDesc;
+            let techStack = toolDetails['技术栈'] || [];
+
+            let html = `
+                <div class="detail-card">
+                    <h3>📊 工具信息</h3>
+                    <div class="meta-info">
+                        <div class="meta-item">
+                            <div class="meta-label">文件名</div>
+                            <div class="meta-value">${tool.filename}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">最后修改</div>
+                            <div class="meta-value">${tool.modified}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">文件大小</div>
+                            <div class="meta-value">${(tool.size / 1024).toFixed(1)} KB</div>
+                        </div>
+                    </div>
+
+                    <div class="meta-item" style="margin-top: 12px;">
+                        <div class="meta-label">功能说明</div>
+                        <div style="color: #c5c5e0; line-height: 1.8; margin-top: 6px; padding: 15px; background: #1e1e2e; border-radius: 8px; border-left: 4px solid #5a67d8; white-space: pre-wrap; font-size: 0.95em;">
+                            ${detailedDescription}
+                        </div>
+                    </div>
+            `;
+
+            // 如果是节日图像生成器,添加主题输入框
+            if (tool.filename === 'picture/generate_festival_images.py') {
+                html += `
+                    <div class="theme-input-container">
+                        <input
+                            type="text"
+                            class="theme-input"
+                            id="theme-input"
+                            placeholder="输入生成主题（例如：春节主题 - 中国风水彩画）"
+                        >
+                        <div class="example-themes">
+                            <strong>示例主题：</strong><br>
+                            • 春节主题 - 中国风水彩画，红色，灯笼，鞭炮<br>
+                            • 中秋节 - 月兔嫦娥，蓝色背景，温馨氛围<br>
+                            • 元宵节 - 花灯、汤圆，热闹节日场景
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 如果工具有输入字段,添加参数输入界面
+            if (tool.input_fields && tool.input_fields.length > 0) {
+                // 根据工具类型设置标题
+                let title = "参数设置";
+                if (tool.filename === 'article/toutiao_article_generator.py') {
+                    title = "📝 文章参数设置";
+                } else if (tool.filename === 'video/baidu_video_downloader.py') {
+                    title = "🎬 视频下载设置";
+                }
+
+                html += `
+                    <div class="params-input-container" style="background: #1e1e2e; padding: 20px; border-radius: 10px; border-left: 3px solid #5a67d8; margin-top: 15px;">
+                        <h4 style="color: #5a67d8; margin-bottom: 15px;">${title}</h4>
+                `;
+
+                // 为每个输入字段创建界面
+                tool.input_fields.forEach(field => {
+                    if (field.type === 'text') {
+                        html += `
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${field.label} ${field.required ? '<span style="color: #e53e3e;">*</span>' : ''}</label>
+                                <input
+                                    type="text"
+                                    class="param-input"
+                                    id="param-${field.name}"
+                                    placeholder="${field.placeholder}"
+                                    style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px;"
+                                    ${field.required ? 'required' : ''}
+                                >
+                            </div>
+                        `;
+                    } else if (field.type === 'textarea') {
+                        html += `
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${field.label} ${field.required ? '<span style="color: #e53e3e;">*</span>' : ''}</label>
+                                <textarea
+                                    class="param-input"
+                                    id="param-${field.name}"
+                                    placeholder="${field.placeholder}"
+                                    rows="8"
+                                    style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px; font-family: inherit; resize: vertical;"
+                                    ${field.required ? 'required' : ''}
+                                ></textarea>
+                            </div>
+                        `;
+                    } else if (field.type === 'select') {
+                        html += `
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${field.label}</label>
+                                <select
+                                    class="param-input"
+                                    id="param-${field.name}"
+                                    style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px;"
+                                    onchange="handleModeChange()"
+                                >
+                                    ${field.options.map(opt =>
+                                        `<option value="${opt.value}">${opt.label}</option>`
+                                    ).join('')}
+                                </select>
+                            </div>
+                        `;
+                    }
+                });
+
+                // 根据工具类型添加示例提示
+                if (tool.filename === 'article/toutiao_article_generator.py') {
+                    html += `
+                        <div style="margin-top: 15px; padding: 12px; background: #2d3748; border-radius: 5px; border-left: 3px solid #6b46c1;">
+                            <strong style="color: #6b46c1;">💡 热门主题示例:</strong><br>
+                            <span style="color: #c5c5e0; font-size: 0.9em;">
+                            • 过年回老家 - 情感共鸣强<br>
+                            • 职场新人必看 - 实用价值高<br>
+                            • 30岁后才明白的真相 - 引发好奇<br>
+                            • 这3个习惯让我年入百万 - 数字刺激
+                            </span>
+                        </div>
+                    `;
+                } else if (tool.filename === 'video/baidu_video_downloader.py') {
+                    html += `
+                        <div style="margin-top: 15px; padding: 12px; background: #2d3748; border-radius: 5px; border-left: 3px solid #48bb78;">
+                            <strong style="color: #48bb78;">💡 支持的视频平台:</strong><br>
+                            <span style="color: #c5c5e0; font-size: 0.9em;">
+                            • 百度新闻 (mbd.baidu.com)<br>
+                            • 百家号 (baijiahao.baidu.com)<br>
+                            • 百度视频 (haokan.baidu.com)
+                            </span>
+                        </div>
+                    `;
+                }
+            }
+
+            html += `
+                    <button class="run-button" onclick="runTool()">▶ 运行工具</button>
+                </div>
+            `;
+
+            // 添加技术栈卡片
+            if (techStack.length > 0) {
+                html += `
+                    <div class="detail-card" style="margin-top: 20px;">
+                        <h3>🛠️ 技术栈</h3>
+                        <div style="margin-top: 10px;">
+                            ${techStack.map(tech =>
+                                `<span style="display: inline-block; background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%); color: white; padding: 6px 14px; margin: 4px; border-radius: 20px; font-size: 0.9em; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${tech}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 在运行工具按钮后添加主要函数和主要类
+            if (docInfo) {
+                html += `<div class="detail-card" style="margin-top: 20px;">`;
+
+                // 添加主要函数
+                if (docInfo.main_functions && docInfo.main_functions.length > 0) {
+                    html += `
+                        <h3>📋 主要函数</h3>
+                        <div style="color: #c5c5e0; margin-top: 10px; padding: 12px; background: #1e1e2e; border-radius: 5px;">
+                            ${docInfo.main_functions.slice(0, 8).map(func =>
+                                `<div style="padding: 4px 0;">• <code style="color: #4299e1;">${func}</code></div>`
+                            ).join('')}
+                            ${docInfo.main_functions.length > 8 ? `<div style="padding: 8px 0; color: #888; font-style: italic;">... 还有 ${docInfo.main_functions.length - 8} 个函数</div>` : ''}
+                        </div>
+                    `;
+                }
+
+                // 添加主要类
+                if (docInfo.classes && docInfo.classes.length > 0) {
+                    html += `
+                        <h3 style="margin-top: 20px;">🏗️ 主要类</h3>
+                        <div style="margin-top: 10px;">
+                            ${docInfo.classes.map(cls =>
+                                `<span style="display: inline-block; background: #48bb78; color: white; padding: 6px 12px; margin: 4px; border-radius: 4px; font-size: 0.9em;">${cls}</span>`
+                            ).join('')}
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
+            }
+
+            detailsDiv.innerHTML = html;
+        }
+
+        // 运行工具
+        // 处理生成模式变化
+        function handleModeChange() {
+            const mode = document.getElementById('param-mode')?.value;
+            if (!mode) return;
+
+            const themeField = document.getElementById('param-theme')?.parentElement;
+            const draftField = document.getElementById('param-draft')?.parentElement;
+
+            if (mode === '1') {
+                // 主题生成模式 - 显示主题输入,隐藏草稿输入
+                if (themeField) themeField.style.display = 'block';
+                if (draftField) draftField.style.display = 'none';
+            } else if (mode === '2') {
+                // 草稿完善模式 - 隐藏主题输入,显示草稿输入
+                if (themeField) themeField.style.display = 'none';
+                if (draftField) draftField.style.display = 'block';
+            }
+        }
+
+        async function runTool() {
+            if (!currentTool) return;
+
+            const btn = document.querySelector('.run-button');
+            btn.disabled = true;
+            btn.textContent = '⏳ 启动中...';
+            btn.classList.add('running');
+
+            // 添加日志
+            addLog('info', `开始运行: ${currentTool.description}`);
+
+            try {
+                const requestData = {
+                    filename: currentTool.filename
+                };
+
+                // 如果是节日图像生成器,获取主题
+                if (currentTool.filename === 'picture/generate_festival_images.py') {
+                    const theme = document.getElementById('theme-input').value;
+                    if (theme) {
+                        requestData.params = { theme: theme };
+                        addLog('info', `主题: ${theme}`);
+                    }
+                }
+
+                // 如果是今日头条文章生成器,获取模式、主题/草稿、字数和配图参数
+                if (currentTool.filename === 'article/toutiao_article_generator.py') {
+                    const mode = document.getElementById('param-mode').value;
+                    const theme = document.getElementById('param-theme').value;
+                    const draft = document.getElementById('param-draft').value;
+                    const length = document.getElementById('param-length').value;
+                    const generateImages = document.getElementById('param-generate_images').value;
+                    const imageStyle = document.getElementById('param-image_style').value;
+
+                    // 验证参数
+                    if (mode === '1' && !theme) {
+                        addLog('error', '请输入文章主题');
+                        btn.disabled = false;
+                        btn.textContent = '▶️ 运行工具';
+                        btn.classList.remove('running');
+                        return;
+                    }
+                    if (mode === '2' && !draft) {
+                        addLog('error', '请输入文章草稿');
+                        btn.disabled = false;
+                        btn.textContent = '▶️ 运行工具';
+                        btn.classList.remove('running');
+                        return;
+                    }
+
+                    requestData.params = {
+                        mode: mode,
+                        theme: theme,
+                        draft: draft,
+                        length: length,
+                        generate_images: generateImages,
+                        image_style: imageStyle
+                    };
+
+                    const modeNames = { '1': '主题生成', '2': '草稿完善' };
+                    addLog('info', `模式: ${modeNames[mode]}`);
+                    if (mode === '1') {
+                        addLog('info', `主题: ${theme}`);
+                    } else {
+                        addLog('info', `草稿: ${draft.substring(0, 50)}...`);
+                    }
+                    addLog('info', `字数: ${length}字`);
+                    addLog('info', `生成配图: ${generateImages === 'y' ? '是' : '否'}`);
+                    if (generateImages === 'y') {
+                        const styleNames = { 'realistic': '真实照片', 'artistic': '艺术创作', 'cartoon': '卡通插画' };
+                        addLog('info', `配图风格: ${styleNames[imageStyle]}`);
+                    }
+                }
+
+                // 如果是百度视频下载器,获取URL和输出文件名
+                if (currentTool.filename === 'video/baidu_video_downloader.py') {
+                    const url = document.getElementById('param-url').value;
+                    const outputFilename = document.getElementById('param-output_filename').value;
+
+                    if (!url) {
+                        addLog('error', '请输入视频URL');
+                        btn.disabled = false;
+                        btn.textContent = '▶️ 运行工具';
+                        btn.classList.remove('running');
+                        return;
+                    }
+
+                    requestData.params = {
+                        url: url,
+                        output_filename: outputFilename
+                    };
+                    addLog('info', `视频URL: ${url}`);
+                    if (outputFilename) {
+                        addLog('info', `输出文件: ${outputFilename}`);
+                    } else {
+                        addLog('info', `输出文件: 自动生成`);
+                    }
+                }
+
+                const response = await fetch('/api/run', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentProcessId = data.process_id;
+                    addLog('success', `工具已启动: ${data.message}`);
+
+                    // 更新树节点状态
+                    const toolElement = document.querySelector(`[data-filename="${currentTool.filename}"]`);
+                    if (toolElement) {
+                        toolElement.classList.add('running');
+                    }
+
+                    // 开始检查状态
+                    btn.textContent = '🔄 运行中...';
+                    checkStatus();
+
+                } else {
+                    addLog('error', `启动失败: ${data.error}`);
+                    btn.disabled = false;
+                    btn.textContent = '▶ 运行工具';
+                    btn.classList.remove('running');
+                }
+
+            } catch (error) {
+                addLog('error', `请求失败: ${error.message}`);
+                btn.disabled = false;
+                btn.textContent = '▶ 运行工具';
+                btn.classList.remove('running');
+            }
+        }
+
+        // 检查运行状态
+        async function checkStatus() {
+            if (!currentProcessId) return;
+
+            try {
+                const response = await fetch(`/api/status/${currentProcessId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.status === 'running') {
+                        addLog('info', `运行中... (${data.elapsed_time}秒)`);
+                        statusCheckInterval = setTimeout(checkStatus, 2000);
+                    } else {
+                        // 完成
+                        clearInterval(statusCheckInterval);
+
+                        const toolElement = document.querySelector(`[data-filename="${currentTool.filename}"]`);
+                        if (toolElement) {
+                            toolElement.classList.remove('running');
+                            toolElement.classList.add(data.status);
+                        }
+
+                        if (data.status === 'completed') {
+                            addLog('success', `✓ 运行完成! 耗时: ${data.elapsed_time}秒`);
+                            if (data.output) {
+                                addLog('info', '输出结果:\n' + data.output);
+                            }
+                        } else {
+                            addLog('error', `✗ 运行失败 (退出码: ${data.returncode})`);
+                            if (data.output) {
+                                addLog('error', '错误输出:\n' + data.output);
+                            }
+                        }
+
+                        const btn = document.querySelector('.run-button');
+                        btn.disabled = false;
+                        btn.textContent = '▶ 运行工具';
+                        btn.classList.remove('running');
+
+                        updateStats();
+                    }
+                }
+
+            } catch (error) {
+                addLog('error', `状态检查失败: ${error.message}`);
+            }
+        }
+
+        // 添加日志
+        function addLog(type, message) {
+            const logContent = document.getElementById('log-content');
+            const now = new Date();
+            const time = now.toLocaleTimeString('zh-CN');
+
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `
+                <span class="log-time">[${time}]</span>
+                <span class="log-message">${message}</span>
+            `;
+
+            logContent.appendChild(logEntry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        // 清空日志
+        function clearLogs() {
+            document.getElementById('log-content').innerHTML = '';
+            addLog('info', '日志已清空');
+        }
+
+        // 删除工具
+        async function deleteTool(tool, element) {
+            // 提取工具名称
+            let toolName = tool.description;
+            if (toolName.includes(' - ')) {
+                toolName = toolName.split(' - ')[1];
+            }
+            if (toolName.includes(' (')) {
+                toolName = toolName.split(' (')[0];
+            }
+
+            // 确认删除
+            if (!confirm(`确定要删除工具吗？\n\n工具: ${toolName}\n文件: ${tool.filename}\n\n此操作将永久删除该文件，无法恢复！`)) {
+                return;
+            }
+
+            addLog('warning', `正在删除工具: ${toolName}`);
+
+            try {
+                const response = await fetch('/api/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filename: tool.filename
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addLog('success', `✓ 工具已删除: ${tool.filename}`);
+
+                    // 从UI中移除
+                    element.style.transition = 'all 0.3s';
+                    element.style.opacity = '0';
+                    element.style.transform = 'translateX(-100%)';
+
+                    setTimeout(() => {
+                        element.remove();
+                        updateStats();
+
+                        // 如果当前选中的是被删除的工具，清空详情区
+                        if (currentTool && currentTool.filename === tool.filename) {
+                            document.getElementById('tool-title').textContent = '请选择一个工具';
+                            document.getElementById('tool-description').textContent = '从左侧目录树中选择要运行的工具';
+                            document.getElementById('tool-details').innerHTML = `
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">👈</div>
+                                    <p>点击左侧目录选择工具</p>
+                                </div>
+                            `;
+                            currentTool = null;
+                        }
+                    }, 300);
+
+                } else {
+                    addLog('error', `删除失败: ${data.error}`);
+                }
+
+            } catch (error) {
+                addLog('error', `请求失败: ${error.message}`);
+            }
+        }
+
+        // 更新文档
+        async function updateDocumentation() {
+            const btn = document.querySelector('.update-docs-button');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '⏳ 更新中...';
+
+            addLog('info', '开始更新工具文档...');
+
+            try {
+                const response = await fetch('/api/update-documentation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addLog('success', '✓ 文档已成功更新');
+                    if (data.output) {
+                        // 解析输出中的统计信息
+                        const lines = data.output.split('\n');
+                        const summaryLine = lines.find(line => line.includes('共分析'));
+                        if (summaryLine) {
+                            addLog('info', summaryLine.trim());
+                        }
+                    }
+
+                    // 如果当前选中的工具，刷新详情显示
+                    if (currentTool) {
+                        const toolElement = document.querySelector('.tree-tool.selected');
+                        if (toolElement) {
+                            await selectTool(currentTool, toolElement);
+                        }
+                    }
+                } else {
+                    addLog('error', `更新失败: ${data.error}`);
+                }
+
+            } catch (error) {
+                addLog('error', `请求失败: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // 更新统计
+        function updateStats() {
+            document.getElementById('total-categories').textContent = Object.keys(toolsData).length;
+
+            let totalTools = 0;
+            for (const tools of Object.values(toolsData)) {
+                totalTools += tools.length;
+            }
+            document.getElementById('total-tools').textContent = totalTools;
+
+            const runningCount = document.querySelectorAll('.tree-tool.running').length;
+            document.getElementById('running-count').textContent = runningCount;
+        }
+    </script>
+</body>
+</html>

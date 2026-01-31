@@ -1,0 +1,10 @@
+{
+  "model": "gemini-3-pro-image-4k",
+  "model_name": "Gemini 3 Pro Image 4K",
+  "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere, elegant composition, masterpiece quality",
+  "filename": "gemini_simple_test/chinese_landscape_20260129_085343.png",
+  "size": 458788,
+  "resolution": "1024x1024",
+  "timestamp": "20260129_085343",
+  "status": "success"
+}

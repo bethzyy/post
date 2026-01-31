@@ -1,0 +1,232 @@
+{
+  "gemini-3-pro-image-4k": {
+    "model_info": {
+      "name": "Gemini 3 Pro Image 4K",
+      "description": "最高分辨率,细节最丰富",
+      "size": "4K"
+    },
+    "results": [
+      {
+        "prompt_title": "中国传统山水画",
+        "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+        "category": "art",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "可爱猫咪",
+        "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+        "category": "animal",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "未来城市",
+        "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+        "category": "scifi",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "美食",
+        "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+        "category": "food",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "花鸟画",
+        "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+        "category": "art",
+        "status": "error",
+        "error": "Error code: 502"
+      }
+    ],
+    "success_count": 0,
+    "total_count": 5
+  },
+  "gemini-3-pro-image-2k": {
+    "model_info": {
+      "name": "Gemini 3 Pro Image 2K",
+      "description": "高分辨率,平衡质量和速度",
+      "size": "2K"
+    },
+    "results": [
+      {
+        "prompt_title": "中国传统山水画",
+        "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+        "category": "art",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "可爱猫咪",
+        "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+        "category": "animal",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "未来城市",
+        "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+        "category": "scifi",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "美食",
+        "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+        "category": "food",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "花鸟画",
+        "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+        "category": "art",
+        "status": "error",
+        "error": "Error code: 502"
+      }
+    ],
+    "success_count": 0,
+    "total_count": 5
+  },
+  "gemini-3-flash-image": {
+    "model_info": {
+      "name": "Gemini 3 Flash Image",
+      "description": "快速生成,适合批量处理",
+      "size": "1024x1024"
+    },
+    "results": [
+      {
+        "prompt_title": "中国传统山水画",
+        "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+        "category": "art",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "可爱猫咪",
+        "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+        "category": "animal",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "未来城市",
+        "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+        "category": "scifi",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "美食",
+        "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+        "category": "food",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "花鸟画",
+        "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+        "category": "art",
+        "status": "error",
+        "error": "Error code: 502"
+      }
+    ],
+    "success_count": 0,
+    "total_count": 5
+  },
+  "gemini-2-pro-image": {
+    "model_info": {
+      "name": "Gemini 2 Pro Image",
+      "description": "第二代专业图像模型",
+      "size": "1024x1024"
+    },
+    "results": [
+      {
+        "prompt_title": "中国传统山水画",
+        "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+        "category": "art",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "可爱猫咪",
+        "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+        "category": "animal",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "未来城市",
+        "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+        "category": "scifi",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "美食",
+        "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+        "category": "food",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "花鸟画",
+        "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+        "category": "art",
+        "status": "error",
+        "error": "Error code: 502"
+      }
+    ],
+    "success_count": 0,
+    "total_count": 5
+  },
+  "gemini-2-flash-image": {
+    "model_info": {
+      "name": "Gemini 2 Flash Image",
+      "description": "第二代快速图像模型",
+      "size": "1024x1024"
+    },
+    "results": [
+      {
+        "prompt_title": "中国传统山水画",
+        "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+        "category": "art",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "可爱猫咪",
+        "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+        "category": "animal",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "未来城市",
+        "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+        "category": "scifi",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "美食",
+        "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+        "category": "food",
+        "status": "error",
+        "error": "Error code: 502"
+      },
+      {
+        "prompt_title": "花鸟画",
+        "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+        "category": "art",
+        "status": "error",
+        "error": "Error code: 502"
+      }
+    ],
+    "success_count": 0,
+    "total_count": 5
+  }
+}

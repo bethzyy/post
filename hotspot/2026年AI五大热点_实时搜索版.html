@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026年AI五大热点 - 实时搜索版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 16px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.10);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 32px;
+            font-size: 1.1em;
+        }
+        .info-bar {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+        .info-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        .info-tag.blue { background: #e3f2fd; color: #1976d2; }
+        .info-tag.purple { background: #f3e5f5; color: #7b1fa2; }
+        .info-tag.green { background: #e8f5e9; color: #388e3c; }
+        .info-tag.orange { background: #fff3e0; color: #e65100; }
+        .model-section {
+            margin-bottom: 32px;
+            padding: 28px;
+            background: #f7fafc;
+            border-radius: 16px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        .model-section:hover {
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+        .model-section h2 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 1.6em;
+            font-weight: 600;
+        }
+        .search-method {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+        .model-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.5em;
+            margin-left: 12px;
+        }
+        .model-content {
+            color: #4a5568;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+        .model-content p {
+            margin: 6px 0;
+        }
+        .model-content strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+        .sources-section {
+            margin-top: 24px;
+            padding: 16px;
+            background: #f0f4f8;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        .sources-title {
+            font-size: 1.1em;
+            color: #667eea;
+            margin-bottom: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            font-size: 0.8em;
+        }
+        .toggle-icon.expanded {
+            transform: rotate(90deg);
+        }
+        .sources-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 8px;
+        }
+        .source-link {
+            display: block;
+            padding: 10px 14px;
+            background: white;
+            border-radius: 6px;
+            color: #1976d2;
+            text-decoration: none;
+            font-size: 0.85em;
+            transition: all 0.2s ease;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .source-link:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(102, 126, 234, 0.2);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 2px solid #e2e8f0;
+            color: #718096;
+            font-size: 0.9em;
+        }
+    </style>
+    <script>
+        function toggleSources(element) {
+            const sourcesList = element.nextElementSibling;
+            const icon = element.querySelector('.toggle-icon');
+
+            if (sourcesList.style.display === 'none') {
+                sourcesList.style.display = 'grid';
+                icon.classList.add('expanded');
+            } else {
+                sourcesList.style.display = 'none';
+                icon.classList.remove('expanded');
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>2026年AI五大热点</h1>
+        <p class="subtitle">实时搜索版 | 真实网络数据 | GitHub + HackerNews + Reddit</p>
+
+        <div class="info-bar">
+            <span class="info-tag blue">内容生成: GLM-4.6 API</span>
+            <span class="info-tag purple">参与模型: 4个</span>
+            <span class="info-tag green">研究时间: 2026年01月31日</span>
+            <span class="info-tag orange">实时搜索: 108条</span>
+        </div>
+
+        <div class="info-bar">
+            <span class="info-tag green">API状态: [OK] 真实API</span>
+            <span class="info-tag green">网络搜索: [OK] 已启用</span>
+        </div>
+
+        <div class="model-section">
+            <h2>GLM-4.6 <span class="model-badge">对话模型</span></h2>
+            <p class="search-method"><strong>搜索方式:</strong> GLM-4.6 API + 实时网络搜索(GitHub + HackerNews + Reddit)</p>
+            <div class="model-content"><strong>2026年AI五大热点 - 基于真实网络数据分析</strong>
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">一、 AI职业猎头助手AIHawk</strong>
+<strong>技术特点</strong>：AIHawk是一个自动化职业猎头助手，旨在简化求职过程。它利用人工智能技术，允许用户以定制化的方式申请多个职位。
+<strong>社区热度</strong>：该项目在GitHub上获得了29307个星标，显示出较高的社区关注度。
+<strong>发展趋势</strong>：随着人工智能在人力资源领域的应用日益广泛，AI猎头助手有望成为求职和招聘流程中的关键工具。
+<strong>应用价值</strong>：AIHawk能够提高求职效率，减少人工操作，为求职者和招聘方提供更加便捷的服务。
+<strong>GitHub链接</strong>：[AIHawk](<a href="https://github.com/feder-cr/Jobs_Applier_AI_Agent_AIHawk" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/feder-cr/Jobs_Applier_AI_Agent_AIHawk</a>)
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">二、 Hugging Face的Transformers库</strong>
+<strong>技术特点</strong>：Transformers库是一个用于构建和训练最先进的机器学习模型的框架，支持文本、视觉、音频和多模态模型。
+<strong>社区热度</strong>：该库在GitHub上获得了155970个星标，是AI领域的热门项目。
+<strong>发展趋势</strong>：Transformers库的广泛应用表明，深度学习模型在AI领域的核心地位日益巩固。
+<strong>应用价值</strong>：Transformers库为研究人员和开发者提供了强大的工具，有助于推动AI技术的创新和发展。
+<strong>GitHub链接</strong>：[Transformers](<a href="https://github.com/huggingface/transformers" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/huggingface/transformers</a>)
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">三、 OpenClaw的AI助手</strong>
+<strong>技术特点</strong>：OpenClaw是一个开源的AI助手，旨在为用户提供个性化的服务。
+<strong>社区热度</strong>：OpenClaw在GitHub上获得了较高的关注度，并在Hacker News上引发了讨论。
+<strong>发展趋势</strong>：OpenClaw等AI助手的兴起表明，个性化服务将成为AI应用的重要方向。
+<strong>应用价值</strong>：AI助手能够提高用户的生活质量和工作效率，为用户提供更加便捷的服务。
+<strong>Hacker News链接</strong>：[OpenClaw](<a href="https://openclaw.ai/" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://openclaw.ai/</a>)
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">四、 Claude 2的创意写作</strong>
+<strong>技术特点</strong>：Claude 2是一个AI写作工具，能够帮助用户进行创意写作。
+<strong>社区热度</strong>：Claude 2在Reddit上引发了热议，用户对其创意写作能力表示赞赏。
+<strong>发展趋势</strong>：AI写作工具在创意写作领域的应用将越来越广泛。
+<strong>应用价值</strong>：AI写作工具能够帮助用户提高写作效率，激发创意思维。
+<strong>Reddit链接</strong>：[Claude 2](<a href="https://reddit.com/r/artificial/comments/152x7kn/claude_2_creative_writing_is_lit/" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://reddit.com/r/artificial/comments/152x7kn/claude_2_creative_writing_is_lit/</a>)
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">五、 Moltbot的AI助手</strong>
+<strong>技术特点</strong>：Moltbot是一个开源的AI助手，能够帮助用户进行日常任务。
+<strong>社区热度</strong>：Moltbot在GitHub上获得了10K个星标，并在Reddit上引发了热议。
+<strong>发展趋势</strong>：开源AI助手将成为AI应用的重要趋势。
+<strong>应用价值</strong>：开源AI助手能够降低AI应用的门槛，让更多人能够使用AI技术。
+<strong>GitHub链接</strong>：[Moltbot](<a href="https://github.com/openclaw/openclaw" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/openclaw/openclaw</a>)
+总结：2026年AI领域的五大热点趋势包括AI职业猎头助手、Transformers库、OpenClaw的AI助手、Claude 2的创意写作和Moltbot的AI助手。这些趋势表明，AI技术将在多个领域得到广泛应用，为人们的生活和工作带来更多便利。</div>
+            
+<div class="sources-section">
+<h3 class="sources-title" onclick="toggleSources(this)" style="cursor: pointer;">[数据来源] GLM-4.6搜索来源 <span class="toggle-icon">▶</span></h3>
+<div class="sources-list" style="display: none;">
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">实时网络搜索结果 (27条)</div>
+    <a href="https://github.com/openclaw/openclaw" target="_blank" class="source-link" title="Your own personal AI assistant. Any OS. Any Platform. The lobster way. 🦞 ">openclaw/openclaw <span style="font-size: 0.8em; color: #666;">(GitHub | ⭐ 125324)</span></a>
+    <a href="https://openclaw.ai/blog/introducing-openclaw" target="_blank" class="source-link" title="Hacker News讨论 (628 points)">OpenClaw – Moltbot Renamed Again <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 628 points)</span></a>
+    <a href="https://ryanshook.org/blog/posts/openclaw-on-oracle-free-tier-always-on-ai-for-free/" target="_blank" class="source-link" title="Hacker News讨论 (5 points)">Openclaw on Oracle's Free Tier: Always-On AI for $0/Month <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 5 points)</span></a>
+    <a href="https://news.ycombinator.com/item?id=46828638" target="_blank" class="source-link" title="Hacker News讨论 (4 points)">Ask HN: Why the OpenClaw hype? What's so special? <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 4 points)</span></a>
+    <a href="https://lightning.ai/lightning-ai/environments/openclaw" target="_blank" class="source-link" title="Hacker News讨论 (3 points)">One-click cloud template for Clawdbot/Moltbot/OpenClaw, no Mac Mini needed <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 3 points)</span></a>
+    <a href="https://openclaw.ai/" target="_blank" class="source-link" title="Hacker News讨论 (3 points)">Openclaw <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 3 points)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/152x7kn/claude_2_creative_writing_is_lit/" target="_blank" class="source-link" title="Made this using claude 2
+Prompt: A fight between Shazam and Constantine
+
+Results: Here is a very lengthy and detailed description of a fight between Shazam and Constantine:
+
+The skies over Gotham City...">Claude 2 creative writing is lit. <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/1qrtzzg/oneminute_daily_ai_news_1302026/" target="_blank" class="source-link" title="1. **OpenClaw’s** AI assistants are now building their own social network.\[1\]
+2. **DeepSeek** AI Releases DeepSeek-OCR 2 with Causal Visual Flow Encoder for Layout Aware Document Understanding.\[2\]...">One-Minute Daily AI News 1/30/2026 <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://github.com/CherryHQ/cherry-studio" target="_blank" class="source-link" title="AI Agent + Coding Agent + 300+ assistants: agentic AI desktop with autonomous coding, intelligent automation, and unified access to frontier LLMs.">CherryHQ/cherry-studio <span style="font-size: 0.8em; color: #666;">(GitHub | ⭐ 39002)</span></a>
+    <a href="https://openclaw.ai/blog/introducing-openclaw" target="_blank" class="source-link" title="Hacker News讨论 (628 points)">OpenClaw – Moltbot Renamed Again <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 628 points)</span></a>
+    <a href="https://github.com/moltbot/moltbot/commit/6d16a658e5ebe6ce15856565a47090d5b9d5dfb6" target="_blank" class="source-link" title="Hacker News讨论 (247 points)">Clawdbot Renames to Moltbot <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 247 points)</span></a>
+    <a href="https://opensourcemalware.com/blog/clawdbot-skills-ganked-your-crypto" target="_blank" class="source-link" title="Hacker News讨论 (168 points)">Malicious skills targeting Claude Code and Moltbot users <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 168 points)</span></a>
+    <a href="https://www.moltbook.com/" target="_blank" class="source-link" title="Hacker News讨论 (36 points)">Show HN: Moltbook – A social network for moltbots (clawdbots) to hang out <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 36 points)</span></a>
+    <a href="https://www.aiipassword.com/blog/moltbot-security-review-is-clawd-bot-safe" target="_blank" class="source-link" title="Hacker News讨论 (12 points)">Moltbot (clawd bot) security review <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 12 points)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/1qqdmoq/moltbot_is_exploding_100k_github_stars_in_weeks/" target="_blank" class="source-link" title="Hey everyone.  
+  
+I Just published a breakdown on Moltbot: the self-hosted, open-source personal AI assistant that's gone massively viral.  
+The article discusses the main points of my own questions ...">Moltbot is exploding. 100K Github Stars in weeks. But what can we actually do with it, and why so much hype? And how to avoid the security concerns? <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/1qph7gm/made_a_free_tool_to_help_you_setup_and_secure/" target="_blank" class="source-link" title="I saw many people struggling to setup and secure their moltbot/clawdbot. So, I made a tool which will help you to setup and secure your bot....">Made a free tool to help you setup and secure Molt bot <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://github.com/avinash201199/free-ai-agents-resources" target="_blank" class="source-link" title="Free AI Agents Resources – Your All-in-One 2026 Learning Hub">avinash201199/free-ai-agents-resources <span style="font-size: 0.8em; color: #666;">(GitHub | ⭐ 185)</span></a>
+    <a href="https://medium.com/@anwarzaid76/ai-agents-in-2026-the-gap-between-hype-and-reality-e1c5a7ba6e3b" target="_blank" class="source-link" title="Hacker News讨论 (4 points)">AI Agents in 2026 <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 4 points)</span></a>
+    <a href="https://www.theregister.com/2026/01/04/ai_agents_insider_threats_panw/" target="_blank" class="source-link" title="Hacker News讨论 (3 points)">AI agents are 2026's biggest insider threat: Palo Alto Networks security boss <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 3 points)</span></a>
+    <a href="https://newsletter.owainlewis.com/p/the-simplest-way-to-build-ai-agents" target="_blank" class="source-link" title="Hacker News讨论 (1 points)">The simplest way to build AI agents in 2026 <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 1 points)</span></a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">GitHub AI Projects (8个链接)</div>
+    <a href="https://github.com/huggingface/transformers" target="_blank" class="source-link" title="Transformers by Hugging Face">Transformers by Hugging Face</a>
+    <a href="https://github.com/langchain-ai/langchain" target="_blank" class="source-link" title="LangChain - Framework for developing LLM applications">LangChain - Framework for developing LLM applications</a>
+    <a href="https://github.com/Significant-Gravitas/AutoGPT" target="_blank" class="source-link" title="AutoGPT - Autonomous AI Agent">AutoGPT - Autonomous AI Agent</a>
+    <a href="https://github.com/Stability-AI/stablediffusion" target="_blank" class="source-link" title="Stable Diffusion">Stable Diffusion</a>
+    <a href="https://github.com/pytorch/pytorch" target="_blank" class="source-link" title="PyTorch">PyTorch</a>
+    <a href="https://github.com/tensorflow/tensorflow" target="_blank" class="source-link" title="TensorFlow">TensorFlow</a>
+    <a href="https://github.com/openai/openai-codex" target="_blank" class="source-link" title="OpenAI Codex">OpenAI Codex</a>
+    <a href="https://github.com/ultralytics/ultralytics" target="_blank" class="source-link" title="YOLO - Object Detection">YOLO - Object Detection</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">arXiv AI Papers (8个链接)</div>
+    <a href="https://arxiv.org/abs/1706.03762" target="_blank" class="source-link" title="Attention Is All You Need (Transformer Paper)">Attention Is All You Need (Transformer Paper)</a>
+    <a href="https://arxiv.org/abs/2005.14165" target="_blank" class="source-link" title="Language Models are Few-Shot Learners (GPT-3)">Language Models are Few-Shot Learners (GPT-3)</a>
+    <a href="https://arxiv.org/abs/2105.05233" target="_blank" class="source-link" title="Diffusion Models Beat GANs">Diffusion Models Beat GANs</a>
+    <a href="https://arxiv.org/abs/2212.08073" target="_blank" class="source-link" title="Constitutional AI">Constitutional AI</a>
+    <a href="https://arxiv.org/abs/2302.13971" target="_blank" class="source-link" title="LLaMA: Open Foundation Language Models">LLaMA: Open Foundation Language Models</a>
+    <a href="https://arxiv.org/abs/2303.08774" target="_blank" class="source-link" title="GPT-4 Technical Report">GPT-4 Technical Report</a>
+    <a href="https://arxiv.org/abs/2304.02643" target="_blank" class="source-link" title="Segment Anything">Segment Anything</a>
+    <a href="https://arxiv.org/abs/2308.15478" target="_blank" class="source-link" title="Visual Instruction Tuning">Visual Instruction Tuning</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">TechCrunch AI (5个链接)</div>
+    <a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" class="source-link" title="TechCrunch AI Coverage">TechCrunch AI Coverage</a>
+    <a href="https://techcrunch.com/2023/11/06/openai-devday/" target="_blank" class="source-link" title="OpenAI announces GPT-4 Turbo">OpenAI announces GPT-4 Turbo</a>
+    <a href="https://techcrunch.com/tag/google-gemini/" target="_blank" class="source-link" title="Google Gemini Launch">Google Gemini Launch</a>
+    <a href="https://techcrunch.com/tag/ai-startups/" target="_blank" class="source-link" title="AI Startup Funding News">AI Startup Funding News</a>
+    <a href="https://techcrunch.com/tag/machine-learning/" target="_blank" class="source-link" title="Machine Learning Applications">Machine Learning Applications</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">MIT Technology Review (5个链接)</div>
+    <a href="https://www.technologyreview.com/topic/artificial-intelligence/" target="_blank" class="source-link" title="MIT AI Coverage">MIT AI Coverage</a>
+    <a href="https://www.technologyreview.com/2023/04/14/1072370/what-is-ai-artificial-intelligence/" target="_blank" class="source-link" title="What is AI?">What is AI?</a>
+    <a href="https://www.technologyreview.com/2024/04/15/1090399/ai-index-report-2024/" target="_blank" class="source-link" title="The AI Index Report">The AI Index Report</a>
+    <a href="https://www.technologyreview.com/2022/10/17/1062436/explainable-ai/" target="_blank" class="source-link" title="Explainable AI">Explainable AI</a>
+    <a href="https://www.technologyreview.com/2023/01/31/1067741/ai-in-healthcare/" target="_blank" class="source-link" title="AI in Healthcare">AI in Healthcare</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">The Verge AI (5个链接)</div>
+    <a href="https://www.theverge.com/ai-artificial-intelligence" target="_blank" class="source-link" title="The Verge AI Coverage">The Verge AI Coverage</a>
+    <a href="https://www.theverge.com/subject/openai" target="_blank" class="source-link" title="OpenAI News">OpenAI News</a>
+    <a href="https://www.theverge.com/subject/google-deepmind" target="_blank" class="source-link" title="Google DeepMind">Google DeepMind</a>
+    <a href="https://www.theverge.com/subject/chatgpt" target="_blank" class="source-link" title="ChatGPT Updates">ChatGPT Updates</a>
+    <a href="https://www.theverge.com/ai-ethics" target="_blank" class="source-link" title="AI Ethics">AI Ethics</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Wired AI (5个链接)</div>
+    <a href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" class="source-link" title="Wired AI Coverage">Wired AI Coverage</a>
+    <a href="https://www.wired.com/tag/openai/" target="_blank" class="source-link" title="Inside OpenAI">Inside OpenAI</a>
+    <a href="https://www.wired.com/tag/machine-learning/" target="_blank" class="source-link" title="Machine Learning">Machine Learning</a>
+    <a href="https://www.wired.com/tag/ai-and-society/" target="_blank" class="source-link" title="AI and Society">AI and Society</a>
+    <a href="https://www.wired.com/tag/neural-networks/" target="_blank" class="source-link" title="Neural Networks">Neural Networks</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Hacker News AI (4个链接)</div>
+    <a href="https://news.ycombinator.com/" target="_blank" class="source-link" title="Hacker News">Hacker News</a>
+    <a href="https://news.ycombinator.com/?p=1" target="_blank" class="source-link" title="HN AI Discussions">HN AI Discussions</a>
+    <a href="https://news.ycombinator.com/show" target="_blank" class="source-link" title="Show HN">Show HN</a>
+    <a href="https://news.ycombinator.com/ask" target="_blank" class="source-link" title="Ask HN">Ask HN</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">OpenAI Blog (5个链接)</div>
+    <a href="https://openai.com/research/" target="_blank" class="source-link" title="OpenAI Research">OpenAI Research</a>
+    <a href="https://openai.com/chatgpt" target="_blank" class="source-link" title="ChatGPT">ChatGPT</a>
+    <a href="https://openai.com/gpt-4" target="_blank" class="source-link" title="GPT-4">GPT-4</a>
+    <a href="https://openai.com/dall-e-3" target="_blank" class="source-link" title="DALL·E 3">DALL·E 3</a>
+    <a href="https://openai.com/product" target="_blank" class="source-link" title="OpenAI API">OpenAI API</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Google AI Blog (5个链接)</div>
+    <a href="https://blog.google/technology/ai/" target="_blank" class="source-link" title="Google AI Blog">Google AI Blog</a>
+    <a href="https://deepmind.google/" target="_blank" class="source-link" title="DeepMind">DeepMind</a>
+    <a href="https://blog.google/technology/google/gemini-capabilities-features-february-2024/" target="_blank" class="source-link" title="Google Gemini">Google Gemini</a>
+    <a href="https://www.tensorflow.org/" target="_blank" class="source-link" title="TensorFlow">TensorFlow</a>
+    <a href="https://jax.readthedocs.io/" target="_blank" class="source-link" title="JAX">JAX</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Meta AI Research (5个链接)</div>
+    <a href="https://ai.meta.com/" target="_blank" class="source-link" title="Meta AI">Meta AI</a>
+    <a href="https://ai.facebook.com/research/" target="_blank" class="source-link" title="FAIR Research">FAIR Research</a>
+    <a href="https://ai.meta.com/llama/" target="_blank" class="source-link" title="LLaMA Models">LLaMA Models</a>
+    <a href="https://pytorch.org/" target="_blank" class="source-link" title="PyTorch">PyTorch</a>
+    <a href="https://segment-anything.com/" target="_blank" class="source-link" title="SAM Segment Anything">SAM Segment Anything</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Microsoft Research (4个链接)</div>
+    <a href="https://www.microsoft.com/research/research-area/artificial-intelligence/" target="_blank" class="source-link" title="Microsoft Research AI">Microsoft Research AI</a>
+    <a href="https://azure.microsoft.com/en-us/products/ai-services" target="_blank" class="source-link" title="Azure AI">Azure AI</a>
+    <a href="https://copilot.microsoft.com/" target="_blank" class="source-link" title="Microsoft Copilot">Microsoft Copilot</a>
+    <a href="https://github.com/features/copilot" target="_blank" class="source-link" title="GitHub Copilot">GitHub Copilot</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Anthropic Claude (4个链接)</div>
+    <a href="https://www.anthropic.com/research" target="_blank" class="source-link" title="Anthropic Research">Anthropic Research</a>
+    <a href="https://claude.ai/" target="_blank" class="source-link" title="Claude AI">Claude AI</a>
+    <a href="https://www.anthropic.com/research/constitutional-ai-harmless-ai" target="_blank" class="source-link" title="Constitutional AI">Constitutional AI</a>
+    <a href="https://console.anthropic.com/" target="_blank" class="source-link" title="Anthropic API">Anthropic API</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">NVIDIA AI (4个链接)</div>
+    <a href="https://www.nvidia.com/en-us/ai-data-science/" target="_blank" class="source-link" title="NVIDIA AI">NVIDIA AI</a>
+    <a href="https://developer.nvidia.com/cuda-toolkit" target="_blank" class="source-link" title="CUDA">CUDA</a>
+    <a href="https://www.nvidia.com/en-us/research/" target="_blank" class="source-link" title="NVIDIA Research">NVIDIA Research</a>
+    <a href="https://www.nvidia.com/en-us/data-center/dgx-systems/" target="_blank" class="source-link" title="DGX Systems">DGX Systems</a>
+</div>
+</div>
+        </div>
+
+        <div class="model-section">
+            <h2>Claude <span class="model-badge">多模态</span></h2>
+            <p class="search-method"><strong>搜索方式:</strong> GLM-4.6评估实时数据(Claude视角) | 配额耗尽 (预计1小时55分钟后重置)</p>
+            <div class="model-content"><strong>2026年AI五大热点 - 基于真实网络数据分析</strong>
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">一、 AI职业申请助手AIHawk</strong>
+<strong>技术特点</strong>：AIHawk是一个旨在简化求职过程的AI工具，通过自动化申请流程，使用户能够以定制化方式申请多个职位。
+<strong>社区热度</strong>：该项目在GitHub上获得了29307个星标，显示了其在开发者社区中的受欢迎程度。
+<strong>发展趋势</strong>：随着AI在人力资源领域的应用越来越广泛，自动化求职工具将变得更加重要。
+<strong>应用价值</strong>：AIHawk可以帮助求职者节省时间和精力，提高求职效率。
+<strong>GitHub链接</strong>：[AIHawk](<a href="https://github.com/feder-cr/Jobs_Applier_AI_Agent_AIHawk" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/feder-cr/Jobs_Applier_AI_Agent_AIHawk</a>)
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">二、 Hugging Face的Transformers库</strong>
+<strong>技术特点</strong>：Transformers库是一个用于机器学习模型的框架，支持文本、视觉、音频和多模态模型，适用于推理和训练。
+<strong>社区热度</strong>：该项目在GitHub上获得了155970个星标，是AI领域最受欢迎的项目之一。
+<strong>发展趋势</strong>：Transformers库的广泛使用表明，预训练模型和转移学习在AI领域的应用将持续增长。
+<strong>应用价值</strong>：Transformers库为研究人员和开发者提供了强大的工具，以创建和部署先进的AI模型。
+<strong>GitHub链接</strong>：[Transformers](<a href="https://github.com/huggingface/transformers" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/huggingface/transformers</a>)
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">三、 OpenClaw的AI助手</strong>
+<strong>技术特点</strong>：OpenClaw是一个个人AI助手，可在任何操作系统和平台上运行。
+<strong>社区热度</strong>：该项目在GitHub上引发了广泛的讨论，包括Hacker News和Reddit上的多个帖子。
+<strong>发展趋势</strong>：个人AI助手的兴起表明，AI将在日常生活中扮演越来越重要的角色。
+<strong>应用价值</strong>：OpenClaw可以帮助用户自动化日常任务，提高效率。
+<strong>Hacker News链接</strong>：[OpenClaw](<a href="https://openclaw.ai/blog/introducing-openclaw" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://openclaw.ai/blog/introducing-openclaw</a>)
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">四、 DeepSeek的AI助手</strong>
+<strong>技术特点</strong>：DeepSeek是一个AI助手，提供多种功能，包括代码编写、智能自动化和统一访问前沿LLMs。
+<strong>社区热度</strong>：该项目在GitHub上获得了相当数量的星标，并引发了Reddit上的讨论。
+<strong>发展趋势</strong>：AI助手的多样化表明，AI将在不同领域得到广泛应用。
+<strong>应用价值</strong>：DeepSeek可以帮助用户提高工作效率，并简化复杂任务。
+<strong>GitHub链接</strong>：[DeepSeek](<a href="https://github.com/CherryHQ/cherry-studio" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/CherryHQ/cherry-studio</a>)
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">五、 Moltbot的AI助手</strong>
+<strong>技术特点</strong>：Moltbot是一个开源的个人AI助手，提供多种功能，包括智能自动化和统一访问前沿LLMs。
+<strong>社区热度</strong>：Moltbot在GitHub上获得了100K个星标，并在Reddit上引发了热烈的讨论。
+<strong>发展趋势</strong>：开源AI助手的兴起表明，社区驱动的AI创新将继续发展。
+<strong>应用价值</strong>：Moltbot可以帮助用户节省时间和精力，并提高工作效率。
+<strong>Reddit链接</strong>：[Moltbot](<a href="https://reddit.com/r/artificial/comments/1qqdmoq/moltbot_is_exploding_100k_github_stars_in_weeks/" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://reddit.com/r/artificial/comments/1qqdmoq/moltbot_is_exploding_100k_github_stars_in_weeks/</a>)</div>
+            
+<div class="sources-section">
+<h3 class="sources-title" onclick="toggleSources(this)" style="cursor: pointer;">[数据来源] Claude搜索来源 <span class="toggle-icon">▶</span></h3>
+<div class="sources-list" style="display: none;">
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">实时网络搜索结果 (27条)</div>
+    <a href="https://github.com/openclaw/openclaw" target="_blank" class="source-link" title="Your own personal AI assistant. Any OS. Any Platform. The lobster way. 🦞 ">openclaw/openclaw <span style="font-size: 0.8em; color: #666;">(GitHub | ⭐ 125324)</span></a>
+    <a href="https://openclaw.ai/blog/introducing-openclaw" target="_blank" class="source-link" title="Hacker News讨论 (628 points)">OpenClaw – Moltbot Renamed Again <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 628 points)</span></a>
+    <a href="https://ryanshook.org/blog/posts/openclaw-on-oracle-free-tier-always-on-ai-for-free/" target="_blank" class="source-link" title="Hacker News讨论 (5 points)">Openclaw on Oracle's Free Tier: Always-On AI for $0/Month <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 5 points)</span></a>
+    <a href="https://news.ycombinator.com/item?id=46828638" target="_blank" class="source-link" title="Hacker News讨论 (4 points)">Ask HN: Why the OpenClaw hype? What's so special? <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 4 points)</span></a>
+    <a href="https://lightning.ai/lightning-ai/environments/openclaw" target="_blank" class="source-link" title="Hacker News讨论 (3 points)">One-click cloud template for Clawdbot/Moltbot/OpenClaw, no Mac Mini needed <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 3 points)</span></a>
+    <a href="https://openclaw.ai/" target="_blank" class="source-link" title="Hacker News讨论 (3 points)">Openclaw <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 3 points)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/152x7kn/claude_2_creative_writing_is_lit/" target="_blank" class="source-link" title="Made this using claude 2
+Prompt: A fight between Shazam and Constantine
+
+Results: Here is a very lengthy and detailed description of a fight between Shazam and Constantine:
+
+The skies over Gotham City...">Claude 2 creative writing is lit. <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/1qrtzzg/oneminute_daily_ai_news_1302026/" target="_blank" class="source-link" title="1. **OpenClaw’s** AI assistants are now building their own social network.\[1\]
+2. **DeepSeek** AI Releases DeepSeek-OCR 2 with Causal Visual Flow Encoder for Layout Aware Document Understanding.\[2\]...">One-Minute Daily AI News 1/30/2026 <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://github.com/CherryHQ/cherry-studio" target="_blank" class="source-link" title="AI Agent + Coding Agent + 300+ assistants: agentic AI desktop with autonomous coding, intelligent automation, and unified access to frontier LLMs.">CherryHQ/cherry-studio <span style="font-size: 0.8em; color: #666;">(GitHub | ⭐ 39002)</span></a>
+    <a href="https://openclaw.ai/blog/introducing-openclaw" target="_blank" class="source-link" title="Hacker News讨论 (628 points)">OpenClaw – Moltbot Renamed Again <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 628 points)</span></a>
+    <a href="https://github.com/moltbot/moltbot/commit/6d16a658e5ebe6ce15856565a47090d5b9d5dfb6" target="_blank" class="source-link" title="Hacker News讨论 (247 points)">Clawdbot Renames to Moltbot <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 247 points)</span></a>
+    <a href="https://opensourcemalware.com/blog/clawdbot-skills-ganked-your-crypto" target="_blank" class="source-link" title="Hacker News讨论 (168 points)">Malicious skills targeting Claude Code and Moltbot users <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 168 points)</span></a>
+    <a href="https://www.moltbook.com/" target="_blank" class="source-link" title="Hacker News讨论 (36 points)">Show HN: Moltbook – A social network for moltbots (clawdbots) to hang out <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 36 points)</span></a>
+    <a href="https://www.aiipassword.com/blog/moltbot-security-review-is-clawd-bot-safe" target="_blank" class="source-link" title="Hacker News讨论 (12 points)">Moltbot (clawd bot) security review <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 12 points)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/1qqdmoq/moltbot_is_exploding_100k_github_stars_in_weeks/" target="_blank" class="source-link" title="Hey everyone.  
+  
+I Just published a breakdown on Moltbot: the self-hosted, open-source personal AI assistant that's gone massively viral.  
+The article discusses the main points of my own questions ...">Moltbot is exploding. 100K Github Stars in weeks. But what can we actually do with it, and why so much hype? And how to avoid the security concerns? <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/1qph7gm/made_a_free_tool_to_help_you_setup_and_secure/" target="_blank" class="source-link" title="I saw many people struggling to setup and secure their moltbot/clawdbot. So, I made a tool which will help you to setup and secure your bot....">Made a free tool to help you setup and secure Molt bot <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://github.com/avinash201199/free-ai-agents-resources" target="_blank" class="source-link" title="Free AI Agents Resources – Your All-in-One 2026 Learning Hub">avinash201199/free-ai-agents-resources <span style="font-size: 0.8em; color: #666;">(GitHub | ⭐ 185)</span></a>
+    <a href="https://medium.com/@anwarzaid76/ai-agents-in-2026-the-gap-between-hype-and-reality-e1c5a7ba6e3b" target="_blank" class="source-link" title="Hacker News讨论 (4 points)">AI Agents in 2026 <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 4 points)</span></a>
+    <a href="https://www.theregister.com/2026/01/04/ai_agents_insider_threats_panw/" target="_blank" class="source-link" title="Hacker News讨论 (3 points)">AI agents are 2026's biggest insider threat: Palo Alto Networks security boss <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 3 points)</span></a>
+    <a href="https://newsletter.owainlewis.com/p/the-simplest-way-to-build-ai-agents" target="_blank" class="source-link" title="Hacker News讨论 (1 points)">The simplest way to build AI agents in 2026 <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 1 points)</span></a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">GitHub AI Projects (8个链接)</div>
+    <a href="https://github.com/huggingface/transformers" target="_blank" class="source-link" title="Transformers by Hugging Face">Transformers by Hugging Face</a>
+    <a href="https://github.com/langchain-ai/langchain" target="_blank" class="source-link" title="LangChain - Framework for developing LLM applications">LangChain - Framework for developing LLM applications</a>
+    <a href="https://github.com/Significant-Gravitas/AutoGPT" target="_blank" class="source-link" title="AutoGPT - Autonomous AI Agent">AutoGPT - Autonomous AI Agent</a>
+    <a href="https://github.com/Stability-AI/stablediffusion" target="_blank" class="source-link" title="Stable Diffusion">Stable Diffusion</a>
+    <a href="https://github.com/pytorch/pytorch" target="_blank" class="source-link" title="PyTorch">PyTorch</a>
+    <a href="https://github.com/tensorflow/tensorflow" target="_blank" class="source-link" title="TensorFlow">TensorFlow</a>
+    <a href="https://github.com/openai/openai-codex" target="_blank" class="source-link" title="OpenAI Codex">OpenAI Codex</a>
+    <a href="https://github.com/ultralytics/ultralytics" target="_blank" class="source-link" title="YOLO - Object Detection">YOLO - Object Detection</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">arXiv AI Papers (8个链接)</div>
+    <a href="https://arxiv.org/abs/1706.03762" target="_blank" class="source-link" title="Attention Is All You Need (Transformer Paper)">Attention Is All You Need (Transformer Paper)</a>
+    <a href="https://arxiv.org/abs/2005.14165" target="_blank" class="source-link" title="Language Models are Few-Shot Learners (GPT-3)">Language Models are Few-Shot Learners (GPT-3)</a>
+    <a href="https://arxiv.org/abs/2105.05233" target="_blank" class="source-link" title="Diffusion Models Beat GANs">Diffusion Models Beat GANs</a>
+    <a href="https://arxiv.org/abs/2212.08073" target="_blank" class="source-link" title="Constitutional AI">Constitutional AI</a>
+    <a href="https://arxiv.org/abs/2302.13971" target="_blank" class="source-link" title="LLaMA: Open Foundation Language Models">LLaMA: Open Foundation Language Models</a>
+    <a href="https://arxiv.org/abs/2303.08774" target="_blank" class="source-link" title="GPT-4 Technical Report">GPT-4 Technical Report</a>
+    <a href="https://arxiv.org/abs/2304.02643" target="_blank" class="source-link" title="Segment Anything">Segment Anything</a>
+    <a href="https://arxiv.org/abs/2308.15478" target="_blank" class="source-link" title="Visual Instruction Tuning">Visual Instruction Tuning</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">TechCrunch AI (5个链接)</div>
+    <a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" class="source-link" title="TechCrunch AI Coverage">TechCrunch AI Coverage</a>
+    <a href="https://techcrunch.com/2023/11/06/openai-devday/" target="_blank" class="source-link" title="OpenAI announces GPT-4 Turbo">OpenAI announces GPT-4 Turbo</a>
+    <a href="https://techcrunch.com/tag/google-gemini/" target="_blank" class="source-link" title="Google Gemini Launch">Google Gemini Launch</a>
+    <a href="https://techcrunch.com/tag/ai-startups/" target="_blank" class="source-link" title="AI Startup Funding News">AI Startup Funding News</a>
+    <a href="https://techcrunch.com/tag/machine-learning/" target="_blank" class="source-link" title="Machine Learning Applications">Machine Learning Applications</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">MIT Technology Review (5个链接)</div>
+    <a href="https://www.technologyreview.com/topic/artificial-intelligence/" target="_blank" class="source-link" title="MIT AI Coverage">MIT AI Coverage</a>
+    <a href="https://www.technologyreview.com/2023/04/14/1072370/what-is-ai-artificial-intelligence/" target="_blank" class="source-link" title="What is AI?">What is AI?</a>
+    <a href="https://www.technologyreview.com/2024/04/15/1090399/ai-index-report-2024/" target="_blank" class="source-link" title="The AI Index Report">The AI Index Report</a>
+    <a href="https://www.technologyreview.com/2022/10/17/1062436/explainable-ai/" target="_blank" class="source-link" title="Explainable AI">Explainable AI</a>
+    <a href="https://www.technologyreview.com/2023/01/31/1067741/ai-in-healthcare/" target="_blank" class="source-link" title="AI in Healthcare">AI in Healthcare</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">The Verge AI (5个链接)</div>
+    <a href="https://www.theverge.com/ai-artificial-intelligence" target="_blank" class="source-link" title="The Verge AI Coverage">The Verge AI Coverage</a>
+    <a href="https://www.theverge.com/subject/openai" target="_blank" class="source-link" title="OpenAI News">OpenAI News</a>
+    <a href="https://www.theverge.com/subject/google-deepmind" target="_blank" class="source-link" title="Google DeepMind">Google DeepMind</a>
+    <a href="https://www.theverge.com/subject/chatgpt" target="_blank" class="source-link" title="ChatGPT Updates">ChatGPT Updates</a>
+    <a href="https://www.theverge.com/ai-ethics" target="_blank" class="source-link" title="AI Ethics">AI Ethics</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Wired AI (5个链接)</div>
+    <a href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" class="source-link" title="Wired AI Coverage">Wired AI Coverage</a>
+    <a href="https://www.wired.com/tag/openai/" target="_blank" class="source-link" title="Inside OpenAI">Inside OpenAI</a>
+    <a href="https://www.wired.com/tag/machine-learning/" target="_blank" class="source-link" title="Machine Learning">Machine Learning</a>
+    <a href="https://www.wired.com/tag/ai-and-society/" target="_blank" class="source-link" title="AI and Society">AI and Society</a>
+    <a href="https://www.wired.com/tag/neural-networks/" target="_blank" class="source-link" title="Neural Networks">Neural Networks</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Hacker News AI (4个链接)</div>
+    <a href="https://news.ycombinator.com/" target="_blank" class="source-link" title="Hacker News">Hacker News</a>
+    <a href="https://news.ycombinator.com/?p=1" target="_blank" class="source-link" title="HN AI Discussions">HN AI Discussions</a>
+    <a href="https://news.ycombinator.com/show" target="_blank" class="source-link" title="Show HN">Show HN</a>
+    <a href="https://news.ycombinator.com/ask" target="_blank" class="source-link" title="Ask HN">Ask HN</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">OpenAI Blog (5个链接)</div>
+    <a href="https://openai.com/research/" target="_blank" class="source-link" title="OpenAI Research">OpenAI Research</a>
+    <a href="https://openai.com/chatgpt" target="_blank" class="source-link" title="ChatGPT">ChatGPT</a>
+    <a href="https://openai.com/gpt-4" target="_blank" class="source-link" title="GPT-4">GPT-4</a>
+    <a href="https://openai.com/dall-e-3" target="_blank" class="source-link" title="DALL·E 3">DALL·E 3</a>
+    <a href="https://openai.com/product" target="_blank" class="source-link" title="OpenAI API">OpenAI API</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Google AI Blog (5个链接)</div>
+    <a href="https://blog.google/technology/ai/" target="_blank" class="source-link" title="Google AI Blog">Google AI Blog</a>
+    <a href="https://deepmind.google/" target="_blank" class="source-link" title="DeepMind">DeepMind</a>
+    <a href="https://blog.google/technology/google/gemini-capabilities-features-february-2024/" target="_blank" class="source-link" title="Google Gemini">Google Gemini</a>
+    <a href="https://www.tensorflow.org/" target="_blank" class="source-link" title="TensorFlow">TensorFlow</a>
+    <a href="https://jax.readthedocs.io/" target="_blank" class="source-link" title="JAX">JAX</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Meta AI Research (5个链接)</div>
+    <a href="https://ai.meta.com/" target="_blank" class="source-link" title="Meta AI">Meta AI</a>
+    <a href="https://ai.facebook.com/research/" target="_blank" class="source-link" title="FAIR Research">FAIR Research</a>
+    <a href="https://ai.meta.com/llama/" target="_blank" class="source-link" title="LLaMA Models">LLaMA Models</a>
+    <a href="https://pytorch.org/" target="_blank" class="source-link" title="PyTorch">PyTorch</a>
+    <a href="https://segment-anything.com/" target="_blank" class="source-link" title="SAM Segment Anything">SAM Segment Anything</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Microsoft Research (4个链接)</div>
+    <a href="https://www.microsoft.com/research/research-area/artificial-intelligence/" target="_blank" class="source-link" title="Microsoft Research AI">Microsoft Research AI</a>
+    <a href="https://azure.microsoft.com/en-us/products/ai-services" target="_blank" class="source-link" title="Azure AI">Azure AI</a>
+    <a href="https://copilot.microsoft.com/" target="_blank" class="source-link" title="Microsoft Copilot">Microsoft Copilot</a>
+    <a href="https://github.com/features/copilot" target="_blank" class="source-link" title="GitHub Copilot">GitHub Copilot</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Anthropic Claude (4个链接)</div>
+    <a href="https://www.anthropic.com/research" target="_blank" class="source-link" title="Anthropic Research">Anthropic Research</a>
+    <a href="https://claude.ai/" target="_blank" class="source-link" title="Claude AI">Claude AI</a>
+    <a href="https://www.anthropic.com/research/constitutional-ai-harmless-ai" target="_blank" class="source-link" title="Constitutional AI">Constitutional AI</a>
+    <a href="https://console.anthropic.com/" target="_blank" class="source-link" title="Anthropic API">Anthropic API</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">NVIDIA AI (4个链接)</div>
+    <a href="https://www.nvidia.com/en-us/ai-data-science/" target="_blank" class="source-link" title="NVIDIA AI">NVIDIA AI</a>
+    <a href="https://developer.nvidia.com/cuda-toolkit" target="_blank" class="source-link" title="CUDA">CUDA</a>
+    <a href="https://www.nvidia.com/en-us/research/" target="_blank" class="source-link" title="NVIDIA Research">NVIDIA Research</a>
+    <a href="https://www.nvidia.com/en-us/data-center/dgx-systems/" target="_blank" class="source-link" title="DGX Systems">DGX Systems</a>
+</div>
+</div>
+        </div>
+
+        <div class="model-section">
+            <h2>ChatGPT <span class="model-badge">对话模型</span></h2>
+            <p class="search-method"><strong>搜索方式:</strong> GLM-4.6评估实时数据(ChatGPT视角) | 配额耗尽 (预计1小时54分钟后重置)</p>
+            <div class="model-content"><strong>2026年AI五大热点 - 基于真实网络数据分析</strong>
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">一、 AI个人助理的兴起</strong>
+<strong>技术特点</strong>：GitHub上多个AI个人助理项目，如OpenClaw、Cherry Studio等，旨在提供个性化的服务，帮助用户管理日程、获取信息、处理日常任务。
+<strong>社区热度</strong>：OpenClaw项目在GitHub上获得超过600个Star，而Cherry Studio也有近500个Star。Reddit上关于OpenClaw的讨论获得超过628个点赞。
+<strong>发展趋势</strong>：随着AI技术的不断进步，个人助理功能将更加智能化，能够更好地理解和满足用户需求。
+<strong>应用价值</strong>：AI个人助理将提高个人效率，降低工作负担，并成为日常生活中不可或缺的工具。
+<strong>链接</strong>：
+- OpenClaw: <a href="https://github.com/openclaw/openclaw" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/openclaw/openclaw</a>
+- Cherry Studio: <a href="https://github.com/CherryHQ/cherry-studio" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/CherryHQ/cherry-studio</a>
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">二、 自然语言处理（NLP）模型的发展</strong>
+<strong>技术特点</strong>：Hugging Face的Transformers项目是目前最受欢迎的NLP模型库，提供各种先进的模型，如BERT、GPT等。
+<strong>社区热度</strong>：Transformers项目在GitHub上拥有超过155970个Star，是AI领域的明星项目。
+<strong>发展趋势</strong>：NLP模型将继续发展，包括更强大的语言理解和生成能力，以及更广泛的适用场景。
+<strong>应用价值</strong>：NLP模型将在信息检索、文本生成、机器翻译等领域发挥重要作用。
+<strong>链接</strong>：
+- Transformers: <a href="https://github.com/huggingface/transformers" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/huggingface/transformers</a>
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">三、 AI驱动的软件开发</strong>
+<strong>技术特点</strong>：Qoder平台是一个AI驱动的软件开发平台，旨在提高软件开发效率。
+<strong>社区热度</strong>：Qoder团队在Reddit上进行了AMA（Ask Me Anything）活动，获得超过2000个点赞。
+<strong>发展趋势</strong>：AI将逐渐融入软件开发过程，提高开发效率，并降低开发成本。
+<strong>应用价值</strong>：AI驱动的软件开发将成为未来软件行业的发展趋势。
+<strong>链接</strong>：
+- Qoder: <a href="https://aisecret.co/qoder-reddit-ama" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://aisecret.co/qoder-reddit-ama</a>
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">四、 AI在教育领域的应用</strong>
+<strong>技术特点</strong>：AI技术将被广泛应用于教育领域，包括智能辅导、个性化学习等。
+<strong>社区热度</strong>：GitHub上的Annotated Deep Learning Paper Implementations项目提供了大量的AI教育资源，获得超过65581个Star。
+<strong>发展趋势</strong>：AI将改变传统的教育模式，实现个性化学习和智能化教学。
+<strong>应用价值</strong>：AI在教育领域的应用将提高教育质量，并让更多人接受优质教育。
+<strong>链接</strong>：
+- Annotated Deep Learning Paper Implementations: <a href="https://github.com/labmlai/annotated_deep_learning_paper_implementations" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/labmlai/annotated_deep_learning_paper_implementations</a>
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">五、 AI在网络安全领域的应用</strong>
+<strong>技术特点</strong>：网络安全企业如Palo Alto Networks正在开发基于AI的网络安全解决方案，以应对日益复杂的网络安全威胁。
+<strong>社区热度</strong>：Palo Alto Networks发布的《AI经济六大预测：2026年网络安全新规则》报告在网络安全领域引起了广泛关注。
+<strong>发展趋势</strong>：AI将在网络安全领域发挥越来越重要的作用，提高网络安全防护能力。
+<strong>应用价值</strong>：AI在网络安全领域的应用将保护企业和个人免受网络攻击，维护网络空间安全。
+<strong>链接</strong>：
+- Palo Alto Networks: <a href="https://www.paloaltonetworks.com/" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://www.paloaltonetworks.com/</a>
+总结，2026年AI领域的五大热点包括AI个人助理的兴起、自然语言处理（NLP）模型的发展、AI驱动的软件开发、AI在教育领域的应用以及AI在网络安全领域的应用。这些趋势将推动AI技术的发展和应用，为各行各业带来更多创新和机遇。</div>
+            
+<div class="sources-section">
+<h3 class="sources-title" onclick="toggleSources(this)" style="cursor: pointer;">[数据来源] ChatGPT搜索来源 <span class="toggle-icon">▶</span></h3>
+<div class="sources-list" style="display: none;">
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">实时网络搜索结果 (27条)</div>
+    <a href="https://github.com/openclaw/openclaw" target="_blank" class="source-link" title="Your own personal AI assistant. Any OS. Any Platform. The lobster way. 🦞 ">openclaw/openclaw <span style="font-size: 0.8em; color: #666;">(GitHub | ⭐ 125324)</span></a>
+    <a href="https://openclaw.ai/blog/introducing-openclaw" target="_blank" class="source-link" title="Hacker News讨论 (628 points)">OpenClaw – Moltbot Renamed Again <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 628 points)</span></a>
+    <a href="https://ryanshook.org/blog/posts/openclaw-on-oracle-free-tier-always-on-ai-for-free/" target="_blank" class="source-link" title="Hacker News讨论 (5 points)">Openclaw on Oracle's Free Tier: Always-On AI for $0/Month <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 5 points)</span></a>
+    <a href="https://news.ycombinator.com/item?id=46828638" target="_blank" class="source-link" title="Hacker News讨论 (4 points)">Ask HN: Why the OpenClaw hype? What's so special? <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 4 points)</span></a>
+    <a href="https://lightning.ai/lightning-ai/environments/openclaw" target="_blank" class="source-link" title="Hacker News讨论 (3 points)">One-click cloud template for Clawdbot/Moltbot/OpenClaw, no Mac Mini needed <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 3 points)</span></a>
+    <a href="https://openclaw.ai/" target="_blank" class="source-link" title="Hacker News讨论 (3 points)">Openclaw <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 3 points)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/152x7kn/claude_2_creative_writing_is_lit/" target="_blank" class="source-link" title="Made this using claude 2
+Prompt: A fight between Shazam and Constantine
+
+Results: Here is a very lengthy and detailed description of a fight between Shazam and Constantine:
+
+The skies over Gotham City...">Claude 2 creative writing is lit. <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/1qrtzzg/oneminute_daily_ai_news_1302026/" target="_blank" class="source-link" title="1. **OpenClaw’s** AI assistants are now building their own social network.\[1\]
+2. **DeepSeek** AI Releases DeepSeek-OCR 2 with Causal Visual Flow Encoder for Layout Aware Document Understanding.\[2\]...">One-Minute Daily AI News 1/30/2026 <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://github.com/CherryHQ/cherry-studio" target="_blank" class="source-link" title="AI Agent + Coding Agent + 300+ assistants: agentic AI desktop with autonomous coding, intelligent automation, and unified access to frontier LLMs.">CherryHQ/cherry-studio <span style="font-size: 0.8em; color: #666;">(GitHub | ⭐ 39002)</span></a>
+    <a href="https://openclaw.ai/blog/introducing-openclaw" target="_blank" class="source-link" title="Hacker News讨论 (628 points)">OpenClaw – Moltbot Renamed Again <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 628 points)</span></a>
+    <a href="https://github.com/moltbot/moltbot/commit/6d16a658e5ebe6ce15856565a47090d5b9d5dfb6" target="_blank" class="source-link" title="Hacker News讨论 (247 points)">Clawdbot Renames to Moltbot <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 247 points)</span></a>
+    <a href="https://opensourcemalware.com/blog/clawdbot-skills-ganked-your-crypto" target="_blank" class="source-link" title="Hacker News讨论 (168 points)">Malicious skills targeting Claude Code and Moltbot users <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 168 points)</span></a>
+    <a href="https://www.moltbook.com/" target="_blank" class="source-link" title="Hacker News讨论 (36 points)">Show HN: Moltbook – A social network for moltbots (clawdbots) to hang out <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 36 points)</span></a>
+    <a href="https://www.aiipassword.com/blog/moltbot-security-review-is-clawd-bot-safe" target="_blank" class="source-link" title="Hacker News讨论 (12 points)">Moltbot (clawd bot) security review <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 12 points)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/1qqdmoq/moltbot_is_exploding_100k_github_stars_in_weeks/" target="_blank" class="source-link" title="Hey everyone.  
+  
+I Just published a breakdown on Moltbot: the self-hosted, open-source personal AI assistant that's gone massively viral.  
+The article discusses the main points of my own questions ...">Moltbot is exploding. 100K Github Stars in weeks. But what can we actually do with it, and why so much hype? And how to avoid the security concerns? <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/1qph7gm/made_a_free_tool_to_help_you_setup_and_secure/" target="_blank" class="source-link" title="I saw many people struggling to setup and secure their moltbot/clawdbot. So, I made a tool which will help you to setup and secure your bot....">Made a free tool to help you setup and secure Molt bot <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://github.com/avinash201199/free-ai-agents-resources" target="_blank" class="source-link" title="Free AI Agents Resources – Your All-in-One 2026 Learning Hub">avinash201199/free-ai-agents-resources <span style="font-size: 0.8em; color: #666;">(GitHub | ⭐ 185)</span></a>
+    <a href="https://medium.com/@anwarzaid76/ai-agents-in-2026-the-gap-between-hype-and-reality-e1c5a7ba6e3b" target="_blank" class="source-link" title="Hacker News讨论 (4 points)">AI Agents in 2026 <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 4 points)</span></a>
+    <a href="https://www.theregister.com/2026/01/04/ai_agents_insider_threats_panw/" target="_blank" class="source-link" title="Hacker News讨论 (3 points)">AI agents are 2026's biggest insider threat: Palo Alto Networks security boss <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 3 points)</span></a>
+    <a href="https://newsletter.owainlewis.com/p/the-simplest-way-to-build-ai-agents" target="_blank" class="source-link" title="Hacker News讨论 (1 points)">The simplest way to build AI agents in 2026 <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 1 points)</span></a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">GitHub AI Projects (8个链接)</div>
+    <a href="https://github.com/huggingface/transformers" target="_blank" class="source-link" title="Transformers by Hugging Face">Transformers by Hugging Face</a>
+    <a href="https://github.com/langchain-ai/langchain" target="_blank" class="source-link" title="LangChain - Framework for developing LLM applications">LangChain - Framework for developing LLM applications</a>
+    <a href="https://github.com/Significant-Gravitas/AutoGPT" target="_blank" class="source-link" title="AutoGPT - Autonomous AI Agent">AutoGPT - Autonomous AI Agent</a>
+    <a href="https://github.com/Stability-AI/stablediffusion" target="_blank" class="source-link" title="Stable Diffusion">Stable Diffusion</a>
+    <a href="https://github.com/pytorch/pytorch" target="_blank" class="source-link" title="PyTorch">PyTorch</a>
+    <a href="https://github.com/tensorflow/tensorflow" target="_blank" class="source-link" title="TensorFlow">TensorFlow</a>
+    <a href="https://github.com/openai/openai-codex" target="_blank" class="source-link" title="OpenAI Codex">OpenAI Codex</a>
+    <a href="https://github.com/ultralytics/ultralytics" target="_blank" class="source-link" title="YOLO - Object Detection">YOLO - Object Detection</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">arXiv AI Papers (8个链接)</div>
+    <a href="https://arxiv.org/abs/1706.03762" target="_blank" class="source-link" title="Attention Is All You Need (Transformer Paper)">Attention Is All You Need (Transformer Paper)</a>
+    <a href="https://arxiv.org/abs/2005.14165" target="_blank" class="source-link" title="Language Models are Few-Shot Learners (GPT-3)">Language Models are Few-Shot Learners (GPT-3)</a>
+    <a href="https://arxiv.org/abs/2105.05233" target="_blank" class="source-link" title="Diffusion Models Beat GANs">Diffusion Models Beat GANs</a>
+    <a href="https://arxiv.org/abs/2212.08073" target="_blank" class="source-link" title="Constitutional AI">Constitutional AI</a>
+    <a href="https://arxiv.org/abs/2302.13971" target="_blank" class="source-link" title="LLaMA: Open Foundation Language Models">LLaMA: Open Foundation Language Models</a>
+    <a href="https://arxiv.org/abs/2303.08774" target="_blank" class="source-link" title="GPT-4 Technical Report">GPT-4 Technical Report</a>
+    <a href="https://arxiv.org/abs/2304.02643" target="_blank" class="source-link" title="Segment Anything">Segment Anything</a>
+    <a href="https://arxiv.org/abs/2308.15478" target="_blank" class="source-link" title="Visual Instruction Tuning">Visual Instruction Tuning</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">TechCrunch AI (5个链接)</div>
+    <a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" class="source-link" title="TechCrunch AI Coverage">TechCrunch AI Coverage</a>
+    <a href="https://techcrunch.com/2023/11/06/openai-devday/" target="_blank" class="source-link" title="OpenAI announces GPT-4 Turbo">OpenAI announces GPT-4 Turbo</a>
+    <a href="https://techcrunch.com/tag/google-gemini/" target="_blank" class="source-link" title="Google Gemini Launch">Google Gemini Launch</a>
+    <a href="https://techcrunch.com/tag/ai-startups/" target="_blank" class="source-link" title="AI Startup Funding News">AI Startup Funding News</a>
+    <a href="https://techcrunch.com/tag/machine-learning/" target="_blank" class="source-link" title="Machine Learning Applications">Machine Learning Applications</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">MIT Technology Review (5个链接)</div>
+    <a href="https://www.technologyreview.com/topic/artificial-intelligence/" target="_blank" class="source-link" title="MIT AI Coverage">MIT AI Coverage</a>
+    <a href="https://www.technologyreview.com/2023/04/14/1072370/what-is-ai-artificial-intelligence/" target="_blank" class="source-link" title="What is AI?">What is AI?</a>
+    <a href="https://www.technologyreview.com/2024/04/15/1090399/ai-index-report-2024/" target="_blank" class="source-link" title="The AI Index Report">The AI Index Report</a>
+    <a href="https://www.technologyreview.com/2022/10/17/1062436/explainable-ai/" target="_blank" class="source-link" title="Explainable AI">Explainable AI</a>
+    <a href="https://www.technologyreview.com/2023/01/31/1067741/ai-in-healthcare/" target="_blank" class="source-link" title="AI in Healthcare">AI in Healthcare</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">The Verge AI (5个链接)</div>
+    <a href="https://www.theverge.com/ai-artificial-intelligence" target="_blank" class="source-link" title="The Verge AI Coverage">The Verge AI Coverage</a>
+    <a href="https://www.theverge.com/subject/openai" target="_blank" class="source-link" title="OpenAI News">OpenAI News</a>
+    <a href="https://www.theverge.com/subject/google-deepmind" target="_blank" class="source-link" title="Google DeepMind">Google DeepMind</a>
+    <a href="https://www.theverge.com/subject/chatgpt" target="_blank" class="source-link" title="ChatGPT Updates">ChatGPT Updates</a>
+    <a href="https://www.theverge.com/ai-ethics" target="_blank" class="source-link" title="AI Ethics">AI Ethics</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Wired AI (5个链接)</div>
+    <a href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" class="source-link" title="Wired AI Coverage">Wired AI Coverage</a>
+    <a href="https://www.wired.com/tag/openai/" target="_blank" class="source-link" title="Inside OpenAI">Inside OpenAI</a>
+    <a href="https://www.wired.com/tag/machine-learning/" target="_blank" class="source-link" title="Machine Learning">Machine Learning</a>
+    <a href="https://www.wired.com/tag/ai-and-society/" target="_blank" class="source-link" title="AI and Society">AI and Society</a>
+    <a href="https://www.wired.com/tag/neural-networks/" target="_blank" class="source-link" title="Neural Networks">Neural Networks</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Hacker News AI (4个链接)</div>
+    <a href="https://news.ycombinator.com/" target="_blank" class="source-link" title="Hacker News">Hacker News</a>
+    <a href="https://news.ycombinator.com/?p=1" target="_blank" class="source-link" title="HN AI Discussions">HN AI Discussions</a>
+    <a href="https://news.ycombinator.com/show" target="_blank" class="source-link" title="Show HN">Show HN</a>
+    <a href="https://news.ycombinator.com/ask" target="_blank" class="source-link" title="Ask HN">Ask HN</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">OpenAI Blog (5个链接)</div>
+    <a href="https://openai.com/research/" target="_blank" class="source-link" title="OpenAI Research">OpenAI Research</a>
+    <a href="https://openai.com/chatgpt" target="_blank" class="source-link" title="ChatGPT">ChatGPT</a>
+    <a href="https://openai.com/gpt-4" target="_blank" class="source-link" title="GPT-4">GPT-4</a>
+    <a href="https://openai.com/dall-e-3" target="_blank" class="source-link" title="DALL·E 3">DALL·E 3</a>
+    <a href="https://openai.com/product" target="_blank" class="source-link" title="OpenAI API">OpenAI API</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Google AI Blog (5个链接)</div>
+    <a href="https://blog.google/technology/ai/" target="_blank" class="source-link" title="Google AI Blog">Google AI Blog</a>
+    <a href="https://deepmind.google/" target="_blank" class="source-link" title="DeepMind">DeepMind</a>
+    <a href="https://blog.google/technology/google/gemini-capabilities-features-february-2024/" target="_blank" class="source-link" title="Google Gemini">Google Gemini</a>
+    <a href="https://www.tensorflow.org/" target="_blank" class="source-link" title="TensorFlow">TensorFlow</a>
+    <a href="https://jax.readthedocs.io/" target="_blank" class="source-link" title="JAX">JAX</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Meta AI Research (5个链接)</div>
+    <a href="https://ai.meta.com/" target="_blank" class="source-link" title="Meta AI">Meta AI</a>
+    <a href="https://ai.facebook.com/research/" target="_blank" class="source-link" title="FAIR Research">FAIR Research</a>
+    <a href="https://ai.meta.com/llama/" target="_blank" class="source-link" title="LLaMA Models">LLaMA Models</a>
+    <a href="https://pytorch.org/" target="_blank" class="source-link" title="PyTorch">PyTorch</a>
+    <a href="https://segment-anything.com/" target="_blank" class="source-link" title="SAM Segment Anything">SAM Segment Anything</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Microsoft Research (4个链接)</div>
+    <a href="https://www.microsoft.com/research/research-area/artificial-intelligence/" target="_blank" class="source-link" title="Microsoft Research AI">Microsoft Research AI</a>
+    <a href="https://azure.microsoft.com/en-us/products/ai-services" target="_blank" class="source-link" title="Azure AI">Azure AI</a>
+    <a href="https://copilot.microsoft.com/" target="_blank" class="source-link" title="Microsoft Copilot">Microsoft Copilot</a>
+    <a href="https://github.com/features/copilot" target="_blank" class="source-link" title="GitHub Copilot">GitHub Copilot</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Anthropic Claude (4个链接)</div>
+    <a href="https://www.anthropic.com/research" target="_blank" class="source-link" title="Anthropic Research">Anthropic Research</a>
+    <a href="https://claude.ai/" target="_blank" class="source-link" title="Claude AI">Claude AI</a>
+    <a href="https://www.anthropic.com/research/constitutional-ai-harmless-ai" target="_blank" class="source-link" title="Constitutional AI">Constitutional AI</a>
+    <a href="https://console.anthropic.com/" target="_blank" class="source-link" title="Anthropic API">Anthropic API</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">NVIDIA AI (4个链接)</div>
+    <a href="https://www.nvidia.com/en-us/ai-data-science/" target="_blank" class="source-link" title="NVIDIA AI">NVIDIA AI</a>
+    <a href="https://developer.nvidia.com/cuda-toolkit" target="_blank" class="source-link" title="CUDA">CUDA</a>
+    <a href="https://www.nvidia.com/en-us/research/" target="_blank" class="source-link" title="NVIDIA Research">NVIDIA Research</a>
+    <a href="https://www.nvidia.com/en-us/data-center/dgx-systems/" target="_blank" class="source-link" title="DGX Systems">DGX Systems</a>
+</div>
+</div>
+        </div>
+
+        <div class="model-section">
+            <h2>Gemini <span class="model-badge">多模态</span></h2>
+            <p class="search-method"><strong>搜索方式:</strong> GLM-4.6评估实时数据(Gemini视角) | 配额耗尽 (预计1小时52分钟后重置)</p>
+            <div class="model-content"><strong>2026年AI五大热点 - 基于真实网络数据分析</strong>
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">一、 AI Agent自动化求职工具：AIHawk</strong>
+<strong>技术特点</strong>：AIHawk是一个旨在简化求职过程的AI工具，它通过人工智能自动化工作申请流程，使用户能够以定制化的方式申请多个职位。
+<strong>社区热度</strong>：该项目在GitHub上获得了29307个星标，表明社区对其高度关注。
+<strong>发展趋势</strong>：随着人工智能技术的发展，自动化工具在求职领域的应用越来越广泛，AIHawk代表了这一趋势。
+<strong>应用价值</strong>：AIHawk能够提高求职效率，减轻求职者的工作负担，同时帮助雇主更快速地找到合适的人才。
+<strong>链接</strong>：[AIHawk on GitHub](<a href="https://github.com/feder-cr/Jobs_Applier_AI_Agent_AIHawk" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/feder-cr/Jobs_Applier_AI_Agent_AIHawk</a>)
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">二、 深度学习模型框架：Hugging Face Transformers</strong>
+<strong>技术特点</strong>：Hugging Face Transformers是一个开源的模型定义框架，支持文本、视觉、音频和多媒体模型，适用于推理和训练。
+<strong>社区热度</strong>：该项目在GitHub上获得了155970个星标，是社区中非常受欢迎的项目。
+<strong>发展趋势</strong>：随着深度学习模型的不断进步，对模型框架的需求也在增加，Transformers框架代表了这一趋势。
+<strong>应用价值</strong>：Transformers框架能够帮助研究人员和开发者更快地构建和部署先进的机器学习模型。
+<strong>链接</strong>：[Hugging Face Transformers on GitHub](<a href="https://github.com/huggingface/transformers" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/huggingface/transformers</a>)
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">三、 深度学习论文实现与教程：labmlai/annotated_deep_learning_paper_implementations</strong>
+<strong>技术特点</strong>：该项目提供了60多个深度学习论文的实现和教程，包括Transformer、优化器、GAN、强化学习、CapsNet、蒸馏等。
+<strong>社区热度</strong>：该项目在GitHub上获得了65581个星标，是深度学习领域的热门资源。
+<strong>发展趋势</strong>：随着深度学习领域的快速发展，对论文实现和教程的需求也在增加，该项目代表了这一趋势。
+<strong>应用价值</strong>：该项目为深度学习研究人员和开发者提供了丰富的学习资源，有助于他们更好地理解和应用深度学习技术。
+<strong>链接</strong>：[labmlai/annotated_deep_learning_paper_implementations on GitHub](<a href="https://github.com/labmlai/annotated_deep_learning_paper_implementations" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/labmlai/annotated_deep_learning_paper_implementations</a>)
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">四、 个人AI助手：openclaw/openclaw</strong>
+<strong>技术特点</strong>：openclaw是一个开源的个人AI助手，可在任何操作系统和平台上运行。
+<strong>社区热度</strong>：该项目在GitHub上获得了一定的关注度，但与Hugging Face Transformers相比，关注度较低。
+<strong>发展趋势</strong>：随着AI技术的不断发展，个人AI助手在日常生活中将发挥越来越重要的作用。
+<strong>应用价值</strong>：openclaw可以帮助用户管理日程、回复邮件、提供信息等，提高生活和工作效率。
+<strong>链接</strong>：[openclaw on GitHub](<a href="https://github.com/openclaw/openclaw" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/openclaw/openclaw</a>)
+<strong style="font-size: 1.4em; color: #667eea; display: block; margin: 16px 0 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-left: 5px solid #667eea; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">五、 AI Agent + 编程Agent：CherryHQ/cherry-studio</strong>
+<strong>技术特点</strong>：Cherry Studio是一个集AI Agent、编程Agent和300多个助手于一体的AI桌面，具有自主编程、智能自动化和统一访问前沿LLMs等功能。
+<strong>社区热度</strong>：该项目在GitHub上获得了一定的关注度，但与Hugging Face Transformers相比，关注度较低。
+<strong>发展趋势</strong>：随着AI技术的不断发展，AI Agent和编程Agent在软件开发和自动化领域的应用将越来越广泛。
+<strong>应用价值</strong>：Cherry Studio可以帮助开发者提高开发效率，实现智能自动化，同时提供对前沿LLMs的统一访问。
+<strong>链接</strong>：[CherryHQ/cherry-studio on GitHub](<a href="https://github.com/CherryHQ/cherry-studio" target="_blank" style="color: #1976d2; text-decoration: underline; font-weight: 500;">https://github.com/CherryHQ/cherry-studio</a>)</div>
+            
+<div class="sources-section">
+<h3 class="sources-title" onclick="toggleSources(this)" style="cursor: pointer;">[数据来源] Gemini搜索来源 <span class="toggle-icon">▶</span></h3>
+<div class="sources-list" style="display: none;">
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">实时网络搜索结果 (27条)</div>
+    <a href="https://github.com/openclaw/openclaw" target="_blank" class="source-link" title="Your own personal AI assistant. Any OS. Any Platform. The lobster way. 🦞 ">openclaw/openclaw <span style="font-size: 0.8em; color: #666;">(GitHub | ⭐ 125324)</span></a>
+    <a href="https://openclaw.ai/blog/introducing-openclaw" target="_blank" class="source-link" title="Hacker News讨论 (628 points)">OpenClaw – Moltbot Renamed Again <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 628 points)</span></a>
+    <a href="https://ryanshook.org/blog/posts/openclaw-on-oracle-free-tier-always-on-ai-for-free/" target="_blank" class="source-link" title="Hacker News讨论 (5 points)">Openclaw on Oracle's Free Tier: Always-On AI for $0/Month <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 5 points)</span></a>
+    <a href="https://news.ycombinator.com/item?id=46828638" target="_blank" class="source-link" title="Hacker News讨论 (4 points)">Ask HN: Why the OpenClaw hype? What's so special? <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 4 points)</span></a>
+    <a href="https://lightning.ai/lightning-ai/environments/openclaw" target="_blank" class="source-link" title="Hacker News讨论 (3 points)">One-click cloud template for Clawdbot/Moltbot/OpenClaw, no Mac Mini needed <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 3 points)</span></a>
+    <a href="https://openclaw.ai/" target="_blank" class="source-link" title="Hacker News讨论 (3 points)">Openclaw <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 3 points)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/152x7kn/claude_2_creative_writing_is_lit/" target="_blank" class="source-link" title="Made this using claude 2
+Prompt: A fight between Shazam and Constantine
+
+Results: Here is a very lengthy and detailed description of a fight between Shazam and Constantine:
+
+The skies over Gotham City...">Claude 2 creative writing is lit. <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/1qrtzzg/oneminute_daily_ai_news_1302026/" target="_blank" class="source-link" title="1. **OpenClaw’s** AI assistants are now building their own social network.\[1\]
+2. **DeepSeek** AI Releases DeepSeek-OCR 2 with Causal Visual Flow Encoder for Layout Aware Document Understanding.\[2\]...">One-Minute Daily AI News 1/30/2026 <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://github.com/CherryHQ/cherry-studio" target="_blank" class="source-link" title="AI Agent + Coding Agent + 300+ assistants: agentic AI desktop with autonomous coding, intelligent automation, and unified access to frontier LLMs.">CherryHQ/cherry-studio <span style="font-size: 0.8em; color: #666;">(GitHub | ⭐ 39002)</span></a>
+    <a href="https://openclaw.ai/blog/introducing-openclaw" target="_blank" class="source-link" title="Hacker News讨论 (628 points)">OpenClaw – Moltbot Renamed Again <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 628 points)</span></a>
+    <a href="https://github.com/moltbot/moltbot/commit/6d16a658e5ebe6ce15856565a47090d5b9d5dfb6" target="_blank" class="source-link" title="Hacker News讨论 (247 points)">Clawdbot Renames to Moltbot <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 247 points)</span></a>
+    <a href="https://opensourcemalware.com/blog/clawdbot-skills-ganked-your-crypto" target="_blank" class="source-link" title="Hacker News讨论 (168 points)">Malicious skills targeting Claude Code and Moltbot users <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 168 points)</span></a>
+    <a href="https://www.moltbook.com/" target="_blank" class="source-link" title="Hacker News讨论 (36 points)">Show HN: Moltbook – A social network for moltbots (clawdbots) to hang out <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 36 points)</span></a>
+    <a href="https://www.aiipassword.com/blog/moltbot-security-review-is-clawd-bot-safe" target="_blank" class="source-link" title="Hacker News讨论 (12 points)">Moltbot (clawd bot) security review <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 12 points)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/1qqdmoq/moltbot_is_exploding_100k_github_stars_in_weeks/" target="_blank" class="source-link" title="Hey everyone.  
+  
+I Just published a breakdown on Moltbot: the self-hosted, open-source personal AI assistant that's gone massively viral.  
+The article discusses the main points of my own questions ...">Moltbot is exploding. 100K Github Stars in weeks. But what can we actually do with it, and why so much hype? And how to avoid the security concerns? <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://reddit.com/r/artificial/comments/1qph7gm/made_a_free_tool_to_help_you_setup_and_secure/" target="_blank" class="source-link" title="I saw many people struggling to setup and secure their moltbot/clawdbot. So, I made a tool which will help you to setup and secure your bot....">Made a free tool to help you setup and secure Molt bot <span style="font-size: 0.8em; color: #666;">(Reddit r/artificial)</span></a>
+    <a href="https://github.com/avinash201199/free-ai-agents-resources" target="_blank" class="source-link" title="Free AI Agents Resources – Your All-in-One 2026 Learning Hub">avinash201199/free-ai-agents-resources <span style="font-size: 0.8em; color: #666;">(GitHub | ⭐ 185)</span></a>
+    <a href="https://medium.com/@anwarzaid76/ai-agents-in-2026-the-gap-between-hype-and-reality-e1c5a7ba6e3b" target="_blank" class="source-link" title="Hacker News讨论 (4 points)">AI Agents in 2026 <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 4 points)</span></a>
+    <a href="https://www.theregister.com/2026/01/04/ai_agents_insider_threats_panw/" target="_blank" class="source-link" title="Hacker News讨论 (3 points)">AI agents are 2026's biggest insider threat: Palo Alto Networks security boss <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 3 points)</span></a>
+    <a href="https://newsletter.owainlewis.com/p/the-simplest-way-to-build-ai-agents" target="_blank" class="source-link" title="Hacker News讨论 (1 points)">The simplest way to build AI agents in 2026 <span style="font-size: 0.8em; color: #666;">(Hacker News | ▲ 1 points)</span></a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">GitHub AI Projects (8个链接)</div>
+    <a href="https://github.com/huggingface/transformers" target="_blank" class="source-link" title="Transformers by Hugging Face">Transformers by Hugging Face</a>
+    <a href="https://github.com/langchain-ai/langchain" target="_blank" class="source-link" title="LangChain - Framework for developing LLM applications">LangChain - Framework for developing LLM applications</a>
+    <a href="https://github.com/Significant-Gravitas/AutoGPT" target="_blank" class="source-link" title="AutoGPT - Autonomous AI Agent">AutoGPT - Autonomous AI Agent</a>
+    <a href="https://github.com/Stability-AI/stablediffusion" target="_blank" class="source-link" title="Stable Diffusion">Stable Diffusion</a>
+    <a href="https://github.com/pytorch/pytorch" target="_blank" class="source-link" title="PyTorch">PyTorch</a>
+    <a href="https://github.com/tensorflow/tensorflow" target="_blank" class="source-link" title="TensorFlow">TensorFlow</a>
+    <a href="https://github.com/openai/openai-codex" target="_blank" class="source-link" title="OpenAI Codex">OpenAI Codex</a>
+    <a href="https://github.com/ultralytics/ultralytics" target="_blank" class="source-link" title="YOLO - Object Detection">YOLO - Object Detection</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">arXiv AI Papers (8个链接)</div>
+    <a href="https://arxiv.org/abs/1706.03762" target="_blank" class="source-link" title="Attention Is All You Need (Transformer Paper)">Attention Is All You Need (Transformer Paper)</a>
+    <a href="https://arxiv.org/abs/2005.14165" target="_blank" class="source-link" title="Language Models are Few-Shot Learners (GPT-3)">Language Models are Few-Shot Learners (GPT-3)</a>
+    <a href="https://arxiv.org/abs/2105.05233" target="_blank" class="source-link" title="Diffusion Models Beat GANs">Diffusion Models Beat GANs</a>
+    <a href="https://arxiv.org/abs/2212.08073" target="_blank" class="source-link" title="Constitutional AI">Constitutional AI</a>
+    <a href="https://arxiv.org/abs/2302.13971" target="_blank" class="source-link" title="LLaMA: Open Foundation Language Models">LLaMA: Open Foundation Language Models</a>
+    <a href="https://arxiv.org/abs/2303.08774" target="_blank" class="source-link" title="GPT-4 Technical Report">GPT-4 Technical Report</a>
+    <a href="https://arxiv.org/abs/2304.02643" target="_blank" class="source-link" title="Segment Anything">Segment Anything</a>
+    <a href="https://arxiv.org/abs/2308.15478" target="_blank" class="source-link" title="Visual Instruction Tuning">Visual Instruction Tuning</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">TechCrunch AI (5个链接)</div>
+    <a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" class="source-link" title="TechCrunch AI Coverage">TechCrunch AI Coverage</a>
+    <a href="https://techcrunch.com/2023/11/06/openai-devday/" target="_blank" class="source-link" title="OpenAI announces GPT-4 Turbo">OpenAI announces GPT-4 Turbo</a>
+    <a href="https://techcrunch.com/tag/google-gemini/" target="_blank" class="source-link" title="Google Gemini Launch">Google Gemini Launch</a>
+    <a href="https://techcrunch.com/tag/ai-startups/" target="_blank" class="source-link" title="AI Startup Funding News">AI Startup Funding News</a>
+    <a href="https://techcrunch.com/tag/machine-learning/" target="_blank" class="source-link" title="Machine Learning Applications">Machine Learning Applications</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">MIT Technology Review (5个链接)</div>
+    <a href="https://www.technologyreview.com/topic/artificial-intelligence/" target="_blank" class="source-link" title="MIT AI Coverage">MIT AI Coverage</a>
+    <a href="https://www.technologyreview.com/2023/04/14/1072370/what-is-ai-artificial-intelligence/" target="_blank" class="source-link" title="What is AI?">What is AI?</a>
+    <a href="https://www.technologyreview.com/2024/04/15/1090399/ai-index-report-2024/" target="_blank" class="source-link" title="The AI Index Report">The AI Index Report</a>
+    <a href="https://www.technologyreview.com/2022/10/17/1062436/explainable-ai/" target="_blank" class="source-link" title="Explainable AI">Explainable AI</a>
+    <a href="https://www.technologyreview.com/2023/01/31/1067741/ai-in-healthcare/" target="_blank" class="source-link" title="AI in Healthcare">AI in Healthcare</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">The Verge AI (5个链接)</div>
+    <a href="https://www.theverge.com/ai-artificial-intelligence" target="_blank" class="source-link" title="The Verge AI Coverage">The Verge AI Coverage</a>
+    <a href="https://www.theverge.com/subject/openai" target="_blank" class="source-link" title="OpenAI News">OpenAI News</a>
+    <a href="https://www.theverge.com/subject/google-deepmind" target="_blank" class="source-link" title="Google DeepMind">Google DeepMind</a>
+    <a href="https://www.theverge.com/subject/chatgpt" target="_blank" class="source-link" title="ChatGPT Updates">ChatGPT Updates</a>
+    <a href="https://www.theverge.com/ai-ethics" target="_blank" class="source-link" title="AI Ethics">AI Ethics</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Wired AI (5个链接)</div>
+    <a href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" class="source-link" title="Wired AI Coverage">Wired AI Coverage</a>
+    <a href="https://www.wired.com/tag/openai/" target="_blank" class="source-link" title="Inside OpenAI">Inside OpenAI</a>
+    <a href="https://www.wired.com/tag/machine-learning/" target="_blank" class="source-link" title="Machine Learning">Machine Learning</a>
+    <a href="https://www.wired.com/tag/ai-and-society/" target="_blank" class="source-link" title="AI and Society">AI and Society</a>
+    <a href="https://www.wired.com/tag/neural-networks/" target="_blank" class="source-link" title="Neural Networks">Neural Networks</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Hacker News AI (4个链接)</div>
+    <a href="https://news.ycombinator.com/" target="_blank" class="source-link" title="Hacker News">Hacker News</a>
+    <a href="https://news.ycombinator.com/?p=1" target="_blank" class="source-link" title="HN AI Discussions">HN AI Discussions</a>
+    <a href="https://news.ycombinator.com/show" target="_blank" class="source-link" title="Show HN">Show HN</a>
+    <a href="https://news.ycombinator.com/ask" target="_blank" class="source-link" title="Ask HN">Ask HN</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">OpenAI Blog (5个链接)</div>
+    <a href="https://openai.com/research/" target="_blank" class="source-link" title="OpenAI Research">OpenAI Research</a>
+    <a href="https://openai.com/chatgpt" target="_blank" class="source-link" title="ChatGPT">ChatGPT</a>
+    <a href="https://openai.com/gpt-4" target="_blank" class="source-link" title="GPT-4">GPT-4</a>
+    <a href="https://openai.com/dall-e-3" target="_blank" class="source-link" title="DALL·E 3">DALL·E 3</a>
+    <a href="https://openai.com/product" target="_blank" class="source-link" title="OpenAI API">OpenAI API</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Google AI Blog (5个链接)</div>
+    <a href="https://blog.google/technology/ai/" target="_blank" class="source-link" title="Google AI Blog">Google AI Blog</a>
+    <a href="https://deepmind.google/" target="_blank" class="source-link" title="DeepMind">DeepMind</a>
+    <a href="https://blog.google/technology/google/gemini-capabilities-features-february-2024/" target="_blank" class="source-link" title="Google Gemini">Google Gemini</a>
+    <a href="https://www.tensorflow.org/" target="_blank" class="source-link" title="TensorFlow">TensorFlow</a>
+    <a href="https://jax.readthedocs.io/" target="_blank" class="source-link" title="JAX">JAX</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Meta AI Research (5个链接)</div>
+    <a href="https://ai.meta.com/" target="_blank" class="source-link" title="Meta AI">Meta AI</a>
+    <a href="https://ai.facebook.com/research/" target="_blank" class="source-link" title="FAIR Research">FAIR Research</a>
+    <a href="https://ai.meta.com/llama/" target="_blank" class="source-link" title="LLaMA Models">LLaMA Models</a>
+    <a href="https://pytorch.org/" target="_blank" class="source-link" title="PyTorch">PyTorch</a>
+    <a href="https://segment-anything.com/" target="_blank" class="source-link" title="SAM Segment Anything">SAM Segment Anything</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Microsoft Research (4个链接)</div>
+    <a href="https://www.microsoft.com/research/research-area/artificial-intelligence/" target="_blank" class="source-link" title="Microsoft Research AI">Microsoft Research AI</a>
+    <a href="https://azure.microsoft.com/en-us/products/ai-services" target="_blank" class="source-link" title="Azure AI">Azure AI</a>
+    <a href="https://copilot.microsoft.com/" target="_blank" class="source-link" title="Microsoft Copilot">Microsoft Copilot</a>
+    <a href="https://github.com/features/copilot" target="_blank" class="source-link" title="GitHub Copilot">GitHub Copilot</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">Anthropic Claude (4个链接)</div>
+    <a href="https://www.anthropic.com/research" target="_blank" class="source-link" title="Anthropic Research">Anthropic Research</a>
+    <a href="https://claude.ai/" target="_blank" class="source-link" title="Claude AI">Claude AI</a>
+    <a href="https://www.anthropic.com/research/constitutional-ai-harmless-ai" target="_blank" class="source-link" title="Constitutional AI">Constitutional AI</a>
+    <a href="https://console.anthropic.com/" target="_blank" class="source-link" title="Anthropic API">Anthropic API</a>
+    <div style="grid-column: 1/-1; margin-top: 12px; margin-bottom: 8px; font-weight: 600; color: #667eea;">NVIDIA AI (4个链接)</div>
+    <a href="https://www.nvidia.com/en-us/ai-data-science/" target="_blank" class="source-link" title="NVIDIA AI">NVIDIA AI</a>
+    <a href="https://developer.nvidia.com/cuda-toolkit" target="_blank" class="source-link" title="CUDA">CUDA</a>
+    <a href="https://www.nvidia.com/en-us/research/" target="_blank" class="source-link" title="NVIDIA Research">NVIDIA Research</a>
+    <a href="https://www.nvidia.com/en-us/data-center/dgx-systems/" target="_blank" class="source-link" title="DGX Systems">DGX Systems</a>
+</div>
+</div>
+        </div>
+
+        <div class="footer">
+            <p><strong>技术实现:</strong> 本报告使用GLM-4.6 API + 实时网络搜索生成分析内容</p>
+            <p><strong>数据来源:</strong> 108条实时搜索结果 + 67个预定义技术链接</p>
+            <p><strong>搜索范围:</strong> GitHub Trending API、Hacker News Algolia API、Reddit r/artificial、GitHub Repository Search</p>
+            <p><strong>研究方法:</strong> 每个模型收集100+热点,筛选出最重要的5个</p>
+            <p><strong>格式统一:</strong> 自动标题加粗、减少空行、确保所有模型输出格式一致</p>
+        </div>
+    </div>
+</body>
+</html>

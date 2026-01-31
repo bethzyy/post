@@ -1,0 +1,392 @@
+{
+  "timestamp": "20260131_162433",
+  "completed_count": 33,
+  "total_count": 35,
+  "completed_tasks": [
+    "sd-3_food_4",
+    "flux-dev_art_5",
+    "dall-e-3_animal_2",
+    "dall-e-3_art_5",
+    "flux-schnell_art_1",
+    "flux-schnell_art_5",
+    "dall-e-2_food_4",
+    "dall-e-3_scifi_3",
+    "flux-schnell_animal_2",
+    "dall-e-2_animal_2",
+    "flux-schnell_food_4",
+    "dall-e-2_art_1",
+    "flux-schnell_scifi_3",
+    "sd-3_animal_2",
+    "dall-e-2_scifi_3",
+    "flux-dev_art_1",
+    "flux-1.1-pro_scifi_3",
+    "sd-3_art_1",
+    "flux-1.1-pro_animal_2",
+    "flux-1.1-pro_art_5",
+    "flux-dev_animal_2",
+    "flux-1.1-pro_food_4",
+    "dall-e-3_art_1",
+    "sd-xl-lightning_scifi_3",
+    "dall-e-3_food_4",
+    "flux-dev_scifi_3",
+    "sd-3_scifi_3",
+    "sd-xl-lightning_art_1",
+    "sd-xl-lightning_animal_2",
+    "sd-3_art_5",
+    "dall-e-2_art_5",
+    "flux-1.1-pro_art_1",
+    "flux-dev_food_4"
+  ],
+  "all_results": {
+    "dall-e-3": {
+      "model_info": {
+        "name": "DALL-E 3",
+        "description": "OpenAI最新图像模型,质量极高",
+        "provider": "OpenAI",
+        "size": "1024x1024"
+      },
+      "results": [
+        {
+          "prompt_title": "中国传统山水画",
+          "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+          "category": "art",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/dall-e-3_art_1.png",
+          "size": 892969,
+          "status": "success"
+        },
+        {
+          "prompt_title": "可爱猫咪",
+          "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+          "category": "animal",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/dall-e-3_animal_2.png",
+          "size": 923809,
+          "status": "success"
+        },
+        {
+          "prompt_title": "未来城市",
+          "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+          "category": "scifi",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/dall-e-3_scifi_3.png",
+          "size": 1118079,
+          "status": "success"
+        },
+        {
+          "prompt_title": "美食",
+          "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+          "category": "food",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/dall-e-3_food_4.png",
+          "size": 678001,
+          "status": "success"
+        },
+        {
+          "prompt_title": "花鸟画",
+          "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+          "category": "art",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/dall-e-3_art_5.png",
+          "size": 886006,
+          "status": "success"
+        }
+      ],
+      "success_count": 0,
+      "total_count": 0
+    },
+    "dall-e-2": {
+      "model_info": {
+        "name": "DALL-E 2",
+        "description": "OpenAI经典图像模型",
+        "provider": "OpenAI",
+        "size": "1024x1024"
+      },
+      "results": [
+        {
+          "prompt_title": "中国传统山水画",
+          "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+          "category": "art",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/dall-e-2_art_1.png",
+          "size": 1007007,
+          "status": "success"
+        },
+        {
+          "prompt_title": "可爱猫咪",
+          "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+          "category": "animal",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/dall-e-2_animal_2.png",
+          "size": 1013791,
+          "status": "success"
+        },
+        {
+          "prompt_title": "未来城市",
+          "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+          "category": "scifi",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/dall-e-2_scifi_3.png",
+          "size": 1088806,
+          "status": "success"
+        },
+        {
+          "prompt_title": "美食",
+          "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+          "category": "food",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/dall-e-2_food_4.png",
+          "size": 751080,
+          "status": "success"
+        },
+        {
+          "prompt_title": "花鸟画",
+          "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+          "category": "art",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/dall-e-2_art_5.png",
+          "size": 1099219,
+          "status": "success"
+        }
+      ],
+      "success_count": 0,
+      "total_count": 0
+    },
+    "flux-1.1-pro": {
+      "model_info": {
+        "name": "Flux 1.1 Pro",
+        "description": "Black Forest Labs最新模型",
+        "provider": "Black Forest Labs",
+        "size": "1024x1024"
+      },
+      "results": [
+        {
+          "prompt_title": "中国传统山水画",
+          "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+          "category": "art",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-1.1-pro_art_1.png",
+          "size": 992105,
+          "status": "success"
+        },
+        {
+          "prompt_title": "可爱猫咪",
+          "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+          "category": "animal",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-1.1-pro_animal_2.png",
+          "size": 917390,
+          "status": "success"
+        },
+        {
+          "prompt_title": "未来城市",
+          "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+          "category": "scifi",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-1.1-pro_scifi_3.png",
+          "size": 1078091,
+          "status": "success"
+        },
+        {
+          "prompt_title": "美食",
+          "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+          "category": "food",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-1.1-pro_food_4.png",
+          "size": 720369,
+          "status": "success"
+        },
+        {
+          "prompt_title": "花鸟画",
+          "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+          "category": "art",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-1.1-pro_art_5.png",
+          "size": 817083,
+          "status": "success"
+        }
+      ],
+      "success_count": 0,
+      "total_count": 0
+    },
+    "flux-schnell": {
+      "model_info": {
+        "name": "Flux Schnell",
+        "description": "Flux快速版本",
+        "provider": "Black Forest Labs",
+        "size": "1024x1024"
+      },
+      "results": [
+        {
+          "prompt_title": "中国传统山水画",
+          "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+          "category": "art",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-schnell_art_1.png",
+          "size": 813887,
+          "status": "success"
+        },
+        {
+          "prompt_title": "可爱猫咪",
+          "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+          "category": "animal",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-schnell_animal_2.png",
+          "size": 863697,
+          "status": "success"
+        },
+        {
+          "prompt_title": "未来城市",
+          "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+          "category": "scifi",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-schnell_scifi_3.png",
+          "size": 1008802,
+          "status": "success"
+        },
+        {
+          "prompt_title": "美食",
+          "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+          "category": "food",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-schnell_food_4.png",
+          "size": 718914,
+          "status": "success"
+        },
+        {
+          "prompt_title": "花鸟画",
+          "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+          "category": "art",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-schnell_art_5.png",
+          "size": 790935,
+          "status": "success"
+        }
+      ],
+      "success_count": 0,
+      "total_count": 0
+    },
+    "flux-dev": {
+      "model_info": {
+        "name": "Flux Dev",
+        "description": "Flux开发版本",
+        "provider": "Black Forest Labs",
+        "size": "1024x1024"
+      },
+      "results": [
+        {
+          "prompt_title": "中国传统山水画",
+          "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+          "category": "art",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-dev_art_1.png",
+          "size": 881609,
+          "status": "success"
+        },
+        {
+          "prompt_title": "可爱猫咪",
+          "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+          "category": "animal",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-dev_animal_2.png",
+          "size": 870217,
+          "status": "success"
+        },
+        {
+          "prompt_title": "未来城市",
+          "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+          "category": "scifi",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-dev_scifi_3.png",
+          "size": 1036431,
+          "status": "success"
+        },
+        {
+          "prompt_title": "美食",
+          "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+          "category": "food",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-dev_food_4.png",
+          "size": 755929,
+          "status": "success"
+        },
+        {
+          "prompt_title": "花鸟画",
+          "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+          "category": "art",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/flux-dev_art_5.png",
+          "size": 1011406,
+          "status": "success"
+        }
+      ],
+      "success_count": 0,
+      "total_count": 0
+    },
+    "sd-3": {
+      "model_info": {
+        "name": "Stable Diffusion 3",
+        "description": "Stability AI最新SD模型",
+        "provider": "Stability AI",
+        "size": "1024x1024"
+      },
+      "results": [
+        {
+          "prompt_title": "中国传统山水画",
+          "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+          "category": "art",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/sd-3_art_1.png",
+          "size": 999042,
+          "status": "success"
+        },
+        {
+          "prompt_title": "可爱猫咪",
+          "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+          "category": "animal",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/sd-3_animal_2.png",
+          "size": 943986,
+          "status": "success"
+        },
+        {
+          "prompt_title": "未来城市",
+          "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+          "category": "scifi",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/sd-3_scifi_3.png",
+          "size": 1135513,
+          "status": "success"
+        },
+        {
+          "prompt_title": "美食",
+          "prompt": "Delicious steaming hot bowl of ramen noodles, eggs, green onions, food photography, professional lighting",
+          "category": "food",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/sd-3_food_4.png",
+          "size": 738464,
+          "status": "success"
+        },
+        {
+          "prompt_title": "花鸟画",
+          "prompt": "Traditional Chinese bird and flower painting, bamboo, plum blossoms, elegant brush strokes",
+          "category": "art",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/sd-3_art_5.png",
+          "size": 829984,
+          "status": "success"
+        }
+      ],
+      "success_count": 0,
+      "total_count": 0
+    },
+    "sd-xl-lightning": {
+      "model_info": {
+        "name": "SD XL Lightning",
+        "description": "SD XL快速生成版本",
+        "provider": "Stability AI",
+        "size": "1024x1024"
+      },
+      "results": [
+        {
+          "prompt_title": "中国传统山水画",
+          "prompt": "Traditional Chinese landscape painting, mountains and mist, ink wash style, serene atmosphere",
+          "category": "art",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/sd-xl-lightning_art_1.png",
+          "size": 958719,
+          "status": "success"
+        },
+        {
+          "prompt_title": "可爱猫咪",
+          "prompt": "A cute fluffy cat sitting on a wooden fence, warm golden hour sunlight, realistic style",
+          "category": "animal",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/sd-xl-lightning_animal_2.png",
+          "size": 950570,
+          "status": "success"
+        },
+        {
+          "prompt_title": "未来城市",
+          "prompt": "Futuristic cyberpunk city at night, neon lights, flying cars, rain reflections, cinematic lighting",
+          "category": "scifi",
+          "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\non_gemini_comparison_output/sd-xl-lightning_scifi_3.png",
+          "size": 1080656,
+          "status": "success"
+        },
+        null,
+        null
+      ],
+      "success_count": 0,
+      "total_count": 0
+    }
+  }
+}

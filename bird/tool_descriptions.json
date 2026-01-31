@@ -1,0 +1,43 @@
+{
+  "AI趋势分析": {
+    "multi_model_api_call.py": "多模型AI趋势分析 - 调用GLM-4.6、Claude、ChatGPT、Gemini等模型，让每个模型自己进行网络搜索，分析2026年1月AI领域Top 5热点",
+    "check_quota_status.py": "配额状态检查工具 - 快速检查anti-gravity各个模型的配额状态和等待时间",
+    "test_antigravity_models.py": "Anti-gravity模型测试 - 测试anti-gravity支持的模型列表，验证模型名称是否可用",
+    "deep_research_ai_trends_2026.py": "深度AI趋势研究 - 对2026年AI领域进行深度研究和分析",
+    "deep_research_ai_trends_2026_realtime.py": "实时AI趋势研究 - 使用实时网络搜索研究2026年AI趋势",
+    "complete_multi_model_realtime_search.py": "完整多模型实时搜索 - 多模型实时AI趋势分析",
+    "complete_multi_model_report.py": "完整多模型报告生成 - 生成多模型AI趋势分析报告",
+    "create_ai_trends_final.py": "AI趋势最终报告 - 创建最终的AI趋势分析报告",
+    "ai_trends_2026_comparison.py": "AI趋势对比分析 - 对比不同模型的AI趋势分析结果"
+  },
+  "图像生成 - 节日": {
+    "generate_festival_images.py": "节日主题图像生成器 - 支持自定义主题，使用DALL-E 3、Gemini、Flux、Seedream等4个模型生成图像并生成HTML对比页面 ★ 推荐 ★"
+  },
+  "图像生成 - 鸟类": {
+    "bird_painting_self_correction.py": "鸟类绘画(自修正) - 带自修正功能的鸟类绘画生成工具",
+    "bird_painting_steps_generator.py": "鸟类绘画步骤生成器 - 生成鸟类绘画的分步教程",
+    "bird_painting_steps_teaching.py": "鸟类绘画教学 - 生成鸟类绘画教学内容",
+    "bird_painting_with_verification.py": "鸟类绘画(带验证) - 生成鸟类绘画并进行质量验证",
+    "bird_painting_volcano.py": "鸟类绘画(Volcano) - 使用Volcano模型生成鸟类绘画",
+    "bird_painting_optimized.py": "鸟类绘画(优化版) - 优化版鸟类绘画生成工具",
+    "bird_pollinations_simple.py": "简单鸟类图像(Pollinations) - 使用Pollinations生成简单鸟类图像",
+    "generate_bird_gallery.py": "鸟类图库生成器 - 批量生成鸟类图像图库"
+  },
+  "图像生成 - 文章插图": {
+    "generate_article_images.py": "文章插图生成器 - 为文章自动生成配图",
+    "generate_food_article_images.py": "美食文章插图 - 生成美食主题文章的插图",
+    "generate_food_article_pollinations.py": "美食文章插图(Pollinations) - 使用Pollinations生成美食文章插图",
+    "generate_food_article_seedream.py": "美食文章插图(Seedream) - 使用Seedream生成美食文章插图",
+    "generate_tea_article_images.py": "茶文章插图生成 - 生成茶主题文章的插图"
+  },
+  "文章处理": {
+    "article_review_and_revision.py": "文章审阅和修订 - AI辅助文章审阅和修订工具",
+    "article_review_and_revision_local.py": "本地文章审阅 - 本地版本的文章审阅工具",
+    "create_final_teaching_page.py": "最终教学页面生成 - 生成教学内容展示页面",
+    "create_simple_tutorial.py": "简单教程生成器 - 生成简单的教程文档"
+  },
+  "其他工具": {
+    "config.py": "配置文件 - 项目配置管理（非工具）",
+    "generate_pencil_sketch.py": "铅笔素描生成 - 将图像转换为铅笔素描风格"
+  }
+}

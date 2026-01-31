@@ -1,0 +1,11 @@
+{
+  "model": "doubao-seedream-4-5-251128",
+  "model_name": "Volcano/Seedream 豆包图灵",
+  "prompt": "中国传统山水画，水墨画风格。\n\n画面内容：\n- 远山如黛，层峦叠嶂，云雾缭绕\n- 近景有苍松翠柏，枝干遒劲\n- 山间有小溪潺潺流淌，水波粼粼\n- 水墨晕染，墨色浓淡相宜\n- 构图开阔，意境深远\n- 留白得当，富有诗意\n\n艺术风格：\n- 中国传统水墨画技法\n- 笔墨苍劲，气韵生动\n- 淡雅脱俗，富有禅意\n- 继承宋代山水画传统\n- 1024x1024分辨率",
+  "filename": "C:\\D\\CAIE_tool\\MyAIProduct\\post\\test\\landscape_test\\chinese_landscape_seedream_20260129_075918.jpg",
+  "size": 1083309,
+  "resolution": "2K",
+  "url": "https://example.com/chinese_landscape.jpg",
+  "timestamp": "20260129_075918",
+  "status": "success"
+}
