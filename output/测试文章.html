@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试文章</title>
+    <style>
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .content { padding: 40px; }
+
+        h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .mcp-section {
+            margin: 30px 0;
+            padding: 20px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .mcp-section-wikipedia {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 5px solid #1976d2;
+        }
+
+        .mcp-section-sqlite {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border-left: 5px solid #7b1fa2;
+        }
+
+        .mcp-section-filesystem {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 5px solid #388e3c;
+        }
+
+        .mcp-label {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        .mcp-wikipedia {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 2px solid #1976d2;
+        }
+
+        .mcp-sqlite {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            border: 2px solid #7b1fa2;
+        }
+
+        .mcp-filesystem {
+            background: #e8f5e9;
+            color: #388e3c;
+            border: 2px solid #388e3c;
+        }
+
+        .footer {
+            background: #f5f5f5;
+            padding: 30px;
+            text-align: center;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>测试文章</h1>
+            <p class="meta">生成时间：2026-02-01 16:41:06</p>
+        </div>
+
+        <div class="content">
+            
+            <div class="mcp-section mcp-section-wikipedia">
+                <div class="mcp-label mcp-wikipedia">Wikipedia MCP - 知识来源</div>
+                
+            <h2>测试文章</h2>
+            <p>这是一个测试，验证文件是否在当前目录生成。</p>
+            <p><strong>当前目录</strong>: {os.getcwd()}</p>
+        
+            </div>
+            
+            <div class="mcp-section mcp-section-filesystem">
+                <div class="mcp-label mcp-filesystem">Filesystem MCP - 内容生成</div>
+                
+            <h2>测试内容</h2>
+            <p>这个文件应该生成在当前工作目录的 <code>output</code> 子目录中。</p>
+            <p>数据库也应该在当前工作目录中。</p>
+        
+            </div>
+            
+            <div class="mcp-section mcp-section-sqlite">
+                <div class="mcp-label mcp-sqlite">SQLite MCP - 数据管理</div>
+                
+            <h2>测试结果</h2>
+            <p>✅ HTML文件位置: <code>output/测试文章.html</code></p>
+            <p>✅ 数据库位置: <code>articles.db</code></p>
+        
+            </div>
+            
+        </div>
+
+        <div class="footer">
+            <p>由MCP自动化系统生成</p>
+        </div>
+    </div>
+</body>
+</html>

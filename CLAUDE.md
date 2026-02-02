@@ -75,10 +75,19 @@ Article generation for social media platforms (今日头条/Toutiao).
 ### `/test` - API Testing Tools (7 files)
 Model validation and quota monitoring.
 - **Key Tools**:
+  - `test_antigravity_models_complete.py` - **PRIMARY TOOL** - comprehensive test of ALL Antigravity models (28 models total)
+    - Tests 14 text models (Gemini, GPT, Claude, GLM series)
+    - Tests 14 image models (DALL-E, Flux, Stable Diffusion, Gemini Image)
+    - **NEW FEATURE**: Automatic quota recovery time prediction
+    - Generates HTML report with recovery time estimates for each model series
+    - Auto-opens report in browser when complete
   - `test_gemini_pro_image.py` - test Gemini image generation
-  - `test_antigravity_models.py` - test multiple models
   - `check_quota_status.py` - monitor API quotas
   - `retry_until_available.py` - auto-retry when quota exhausted
+- **Output**: `output/antigravity_complete_report_YYYYMMDD_HHMMSS.html`
+- **Documentation**:
+  - `配额恢复功能更新说明.md` - quota recovery feature documentation
+  - `配额状态说明.md` - detailed quota status explanations
 
 ## Configuration Management
 
@@ -273,13 +282,26 @@ print("[OK] API调用成功")
 **Gemini Free Tier**:
 - Limit: ~250 requests/day
 - Error: HTTP 429 Too Many Requests
-- Recovery: Automatic after ~5 minutes
+- Recovery: Automatic after daily UTC 00:00 reset (Beijing 8:00 AM)
 - Strategy: Implement immediate fallback to Seedream or Pollinations
 
 **GLM Models**:
 - Also have quota limits
 - Returns different error codes
+- Recovery: Daily reset (Beijing midnight)
 - Strategy: Monitor with `test/check_quota_status.py`
+
+**Quota Recovery Time Predictions**:
+The test tool `test_antigravity_models_complete.py` automatically calculates and displays:
+- **Gemini系列**: Tomorrow 8:00 AM (hourly countdown shown)
+- **GLM系列**: Tomorrow 12:00 AM (hourly countdown shown)
+- **GPT-4系列**: Next month 1st or after recharge
+- **Claude系列**: Next month 1st
+- **DALL-E系列**: Next month 1st or after recharge
+- **Flux/SD系列**: Next Monday or tomorrow
+- **Gemini图像系列**: Tomorrow 8:00 AM
+
+All times are dynamically calculated based on when the test runs.
 
 ### File Organization
 
