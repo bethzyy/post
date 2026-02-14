@@ -513,6 +513,31 @@ running_processes[process_id] = {
 
 ## Troubleshooting
 
+### Problem: Article Generator Fails Silently (No Output File)
+**Symptoms**: Tool shows "运行完成" but no HTML file is generated
+
+**Root Causes & Solutions**:
+
+1. **Chinese/English Colon Mismatch in Title Parsing**
+   - AI may return `标题：` (Chinese colon) but code only checks for `标题:` (English colon)
+   - **Solution** (applied to `toutiao_article_generator.py`):
+   ```python
+   # Support both Chinese and English colons
+   if line.startswith("标题:") or line.startswith("标题："):
+       title = line.replace("标题:", "").replace("标题：", "").strip()
+   ```
+
+2. **GBK Encoding Crash When Printing AI Response**
+   - AI responses contain emoji (🌟, 🔍, etc.) which crash Windows GBK console
+   - **Solution**: Safe print with encoding replacement:
+   ```python
+   try:
+       safe_content = content[:200].encode('gbk', errors='replace').decode('gbk')
+       print(f"[DEBUG] Response: {safe_content}")
+   except:
+       print(f"[DEBUG] Response: [contains special characters]")
+   ```
+
 ### Problem: Unicode Encoding Error
 ```
 UnicodeEncodeError: 'gbk' codec can't encode character '\u2713'

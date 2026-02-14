@@ -107,7 +107,8 @@ TOOL_DESCRIPTIONS = {
         },
     },
     "hotspot/": {
-        "ai_trends_2026_comparison.py": "分析 - 2026年AI趋势对比分析工具 (多维度对比分析)",
+        "ai_trends_unified.py": "分析 - 2026年AI趋势分析工具 (多维度分析)",
+        "ai_trends_with_websearch.py": "分析 - AI趋势分析工具 (支持网络搜索)",
     },
     "test/": {
         "test_antigravity_models.py": "测试 - Anti-gravity多模型测试 (测试DALL-E/Gemini等模型)",
@@ -571,7 +572,32 @@ def api_status(process_id):
                 # 如果文件在进程启动后生成,且超过5秒前创建的,认为已完成
                 if file_age > 5 and file_age < elapsed_time:
                     proc_info['status'] = 'completed'
+                    html_path = str(latest_html.absolute())
+                    html_url = f'file:///{html_path.replace(chr(92), "/")}'
                     proc_info['output'] += f'\n[OUTPUT] HTML: {latest_html.name}'
+                    proc_info['output'] += f'\n[文章链接] {html_url}'
+
+                    # 自动用Chrome打开生成的HTML文件
+                    try:
+                        chrome_paths = [
+                            r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+                            r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+                        ]
+                        chrome_exe = None
+                        for cp in chrome_paths:
+                            if os.path.exists(cp):
+                                chrome_exe = cp
+                                break
+
+                        if chrome_exe:
+                            subprocess.Popen([chrome_exe, html_path], shell=False)
+                            proc_info['output'] += f'\n[浏览器] 已在Chrome中打开HTML文件'
+                        else:
+                            os.startfile(html_path)
+                            proc_info['output'] += f'\n[浏览器] 已在默认浏览器中打开HTML文件'
+                    except Exception as e:
+                        proc_info['output'] += f'\n[提示] HTML文件: {latest_html.name}'
+
                     return jsonify({
                         'success': True,
                         'filename': proc_info['filename'],
@@ -583,8 +609,46 @@ def api_status(process_id):
 
         # 检查是否已在输出中标记为完成(用于长时间运行的任务)
         output_so_far = proc_info.get('output', '')
-        if '生成完成!' in output_so_far or '[成功] HTML文件已保存' in output_so_far:
+        if '生成完成!' in output_so_far or '[成功] HTML文件已保存' in output_so_far or '[SUCCESS] Article generation completed!' in output_so_far or '[OUTPUT] HTML:' in output_so_far:
             # 虽然进程还在运行(可能在等待浏览器打开等),但主要工作已完成
+            # 尝试打开生成的HTML文件
+            if tool_path and 'toutiao_article_generator' in str(tool_path):
+                article_dir = tool_path.parent
+                html_patterns = ['DraftImproved_*.html', 'Article_*.html', '今日头条文章_*.html', '文章草稿完善_*.html']
+                html_files = []
+                for pattern in html_patterns:
+                    html_files.extend(article_dir.glob(pattern))
+
+                if html_files:
+                    # 获取进程启动后生成的最新HTML文件
+                    start_time = proc_info['start_time']
+                    recent_files = [f for f in html_files if f.stat().st_mtime > start_time]
+                    if recent_files:
+                        latest_html = max(recent_files, key=lambda p: p.stat().st_mtime)
+                        html_path = str(latest_html.absolute())
+                        html_url = f'file:///{html_path.replace(chr(92), "/")}'
+                        output_so_far += f'\n[文章链接] {html_url}'
+
+                        try:
+                            chrome_paths = [
+                                r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+                                r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+                            ]
+                            chrome_exe = None
+                            for cp in chrome_paths:
+                                if os.path.exists(cp):
+                                    chrome_exe = cp
+                                    break
+
+                            if chrome_exe:
+                                subprocess.Popen([chrome_exe, html_path], shell=False)
+                                output_so_far += f'\n[浏览器] 已在Chrome中打开HTML文件'
+                            else:
+                                os.startfile(html_path)
+                                output_so_far += f'\n[浏览器] 已在默认浏览器中打开HTML文件'
+                        except Exception as e:
+                            output_so_far += f'\n[提示] HTML文件: {latest_html.name}'
+
             return jsonify({
                 'success': True,
                 'filename': proc_info['filename'],
@@ -596,7 +660,7 @@ def api_status(process_id):
 
         # 检查是否超时(5分钟) - 如果超时且输出中有成功标记,视为完成
         if elapsed_time > 300:  # 5分钟超时
-            if 'HTML文件已保存' in output_so_far or '生成完成' in output_so_far:
+            if 'HTML文件已保存' in output_so_far or '生成完成' in output_so_far or '[SUCCESS]' in output_so_far or '[OUTPUT] HTML:' in output_so_far:
                 return jsonify({
                     'success': True,
                     'filename': proc_info['filename'],
@@ -646,12 +710,14 @@ def api_status(process_id):
                 recent_files = [f for f in html_files if f.stat().st_mtime > start_time]
                 if recent_files:
                     latest_html = max(recent_files, key=lambda p: p.stat().st_mtime)
+                    html_path = str(latest_html.absolute())
+                    html_url = f'file:///{html_path.replace(chr(92), "/")}'
                     output += f'\n[OUTPUT] HTML: {latest_html.name}'
+                    output += f'\n[文章链接] {html_url}'
 
                     # 自动用Chrome打开生成的HTML文件
                     try:
                         import subprocess
-                        html_path = str(latest_html.absolute())
                         # 使用Chrome打开HTML文件
                         chrome_paths = [
                             r"C:\Program Files\Google\Chrome\Application\chrome.exe",

@@ -134,6 +134,9 @@ class ToutiaoArticleGenerator:
 
         try:
             # 使用Anthropic兼容接口
+            print(f"[DEBUG] Calling AI API with model=glm-4-flash, max_tokens=4000")
+            print(f"[DEBUG] Draft content length: {len(draft_content)} chars")
+
             response = self.text_client.messages.create(
                 model="glm-4-flash",  # 使用快速模型
                 max_tokens=4000,
@@ -146,26 +149,74 @@ class ToutiaoArticleGenerator:
             )
 
             # 提取生成的内容 (Anthropic格式)
+            print(f"[DEBUG] API response received, type: {type(response)}")
+            print(f"[DEBUG] response.content type: {type(response.content)}, len: {len(response.content) if response.content else 'None'}")
+
+            if not response.content or len(response.content) == 0:
+                print(f"[ERROR] API returned empty content!")
+                return None
+
             content = response.content[0].text
+            print(f"[DEBUG] Extracted text length: {len(content) if content else 0} chars")
+            # 安全打印，避免GBK编码错误
+            try:
+                safe_content = content[:200].encode('gbk', errors='replace').decode('gbk') if content else 'EMPTY'
+                print(f"[DEBUG] First 200 chars of response: {safe_content}")
+            except:
+                print(f"[DEBUG] Response preview: [contains special characters]")
+
+            if not content or content.strip() == "":
+                print(f"[ERROR] Extracted text is empty!")
+                return None
 
             # 解析标题和正文
             lines = content.split('\n')
+            print(f"[DEBUG] Split into {len(lines)} lines")
             title = ""
             body_lines = []
 
             for i, line in enumerate(lines):
-                if line.startswith("标题:"):
-                    title = line.replace("标题:", "").strip()
+                # 支持中英文冒号
+                if line.startswith("标题:") or line.startswith("标题："):
+                    # 同时支持中英文冒号
+                    title = line.replace("标题:", "").replace("标题：", "").strip()
+                    # 安全打印标题
+                    try:
+                        safe_title = title.encode('gbk', errors='replace').decode('gbk')
+                        print(f"[DEBUG] Found title at line {i}: {safe_title}")
+                    except:
+                        print(f"[DEBUG] Found title at line {i}")
                 elif line.strip() == "---":
                     continue
                 elif title:  # 已找到标题后,其余内容为正文
                     body_lines.append(line)
 
             body = '\n'.join(body_lines).strip()
+            print(f"[DEBUG] Parsed body length: {len(body)} chars")
+            # 安全打印标题
+            try:
+                safe_title = title.encode('gbk', errors='replace').decode('gbk') if title else 'NOT FOUND'
+                print(f"[DEBUG] Parsed title: {safe_title}")
+            except:
+                print(f"[DEBUG] Parsed title: [title contains special chars]")
 
             # 如果没有找到标题格式,从第一行提取
             if not title:
                 title = lines[0].strip() if lines else "基于草稿完善的文章"
+                try:
+                    safe_fallback = title.encode('gbk', errors='replace').decode('gbk')
+                    print(f"[DEBUG] Using fallback title: {safe_fallback}")
+                except:
+                    print(f"[DEBUG] Using fallback title")
+
+            # 验证最终结果
+            if not body or len(body) < 50:
+                print(f"[WARN] Body content too short: {len(body) if body else 0} chars")
+                try:
+                    safe_content = content[:500].encode('gbk', errors='replace').decode('gbk')
+                    print(f"[WARN] Full response content: {safe_content}")
+                except:
+                    print(f"[WARN] Full response content: [contains special chars]")
 
             return {
                 'title': title,
@@ -177,6 +228,8 @@ class ToutiaoArticleGenerator:
 
         except Exception as e:
             print(f"[ERROR] 草稿完善失败: {e}")
+            import traceback
+            traceback.print_exc()
             return None
 
     def generate_article_with_ai(self, theme, target_length=2000, style='standard'):
@@ -185,12 +238,12 @@ class ToutiaoArticleGenerator:
         Args:
             theme: 文章主题
             target_length: 目标字数
-            style: 写作风格 ('standard' 标准风格, 'wangzengqi' 汪曾祺风格)
+            style: 写作风格 ('standard' 标准风格, 'wangzengqi' 汪曾祺风格, 或自定义文风描述)
         """
 
         print(f"\n[AI] Generating article for theme: {theme}")
         print(f"[AI] Target length: {target_length} chars")
-        print(f"[AI] Style: {'Wang Zengqi' if style == 'wangzengqi' else 'Standard'}\n")
+        print(f"[AI] Style: {style}\n")
 
         # 根据风格选择不同的prompt
         if style == 'wangzengqi':
@@ -219,18 +272,11 @@ class ToutiaoArticleGenerator:
    - 不得使用营销话术（"让我们一起"、"不容错过"等）
    - 不得生硬列举"5个XX"、"3大XX"
 
-## 用户草稿中的情感基调（请保留并发挥）：
-"每次走进图书馆，那种特有的静谧和书香气息总能让我心神安宁..."
-"我想象中的未来图书馆，绝不仅仅是数字化升级后的'智能书库'。它应该是一座城市的'第三空间'——不是家，不是办公室，而是属于心灵的栖息地。"
-
 ## 写作要求：
 1. 字数: {target_length}字左右
 2. 主题: {theme}
-3. 开头: 从个人经历或感受写起（比如走进图书馆的那份安宁）
-4. 内容:
-   - 谈谈2026年AI时代的图书馆变化
-   - 保留原草稿中"第三空间"、"心灵栖息地"等核心概念
-   - 用平淡朴实的语言写深刻的思想
+3. 开头: 从个人经历或感受写起
+4. 内容: 用平淡朴实的语言写深刻的思想
 5. 结尾: 留有余韵，引人思考
 6. 标题: 简洁有意境，15-25字
 
@@ -245,6 +291,52 @@ class ToutiaoArticleGenerator:
 
 记住:你要写的是一篇有温度、有情怀的散文，而不是营销文案。语言要平淡但有力，朴实但深刻。
 """
+        elif style and style not in ['standard', 'professional']:
+            # 自定义文风描述
+            prompt = f"""请为一篇今日头条文章撰写高质量内容。
+
+主题: {theme}
+
+## 文风要求:
+{style}
+
+## 内容要求:
+1. 字数: {target_length}字左右
+2. 结构: 吸引人的标题 + 引人入胜的开头 + 有逻辑的正文 + 感人或启发的结尾
+
+3. 典籍深度挖掘（重要！）:
+   - 当文风描述中提及某部经典著作（如《黄帝内经》《千金方》《本草纲目》等），必须深入挖掘该典籍中与主题相关的经典论述
+   - 准确引用典籍原文或核心观点，并加以阐释
+   - 例如：提及春季养生，应引用《千金方》"春七十二日，省酸增甘，以养脾气"等经典论述
+   - 例如：提及《黄帝内经》春季养生，应引用"春三月，此谓发陈，天地俱生，万物以荣"等原文
+   - 典籍引用要精准，标明出处，不要凭空捏造
+
+4. 内容准确性:
+   - 对于涉及专业知识的内容（如中医养生、历史典故、科学知识等），必须确保准确无误
+   - 如果不确定某些知识，宁可不写也不要编造
+   - 引用经典著作时要准确，不要曲解原意
+
+5. 写作禁忌:
+   - 不要编造虚假信息或错误知识
+   - 不要使用未经证实的"据说"、"研究表明"等表述
+   - 不要生硬列举"5个XX"、"3大XX"
+   - 不要使用"首先、其次、最后"等公文式表达
+
+请直接输出文章内容,格式如下:
+
+---
+标题: [文章标题]
+
+[正文内容]
+
+---
+
+注意:
+- 严格按照文风要求来组织内容
+- 必须体现对典籍的深度挖掘和准确引用
+- 确保内容准确、真实、有价值
+- 结尾要有情感共鸣或启发
+"""
         else:
             prompt = f"""请为一篇今日头条文章撰写高质量内容。
 
@@ -254,7 +346,13 @@ class ToutiaoArticleGenerator:
 1. 字数: {target_length}字左右
 2. 风格: 通俗易懂,接地气,有感染力
 3. 结构: 吸引人的标题 + 引人入胜的开头 + 3-5个要点 + 感人或启发的结尾 + 互动号召
-4. 内容: 真实案例,数据支撑,实用建议
+4. 内容准确性:
+   - 对于涉及专业知识的内容（如中医养生、历史典故、科学知识等），必须确保准确无误
+   - 如果不确定某些知识，宁可不写也不要编造
+   - 引用经典著作时要准确，不要曲解原意
+5. 写作禁忌:
+   - 不要编造虚假信息或错误知识
+   - 不要使用未经证实的"据说"、"研究表明"等表述
 5. 情感: 能引起共鸣,激发情绪(感动/激励/共鸣)
 6. 标题要求: 使用数字+疑问/对比/利益点,字数15-25字
 
@@ -270,13 +368,16 @@ class ToutiaoArticleGenerator:
 注意:
 - 标题要吸引点击,包含数字或疑问
 - 内容要有真实感,避免空话套话
-- 多用案例和数据说话
+- 确保内容准确、真实、有价值
 - 适当使用emoji增加可读性
 - 结尾要有情感共鸣或行动号召
 """
 
         try:
             # 使用Anthropic兼容接口
+            print(f"[DEBUG] Calling AI API with model=glm-4-flash, max_tokens=4000")
+            print(f"[DEBUG] Theme: {theme}")
+
             response = self.text_client.messages.create(
                 model="glm-4-flash",  # 使用快速模型
                 max_tokens=4000,
@@ -289,26 +390,65 @@ class ToutiaoArticleGenerator:
             )
 
             # 提取生成的内容 (Anthropic格式)
+            print(f"[DEBUG] API response received, type: {type(response)}")
+            print(f"[DEBUG] response.content type: {type(response.content)}, len: {len(response.content) if response.content else 'None'}")
+
+            if not response.content or len(response.content) == 0:
+                print(f"[ERROR] API returned empty content!")
+                return None
+
             content = response.content[0].text
+            print(f"[DEBUG] Extracted text length: {len(content) if content else 0} chars")
+            # 安全打印，避免GBK编码错误
+            try:
+                safe_content = content[:200].encode('gbk', errors='replace').decode('gbk') if content else 'EMPTY'
+                print(f"[DEBUG] First 200 chars of response: {safe_content}")
+            except:
+                print(f"[DEBUG] Response preview: [contains special characters]")
+
+            if not content or content.strip() == "":
+                print(f"[ERROR] Extracted text is empty!")
+                return None
 
             # 解析标题和正文
             lines = content.split('\n')
+            print(f"[DEBUG] Split into {len(lines)} lines")
             title = ""
             body_lines = []
 
             for i, line in enumerate(lines):
-                if line.startswith("标题:"):
-                    title = line.replace("标题:", "").strip()
+                # 支持中英文冒号
+                if line.startswith("标题:") or line.startswith("标题："):
+                    # 同时支持中英文冒号
+                    title = line.replace("标题:", "").replace("标题：", "").strip()
+                    # 安全打印标题
+                    try:
+                        safe_title = title.encode('gbk', errors='replace').decode('gbk')
+                        print(f"[DEBUG] Found title at line {i}: {safe_title}")
+                    except:
+                        print(f"[DEBUG] Found title at line {i}")
                 elif line.strip() == "---":
                     continue
                 elif title:  # 已找到标题后,其余内容为正文
                     body_lines.append(line)
 
             body = '\n'.join(body_lines).strip()
+            print(f"[DEBUG] Parsed body length: {len(body)} chars")
+            print(f"[DEBUG] Parsed title: {title if title else 'NOT FOUND'}")
 
             # 如果没有找到标题格式,从第一行提取
             if not title:
                 title = lines[0].strip() if lines else f"关于{theme}的思考"
+                print(f"[DEBUG] Using fallback title: {title}")
+
+            # 验证最终结果
+            if not body or len(body) < 50:
+                print(f"[WARN] Body content too short: {len(body) if body else 0} chars")
+                try:
+                    safe_content = content[:500].encode('gbk', errors='replace').decode('gbk')
+                    print(f"[WARN] Full response content: {safe_content}")
+                except:
+                    print(f"[WARN] Full response content: [contains special chars]")
 
             return {
                 'title': title,
@@ -319,6 +459,8 @@ class ToutiaoArticleGenerator:
 
         except Exception as e:
             print(f"[ERROR] AI生成失败: {e}")
+            import traceback
+            traceback.print_exc()
             return None
 
     def generate_article_images(self, theme, article_content, image_style="realistic"):
@@ -1385,9 +1527,17 @@ def main_web():
 
             # 调用生成方法
             print("[STEP 3/3] Generating article with AI...")
-            article = generator.generate_article_with_ai(theme, length)
+            article = generator.generate_article_with_ai(theme, length, style)
             if not article:
+                print(f"[ERROR] generate_article_with_ai returned None!")
                 return {"error": "Article generation failed"}
+
+            # 验证文章内容
+            print(f"[DEBUG] Article returned: title='{article.get('title', 'N/A')}', content_len={len(article.get('content', ''))}")
+            if not article.get('content') or len(article.get('content', '')) < 50:
+                print(f"[ERROR] Article content is too short or empty!")
+                print(f"[ERROR] Full article dict: {article}")
+                return {"error": f"Generated article content is too short ({len(article.get('content', ''))} chars)"}
 
             result = {
                 "success": True,
@@ -1443,7 +1593,15 @@ def main_web():
             print("[STEP 4/4] Improving draft with AI...")
             article = generator.improve_article_draft(draft, length)
             if not article:
+                print(f"[ERROR] improve_article_draft returned None!")
                 return {"error": "Draft improvement failed"}
+
+            # 验证文章内容
+            print(f"[DEBUG] Article returned: title='{article.get('title', 'N/A')}', content_len={len(article.get('content', ''))}")
+            if not article.get('content') or len(article.get('content', '')) < 50:
+                print(f"[ERROR] Article content is too short or empty!")
+                print(f"[ERROR] Full article dict: {article}")
+                return {"error": f"Generated article content is too short ({len(article.get('content', ''))} chars)"}
 
             result = {
                 "success": True,
@@ -1527,6 +1685,15 @@ def main_web():
             print(f"[CLEANUP] Temp file removed: {params_json_path}\n")
         except:
             pass
+
+        # 自动在浏览器中打开HTML文件
+        try:
+            import webbrowser
+            abs_html_path = os.path.abspath(html_path)
+            webbrowser.open(f'file:///{abs_html_path}'.replace('\\', '/'))
+            print(f"[SUCCESS] HTML opened in browser")
+        except Exception as browser_error:
+            print(f"[WARN] Could not open browser: {browser_error}")
 
         print("[SUCCESS] Article generation completed!")
         print(f"[OUTPUT] MD: {md_filename}")
