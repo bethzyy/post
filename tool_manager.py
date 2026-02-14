@@ -8,8 +8,9 @@ Post工具管理器 - Web版本
 import os
 import subprocess
 import time
+import json
 from pathlib import Path
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory, make_response
 from datetime import datetime
 import tempfile
 
@@ -17,6 +18,17 @@ import tempfile
 from tool_details_config import get_tool_details
 
 app = Flask(__name__)
+
+# 禁用模板缓存
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+# 添加请求后钩子，禁用浏览器缓存
+@app.after_request
+def add_no_cache_headers(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 # 全局变量存储运行中的进程
 running_processes = {}
@@ -41,6 +53,7 @@ TOOL_DESCRIPTIONS = {
     },
     "picture/": {
         "generate_festival_images.py": "生成器 - 节日主题图像生成器 (支持自定义主题,使用DALL-E3+Flux+Seedream对比)",
+        "advanced_watermark_remover.py": "工具 - 高级去水印 (NS高质量算法,油猴脚本智能检测,推荐使用)⭐⭐",
     },
     "article/": {
         "toutiao_article_generator.py": {
@@ -52,21 +65,24 @@ TOOL_DESCRIPTIONS = {
                     {"value": "2", "label": "草稿完善 (AI优化您的草稿)"}
                 ], "default": "1"},
                 {"name": "theme", "label": "文章主题 (模式1)", "type": "text", "placeholder": "如: 过年回老家", "required": False},
-                {"name": "draft", "label": "文章草稿 (模式2)", "type": "textarea", "placeholder": "请输入您的文章草稿内容...", "required": False},
+                {"name": "draft", "label": "草稿文件路径 (模式2)", "type": "text", "placeholder": "如: article/draft.txt 或 C:\\path\\to\\draft.txt", "required": False},
                 {"name": "length", "label": "文章长度", "type": "select", "options": [
                     {"value": "1500", "label": "1500字 (快速阅读)"},
                     {"value": "2000", "label": "2000字 (标准长度)"},
                     {"value": "2500", "label": "2500字 (深度文章)"}
                 ], "default": "2000"},
+                {"name": "style", "label": "文风描述", "type": "text", "placeholder": "如: 汪曾祺风格、鲁迅杂文风、温柔婉约、幽默风趣、严谨学术等", "required": False},
                 {"name": "generate_images", "label": "生成配图", "type": "select", "options": [
                     {"value": "y", "label": "是 (生成3张配图)"},
                     {"value": "n", "label": "否 (仅生成文章)"}
                 ], "default": "y"},
                 {"name": "image_style", "label": "配图风格", "type": "select", "options": [
+                    {"value": "auto", "label": "自动 (AI智能选择)"},
                     {"value": "realistic", "label": "真实照片"},
                     {"value": "artistic", "label": "艺术创作"},
-                    {"value": "cartoon", "label": "卡通插画"}
-                ], "default": "realistic"}
+                    {"value": "cartoon", "label": "卡通插画"},
+                    {"value": "technical", "label": "技术图表 (流程图/架构图)"}
+                ], "default": "auto"},
             ]
         },
         "article_review_and_revision.py": "工具 - 文章审校和修订工具 (AI辅助文章优化)",
@@ -174,6 +190,12 @@ def index():
     tools = get_all_tools()
     return render_template('tool_manager.html', tools=tools, running_processes=running_processes)
 
+@app.route('/view/article/<filename>')
+def view_article(filename):
+    """查看生成的文章HTML文件"""
+    article_dir = BASE_DIR / 'article'
+    return send_from_directory(article_dir, filename)
+
 @app.route('/api/tools')
 def api_tools():
     """API: 获取所有工具列表"""
@@ -254,6 +276,9 @@ def api_run():
             env = os.environ.copy()
             pythonpath = env.get('PYTHONPATH', '')
             env['PYTHONPATH'] = str(BASE_DIR) + os.pathsep + pythonpath
+            # 设置UTF-8编码，避免中文乱码
+            env['PYTHONIOENCODING'] = 'utf-8'
+            env['PYTHONUTF8'] = '1'
 
             # 今日头条文章生成器 - 支持模式选择、主题/草稿、字数、配图参数
             if filename == 'article/toutiao_article_generator.py':
@@ -264,37 +289,63 @@ def api_run():
                 length = params.get('length', '2000')
                 generate_images = params.get('generate_images', 'y')
                 image_style = params.get('image_style', 'realistic')
+                style = params.get('style', 'standard')
 
                 # 验证参数
                 if mode == '1' and not theme:
                     return jsonify({'success': False, 'error': '模式1需要输入文章主题'})
                 if mode == '2' and not draft:
-                    return jsonify({'success': False, 'error': '模式2需要输入文章草稿'})
+                    return jsonify({'success': False, 'error': '模式2需要输入草稿文件路径'})
 
-                # 创建临时输入文件
-                with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.txt', encoding='utf-8') as f:
-                    # 写入模式选择
-                    f.write(mode + '\n')
+                # 使用JSON文件传递参数,避免stdin编码问题
+                params_dict = {
+                    'mode': mode,
+                    'theme': theme,
+                    'draft': draft,
+                    'length': int(length),
+                    'generate_images': generate_images,
+                    'image_style': image_style,
+                    'style': style,
+                }
 
-                    # 根据模式写入不同内容
-                    if mode == '1':
-                        # 主题生成模式
-                        f.write(theme + '\n')
-                    else:
-                        # 草稿完善模式 - 写入END标记结束
-                        if draft:
-                            f.write(draft + '\n')
-                        f.write('END\n')
+                # 创建JSON参数文件
+                with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.json', encoding='utf-8') as f:
+                    json.dump(params_dict, f, ensure_ascii=False, indent=2)
+                    params_file = f.name
 
-                    # 写入通用参数
-                    f.write(length + '\n')
-                    f.write(generate_images + '\n')
-                    f.write(image_style + '\n')
-                    temp_file = f.name
+                print(f"[DEBUG] JSON参数文件: {params_file}")
+                print(f"[DEBUG] ========== 文章生成参数 ==========")
+                print(f"[DEBUG] 模式(mode): {mode}")
+                print(f"[DEBUG] 主题(theme): {theme}")
+                print(f"[DEBUG] 草稿(draft): {draft}")
+                print(f"[DEBUG] 字数(length): {length}")
+                print(f"[DEBUG] 生成配图(generate_images): {generate_images}")
+                print(f"[DEBUG] 配图风格(image_style): {image_style}")
+                print(f"[DEBUG] 文章风格(style): {style}")
+                print(f"[DEBUG] 参数字典完整内容: {params_dict}")
+                print(f"[DEBUG] ===================================")
+
+                # 设置环境变量传递参数文件路径
+                env['ARTICLE_PARAMS_JSON'] = params_file
+
+                # 读取刚创建的JSON文件内容用于调试
+                with open(params_file, 'r', encoding='utf-8') as debug_f:
+                    json_content = debug_f.read()
+
+                print(f"[DEBUG] ========== 创建的JSON文件内容 ==========")
+                print(f"[DEBUG] 文件路径: {params_file}")
+                print(f"[DEBUG] 文件存在: {os.path.exists(params_file)}")
+                print(f"[DEBUG] JSON内容:\\n{json_content}")
+                print(f"[DEBUG] ========================================\\n")
+
+                print(f"[DEBUG] ========== 子进程环境 ==========")
+                print(f"[DEBUG] 命令: python {tool_path}")
+                print(f"[DEBUG] 工作目录: {BASE_DIR}")
+                print(f"[DEBUG] ARTICLE_PARAMS_JSON: {env.get('ARTICLE_PARAMS_JSON')}")
+                print(f"[DEBUG] ====================================\\n")
 
                 process = subprocess.Popen(
                     ['python', str(tool_path)],
-                    stdin=open(temp_file, 'r', encoding='utf-8'),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     cwd=BASE_DIR,
@@ -315,9 +366,31 @@ def api_run():
                     f.write(output_filename + '\n')
                     temp_file = f.name
 
+                # 使用命令行参数和环境变量传递参数,避免stdin编码问题
+                cmd = ['python', str(tool_path)]
+
+                # 添加命令行参数
+                if mode == '1':
+                    # 主题生成模式
+                    cmd.extend(['--mode', 'theme', '--theme', theme])
+                else:
+                    # 草稿完善模式
+                    cmd.extend(['--mode', 'draft', '--draft', draft])
+
+                cmd.extend(['--length', length])
+                cmd.extend(['--images', generate_images])
+                cmd.extend(['--image-style', image_style])
+
+                # 设置环境变量传递参数(作为备用)
+                env['ARTICLE_MODE'] = mode
+                env['ARTICLE_THEME'] = theme if mode == '1' else ''
+                env['ARTICLE_DRAFT'] = draft if mode == '2' else ''
+                env['ARTICLE_LENGTH'] = length
+                env['ARTICLE_IMAGES'] = generate_images
+                env['ARTICLE_IMAGE_STYLE'] = image_style
+
                 process = subprocess.Popen(
-                    ['python', str(tool_path)],
-                    stdin=open(temp_file, 'r', encoding='utf-8'),
+                    cmd,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     cwd=BASE_DIR,
@@ -333,9 +406,31 @@ def api_run():
                     f.write(prompt + '\n')
                     temp_file = f.name
 
+                # 使用命令行参数和环境变量传递参数,避免stdin编码问题
+                cmd = ['python', str(tool_path)]
+
+                # 添加命令行参数
+                if mode == '1':
+                    # 主题生成模式
+                    cmd.extend(['--mode', 'theme', '--theme', theme])
+                else:
+                    # 草稿完善模式
+                    cmd.extend(['--mode', 'draft', '--draft', draft])
+
+                cmd.extend(['--length', length])
+                cmd.extend(['--images', generate_images])
+                cmd.extend(['--image-style', image_style])
+
+                # 设置环境变量传递参数(作为备用)
+                env['ARTICLE_MODE'] = mode
+                env['ARTICLE_THEME'] = theme if mode == '1' else ''
+                env['ARTICLE_DRAFT'] = draft if mode == '2' else ''
+                env['ARTICLE_LENGTH'] = length
+                env['ARTICLE_IMAGES'] = generate_images
+                env['ARTICLE_IMAGE_STYLE'] = image_style
+
                 process = subprocess.Popen(
-                    ['python', str(tool_path)],
-                    stdin=open(temp_file, 'r', encoding='utf-8'),
+                    cmd,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     cwd=BASE_DIR,
@@ -392,7 +487,8 @@ def api_run():
             'filename': filename,
             'start_time': time.time(),
             'output': '',
-            'status': 'running'
+            'status': 'running',
+            'tool_path': tool_path  # 保存工具路径用于文件检查
         }
 
         return jsonify({
@@ -422,39 +518,100 @@ def api_status(process_id):
 
     if return_code is None:
         # 进程仍在运行
-        # 尝试读取已产生的输出(非阻塞)
+        # Windows下尝试非阻塞读取
         try:
-            # Unix/Linux系统使用fcntl设置非阻塞模式
-            import fcntl
-            import errno
+            # 使用线程超时方式读取
+            import threading
+            output_data = {'stdout': '', 'stderr': ''}
 
-            # 设置非阻塞模式
-            fd = process.stdout.fileno()
-            fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-            fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
-
-            try:
-                output = process.stdout.read()
-                if output:
-                    proc_info['output'] += output.decode('utf-8', errors='ignore')
-            except (IOError, OSError) as e:
-                # 非阻塞读取时没有数据可读是正常的
-                if e.errno != errno.EAGAIN:
+            def read_stdout():
+                try:
+                    output_data['stdout'] = process.stdout.read()
+                except:
                     pass
-        except (ImportError, AttributeError):
-            # Windows不支持fcntl,跳过
-            pass
+
+            def read_stderr():
+                try:
+                    output_data['stderr'] = process.stderr.read()
+                except:
+                    pass
+
+            t1 = threading.Thread(target=read_stdout)
+            t2 = threading.Thread(target=read_stderr)
+            t1.start()
+            t2.start()
+            t1.join(timeout=0.1)
+            t2.join(timeout=0.1)
+
+            if output_data['stdout']:
+                proc_info['output'] += output_data['stdout'].decode('utf-8', errors='ignore')
+            if output_data['stderr']:
+                proc_info['output'] += '\n[stderr] ' + output_data['stderr'].decode('utf-8', errors='ignore')
         except:
-            # 其他错误,忽略
             pass
 
         elapsed_time = time.time() - proc_info['start_time']
+
+        # 对于头条文章生成器,检查是否生成了HTML文件
+        tool_path = proc_info.get('tool_path')
+        if tool_path and 'toutiao_article_generator' in str(tool_path):
+            # 检查article目录下最近生成的HTML文件 (支持多种命名模式)
+            article_dir = tool_path.parent
+            # 支持新的文件名模式
+            html_patterns = ['DraftImproved_*.html', 'Article_*.html', '今日头条文章_*.html', '文章草稿完善_*.html']
+            html_files = []
+            for pattern in html_patterns:
+                html_files.extend(article_dir.glob(pattern))
+
+            if html_files:
+                # 获取最新的HTML文件
+                latest_html = max(html_files, key=lambda p: p.stat().st_mtime)
+                file_age = time.time() - latest_html.stat().st_mtime
+
+                # 如果文件在进程启动后生成,且超过5秒前创建的,认为已完成
+                if file_age > 5 and file_age < elapsed_time:
+                    proc_info['status'] = 'completed'
+                    proc_info['output'] += f'\n[OUTPUT] HTML: {latest_html.name}'
+                    return jsonify({
+                        'success': True,
+                        'filename': proc_info['filename'],
+                        'status': 'completed',
+                        'elapsed_time': round(elapsed_time, 1),
+                        'output': proc_info['output'],
+                        'returncode': 0
+                    })
+
+        # 检查是否已在输出中标记为完成(用于长时间运行的任务)
+        output_so_far = proc_info.get('output', '')
+        if '生成完成!' in output_so_far or '[成功] HTML文件已保存' in output_so_far:
+            # 虽然进程还在运行(可能在等待浏览器打开等),但主要工作已完成
+            return jsonify({
+                'success': True,
+                'filename': proc_info['filename'],
+                'status': 'completed',
+                'elapsed_time': round(elapsed_time, 1),
+                'output': output_so_far,
+                'returncode': 0
+            })
+
+        # 检查是否超时(5分钟) - 如果超时且输出中有成功标记,视为完成
+        if elapsed_time > 300:  # 5分钟超时
+            if 'HTML文件已保存' in output_so_far or '生成完成' in output_so_far:
+                return jsonify({
+                    'success': True,
+                    'filename': proc_info['filename'],
+                    'status': 'completed',
+                    'elapsed_time': round(elapsed_time, 1),
+                    'output': output_so_far + '\n[提示] 任务已完成(超时检测)',
+                    'returncode': 0
+                })
+
         return jsonify({
             'success': True,
             'filename': proc_info['filename'],
             'status': 'running',
             'elapsed_time': round(elapsed_time, 1),
-            'output': proc_info.get('output', '正在运行...'),
+            'output': output_so_far if output_so_far else '正在运行...',
             'returncode': None
         })
     else:
@@ -465,7 +622,7 @@ def api_status(process_id):
             error = stderr.decode('utf-8', errors='ignore')
 
             if error:
-                output += f'\n[错误输出]\n{error}'
+                output += f'\n[stderr]\n{error}'
 
             # 追加到之前的输出
             if proc_info.get('output'):
@@ -473,6 +630,48 @@ def api_status(process_id):
         except:
             # communicate()超时或失败,使用已缓存的输出
             output = proc_info.get('output', '输出读取失败')
+
+        # 对于头条文章生成器,检测生成的HTML文件
+        tool_path = proc_info.get('tool_path')
+        if tool_path and 'toutiao_article_generator' in str(tool_path) and return_code == 0:
+            article_dir = tool_path.parent
+            html_patterns = ['DraftImproved_*.html', 'Article_*.html', '今日头条文章_*.html', '文章草稿完善_*.html']
+            html_files = []
+            for pattern in html_patterns:
+                html_files.extend(article_dir.glob(pattern))
+
+            if html_files:
+                # 获取进程启动后生成的最新HTML文件
+                start_time = proc_info['start_time']
+                recent_files = [f for f in html_files if f.stat().st_mtime > start_time]
+                if recent_files:
+                    latest_html = max(recent_files, key=lambda p: p.stat().st_mtime)
+                    output += f'\n[OUTPUT] HTML: {latest_html.name}'
+
+                    # 自动用Chrome打开生成的HTML文件
+                    try:
+                        import subprocess
+                        html_path = str(latest_html.absolute())
+                        # 使用Chrome打开HTML文件
+                        chrome_paths = [
+                            r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+                            r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+                        ]
+                        chrome_exe = None
+                        for cp in chrome_paths:
+                            if os.path.exists(cp):
+                                chrome_exe = cp
+                                break
+
+                        if chrome_exe:
+                            subprocess.Popen([chrome_exe, html_path], shell=False)
+                            output += f'\n[浏览器] 已在Chrome中打开HTML文件'
+                        else:
+                            # 如果找不到Chrome，使用默认浏览器
+                            os.startfile(html_path)
+                            output += f'\n[浏览器] 已在默认浏览器中打开HTML文件'
+                    except Exception as e:
+                        output += f'\n[提示] HTML文件: {latest_html.name}'
 
         proc_info['status'] = 'completed' if return_code == 0 else 'failed'
         proc_info['output'] = output
@@ -562,8 +761,8 @@ def main():
     print("=" * 80)
     print()
 
-    # 启动Flask服务器
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # 启动Flask服务器(关闭debug模式,避免运行时修改文件导致重启)
+    app.run(host='0.0.0.0', port=5000, debug=False)
 
 if __name__ == '__main__':
     main()

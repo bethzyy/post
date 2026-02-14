@@ -4,90 +4,127 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the **AI-Powered Chinese Art and Content Creation Platform** - a comprehensive toolkit for generating traditional Chinese art, educational content, and social media articles. It serves as both a research platform for comparing AI image generation models and a production tool for content creation.
+This is the **AI-Powered Chinese Content Creation Platform** - a comprehensive toolkit for generating AI articles, images, and managing content creation workflows. It serves as both a production platform for content creation and a research tool for comparing AI models.
 
-**Working Directory**: `C:\D\CAIE_tool\MyAIProduct\draw`
+**Working Directory**: `C:\D\CAIE_tool\MyAIProduct\post`
+
+**Key Components**:
+- **Tool Manager**: Flask-based web interface for managing and executing tools
+- **Article Generator**: AI-powered article creation with image generation
+- **Image Generation**: Multi-API image generation with automatic fallback
+- **Video Downloader**: Baidu video downloading with Selenium automation
+- **Testing Tools**: API validation and quota monitoring
 
 ## Quick Start Commands
 
-### Launch Tool Manager (Web Interface)
+### Launch Tool Manager (Web Interface - Primary Method)
 ```bash
-# Method 1: Using batch script (recommended)
+# Double-click the batch file (recommended)
 启动工具管理器.bat
 
-# Method 2: Direct Python
+# Or direct Python execution
 python tool_manager.py
 
 # Access web interface at: http://localhost:5000
+# The batch file automatically opens browser and minimizes server window
 ```
 
 ### Run Individual Tools
 ```bash
-# All tools can be run directly from their directories
-cd bird && python bird_painting_steps_generator.py
-cd picture && python generate_festival_images.py
-cd article && python generate_food_article_images.py
-cd hotspot && python ai_trends_2026_comparison.py
-cd test && python test_gemini_pro_image.py
-```
+# Article generation
+cd article && python toutiao_article_generator.py
 
-### Generate Documentation
-```bash
-python generate_tool_docs.py
-# Creates tool_documentation.json with descriptions of all tools
+# Festival image generation
+cd picture && python generate_festival_images.py
+
+# Video download
+cd video && python baidu_video_downloader.py
+
+# API testing
+cd test && python test_antigravity_models_complete.py
 ```
 
 ## Directory Structure
 
-The project is organized into 5 functional categories:
+The project is organized into functional categories:
 
-### `/bird` - Chinese Bird Painting Tools (35 files)
-Traditional Chinese painting generation with step-by-step tutorials.
-- **Key Tools**: `bird_painting_steps_generator.py`, `bird_painting_self_correction.py`
-- **Reference**: `bird.jpg` (reference image for composition matching)
-- **Output**: 6-step painting tutorials (pencil sketch → base colors → form → details → refinement → framing)
-- **Special Feature**: AI self-correction system to ensure composition matches reference
+### `/article` - Content Creation Tools (30+ files)
+AI-powered article generation for Chinese social media platforms (今日头条/Toutiao).
 
-### `/picture` - Festival Image Generation (24 files)
-Traditional Chinese festival themed image generation.
-- **Subdirectories**: Laba Festival (腊八节), Little New Year (小年)
-- **Key Tool**: `generate_festival_images.py` - customizable festival image generator
-- **Models**: Gemini, Pollinations, Volcano/Seedream comparison
-- **Documentation**: `画图模型选择原则.md` (model selection principles)
+**Key Tools**:
+- **`toutiao_article_generator.py`** - Main article generator (v3.1)
+  - Two modes: Theme generation (AI from scratch) or Draft improvement (AI optimizes user draft)
+  - Supports 1500-2500 word articles with 3 AI-generated images
+  - Uses ZhipuAI GLM-4.6 for text generation
+  - Image generation: Anti-gravity API (Flux 1.1 Pro) with 5 free fallback APIs
+  - **Critical**: Image generation takes 30-60 seconds per image via Anti-gravity (~30s each)
+  - Output: HTML files with embedded images
+  - Filename pattern: `今日头条文章_{theme}_{timestamp}.html`
 
-### `/article` - Content Creation Tools (30 files)
-Article generation for social media platforms (今日头条/Toutiao).
-- **Key Tools**:
-  - `toutiao_article_generator.py` - viral article generator
-  - `generate_food_article_images.py` - food articles with images
-  - `article_review_and_revision.py` - AI-assisted editing
-- **Reference Documents**:
-  - `今日头条真实数据分析报告_2026.md` - platform analytics
-  - `今日头条高赞范文_*.md` - high-engagement examples
-- **Output**: 1500-2500 word articles with 3-5 generated images
+- `generate_food_article_images.py` - Food article generator
+- `article_review_and_revision.py` - AI-assisted editing
+
+**Reference Documents**:
+- `今日头条真实数据分析报告_2026.md` - Platform analytics
+- `今日头条高赞范文_*.md` - High-engagement examples
+
+**Content Structure** (for 今日头条 articles):
+- Title (10%): Numbers + curiosity + benefit
+- Hook Intro (10%): Grab attention
+- Main Content (70%): Value delivery, storytelling
+- Summary (15%): Key takeaways
+- Engagement (5%): Call-to-action
+
+### `/picture` - Image Generation Tools (24 files)
+Festival and themed image generation with multi-model comparison.
+
+**Key Tools**:
+- `generate_festival_images.py` - Customizable festival image generator
+- Supports multiple models: Gemini, Pollinations, Volcano/Seedream
+
+**Model Priority** (see section below for detailed fallback order):
+1. Gemini (best quality, ~250/day free tier)
+2. Volcano/Seedream (no watermark, stable)
+3. Pollinations.ai (unlimited free, last resort)
+
+### `/video` - Video Download Tools (7 files)
+Baidu video downloader with Selenium automation.
+
+**Key Tools**:
+- **`baidu_video_downloader.py`** (v2.0) - Primary video downloader
+  - Uses Selenium with undetected-chromedriver
+  - Bypasses anti-scraping measures
+  - Supports multiple Baidu video platforms
+  - Automatic filename generation
+
+**Dependencies**: Chrome, ChromeDriver, undetected-chromedriver
 
 ### `/hotspot` - AI Trends Research (12 files)
 2026 AI trend analysis and real-time search tools.
-- **Key Tool**: `ai_trends_2026_comparison.py` - multi-model trend comparison
-- **Features**: Real-time web search, multi-API comparison, HTML reports
-- **Architecture**: See `realtime_search_architecture.md`
 
-### `/test` - API Testing Tools (7 files)
-Model validation and quota monitoring.
-- **Key Tools**:
-  - `test_antigravity_models_complete.py` - **PRIMARY TOOL** - comprehensive test of ALL Antigravity models (28 models total)
-    - Tests 14 text models (Gemini, GPT, Claude, GLM series)
-    - Tests 14 image models (DALL-E, Flux, Stable Diffusion, Gemini Image)
-    - **NEW FEATURE**: Automatic quota recovery time prediction
-    - Generates HTML report with recovery time estimates for each model series
-    - Auto-opens report in browser when complete
-  - `test_gemini_pro_image.py` - test Gemini image generation
-  - `check_quota_status.py` - monitor API quotas
-  - `retry_until_available.py` - auto-retry when quota exhausted
-- **Output**: `output/antigravity_complete_report_YYYYMMDD_HHMMSS.html`
-- **Documentation**:
-  - `配额恢复功能更新说明.md` - quota recovery feature documentation
-  - `配额状态说明.md` - detailed quota status explanations
+**Key Tool**: `ai_trends_2026_comparison.py` - Multi-model trend comparison
+
+### `/test` - API Testing and Quota Monitoring (7 files)
+Model validation, quota monitoring, and API diagnostics.
+
+**Key Tools**:
+- **`test_antigravity_models_complete.py`** - **PRIMARY TESTING TOOL**
+  - Tests ALL 28 Antigravity models (14 text + 14 image)
+  - Automatic quota recovery time prediction
+  - Generates HTML report with recovery estimates
+  - Auto-opens report in browser
+
+- `check_quota_status.py` - Monitor API quotas
+- `retry_until_available.py` - Auto-retry when quota exhausted
+
+**Documentation**:
+- `配额状态说明.md` - Detailed quota status explanations
+- `配额恢复功能更新说明.md` - Quota recovery feature documentation
+
+### `/bird` - Chinese Bird Painting Tools (35 files)
+Traditional Chinese painting generation with step-by-step tutorials.
+
+**Special Feature**: AI self-correction system to ensure composition matches reference image
 
 ## Configuration Management
 
@@ -97,7 +134,7 @@ All API keys and settings are managed through `config.py` which reads from `.env
 
 ```python
 from config import (
-    get_antigravity_client,  # For Gemini/DALL-E via proxy
+    get_antigravity_client,  # For Gemini/DALL-E/Flux via proxy
     get_volcano_client,      # For Volcano/Seedream
     get_zhipuai_client,      # For ZhipuAI GLM models
     Config                   # Access configuration values
@@ -106,333 +143,360 @@ from config import (
 
 ### Required Environment Variables (`.env` file)
 ```bash
-# anti-gravity proxy (for Gemini image generation)
+# anti-gravity proxy (PRIMARY - for most image generation)
 ANTIGRAVITY_BASE_URL=http://127.0.0.1:8045/v1
 ANTIGRAVITY_API_KEY=sk-xxx
 
-# Volcano/Seedream (ByteDance image generation)
+# ZhipuAI (for article text generation)
+ZHIPU_API_KEY=xxx
+
+# Volcano/Seedream (fallback image generation)
 VOLCANO_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
 VOLCANO_API_KEY=xxx
 
-# ZhipuAI (GLM models for text generation)
-ZHIPU_API_KEY=xxx
+# OpenAI (optional)
+OPENAI_API_KEY=xxx
 
 # Image generation defaults
 IMAGE_DEFAULT_SIZE=1024x1024
 IMAGE_QUALITY=standard
 ```
 
-**CRITICAL**: Never commit `.env` file. API keys are loaded from environment only, no hardcoded defaults.
+**CRITICAL**: Never commit `.env` file. API keys are loaded from environment only.
+
+## Tool Manager System (Flask Web Interface)
+
+### Architecture
+
+**File**: `tool_manager.py` (633 lines)
+
+The Flask-based tool manager provides a web interface for:
+- **Three-column layout**: Tool navigation (tree), tool details, execution logs
+- **Process management**: Async tool execution with real-time status monitoring
+- **Dynamic forms**: Custom input fields per tool (via `TOOL_DESCRIPTIONS` config)
+- **Status detection**: Intelligent completion detection for long-running tasks
+
+**API Endpoints**:
+- `GET /` - Main web interface
+- `GET /api/tools` - List all tools by category
+- `POST /api/run` - Execute a tool (supports dynamic input forms)
+- `GET /api/status/<process_id>` - Check running status
+- `POST /api/stop` - Stop running tool
+- `POST /api/delete` - Delete tool files
+- `GET /api/tool-details/<path:path>` - Get detailed tool info
+
+### Critical: Status Detection Mechanism
+
+**Lines 464-488**: Smart completion detection for `toutiao_article_generator.py`
+
+The tool manager uses **file-based completion detection** instead of relying on process exit:
+
+```python
+# For article generator, checks if HTML file was created
+if tool_path and 'toutiao_article_generator' in str(tool_path):
+    article_dir = tool_path.parent
+    html_files = list(article_dir.glob('今日头条文章_*.html'))
+
+    if html_files:
+        latest_html = max(html_files, key=lambda p: p.stat().st_mtime)
+        file_age = time.time() - latest_html.stat().st_mtime
+
+        # File must be >10s old (to ensure write complete)
+        # and created after process started
+        if file_age > 10 and file_age < elapsed_time:
+            return jsonify({'status': 'completed', ...})
+```
+
+**Why This Approach**:
+- Image generation via Anti-gravity API takes 30-60 seconds per image
+- Process may stay alive waiting for browser to open
+- File existence is more reliable than process polling
+- 10-second buffer ensures file write completion
+
+**Fallback Detection** (Lines 490-513):
+- Checks stdout for completion markers: `"生成完成!"` or `"[成功] HTML文件已保存"`
+- 5-minute timeout with success marker check
+- Works on Windows where `fcntl` non-blocking I/O is unavailable
+
+### Tool Configuration
+
+**Tool Descriptions** are defined in `TOOL_DESCRIPTIONS` dict (lines 26-140+):
+
+```python
+TOOL_DESCRIPTIONS = {
+    "article/": {
+        "toutiao_article_generator.py": {
+            "description": "生成器 - 今日头条文章生成器 v3.1...",
+            "needs_input": True,
+            "input_fields": [
+                {"name": "mode", "label": "生成模式", "type": "select", ...},
+                {"name": "theme", "label": "文章主题", "type": "text", ...},
+                # ... more fields
+            ]
+        }
+    }
+}
+```
+
+**Input Field Types**:
+- `text` - Text input
+- `select` - Dropdown selection (with `options` array)
+- `textarea` - Multi-line text
+- Properties: `label`, `placeholder`, `required`, `default`
+
+### Adding New Tools
+
+**Method 1**: Add to `TOOL_DESCRIPTIONS` in `tool_manager.py`
+
+**Method 2**: Place `.py` file in any category directory - auto-discovered with default description
+
+**Method 3**: Create new category subdirectory
+
+### Windows-Specific: Launcher Script
+
+**File**: `启动工具管理器.bat`
+
+```batch
+@echo off
+chcp 65001 >nul
+cd /d "%~dp0"
+start "" http://localhost:5000
+start /min python tool_manager.py
+exit
+```
+
+**Features**:
+- Sets UTF-8 encoding (chcp 65001)
+- Auto-opens browser to http://localhost:5000
+- Starts Python server minimized in background
+- Exits launcher CMD window (clean UX)
 
 ## Image Generation Model Priority
 
-**MUST follow this priority order** (see `picture/画图模型选择原则.md`):
+**MUST follow this priority order** (documented in `picture/画图模型选择原则.md`):
 
-### 1. Gemini (First Priority)
+### 1. Anti-gravity Proxy (Primary - Flux 1.1 Pro)
 ```python
+from config import get_antigravity_client
 client = get_antigravity_client()
+
 response = client.images.generate(
-    model="gemini-3-pro-image-4k",  # or "gemini-3-pro-image-2k"
+    model="flux-1.1-pro",  # or "flux-1.1-pro-ultra"
     prompt=prompt,
     size="1024x1024"
 )
 # Returns base64 in response.data[0].b64_json
 ```
-- **Quality**: Best composition and detail accuracy
-- **Limit**: ~250 images/day (free tier), returns HTTP 429 when exhausted
-- **Use for**: All important image generation tasks
+- **Performance**: ~30 seconds per image
+- **Quality**: Best overall for article illustrations
+- **Usage**: Primary choice for `toutiao_article_generator.py`
+- **Fallback**: Automatic if API fails
 
-### 2. Volcano/Seedream (Second Priority)
+### 2. Gemini (via Anti-gravity)
 ```python
+response = client.images.generate(
+    model="gemini-3-pro-image-4k",
+    prompt=prompt,
+    size="1024x1024"
+)
+```
+- **Quality**: Best composition and detail
+- **Limit**: ~250 images/day (free tier), returns HTTP 429 when exhausted
+- **Recovery**: Daily UTC reset (Beijing 8:00 AM)
+
+### 3. Volcano/Seedream (Fallback)
+```python
+from config import get_volcano_client
 client = get_volcano_client()
+
 response = client.images.generate(
     model="doubao-seedream-4-5-251128",
     prompt=prompt,
     size="2K",
     response_format="url",
-    extra_body={"watermark": False}  # No AI watermark
+    extra_body={"watermark": False}
 )
 # Must download from URL
 image_url = response.data[0].url
-img_response = requests.get(image_url)
-with open(filename, 'wb') as f:
-    f.write(img_response.content)
 ```
-- **Advantage**: No watermark, stable performance
-- **Use for**: Fallback when Gemini returns 429
+- **Advantage**: No watermark, stable
+- **Use when**: Gemini returns 429
 
-### 3. Pollinations.ai (Third Priority)
+### 4. Pollinations.ai (Last Resort)
 ```python
 import requests
 url = f"https://image.pollinations.ai/prompt/{prompt}"
 response = requests.get(url, timeout=60)
-with open(filename, 'wb') as f:
-    f.write(response.content)
 ```
-- **Advantage**: No quota limits, completely free
-- **Use for**: Last resort or bulk generation
+- **Advantage**: No quota limits
+- **Use when**: All paid APIs fail
 
 ### Error Handling Pattern
 ```python
 def generate_with_priority(prompt, filename):
     try:
-        return generate_with_gemini(prompt, filename)
+        return generate_with_antigravity(prompt, filename)
     except Exception as e:
-        if "429" in str(e):
-            print("[WARNING] Gemini quota exhausted, trying Seedream")
-            try:
-                return generate_with_seedream(prompt, filename)
-            except Exception as e2:
-                print("[WARNING] Seedream failed, trying Pollinations")
-                return generate_with_pollinations(prompt, filename)
+        if "429" in str(e) or "quota" in str(e).lower():
+            return generate_with_pollinations(prompt, filename)
         raise
 ```
 
-## Key Architecture Patterns
+## Critical Architecture Patterns
 
-### Tool Manager System
+### Article Generator Flow (`toutiao_article_generator.py`)
 
-The Flask-based tool manager (`tool_manager.py`) provides:
-- **Web Interface**: Three-column layout (tree navigation, tool details, execution logs)
-- **Process Management**: Run tools asynchronously, monitor status in real-time
-- **API Endpoints**:
-  - `GET /api/tools` - List all tools by category
-  - `POST /api/run` - Execute a tool
-  - `GET /api/status/<process_id>` - Check running status
-  - `POST /api/stop` - Stop running tool
-  - `POST /api/delete` - Delete tool files
-- **Tool Descriptions**: Defined in `TOOL_DESCRIPTIONS` dict in `tool_manager.py`
+**Lines 49-1650**: Complete article generation pipeline
 
-### Multi-Model Comparison Pattern
+**Key Methods**:
+- `improve_article_draft()` (lines 56-163) - AI draft improvement with two styles
+- `generate_article_from_theme()` (lines 165-260) - Theme-based generation
+- `generate_article_images()` (lines 1371-1458) - Multi-API image generation
 
-Scripts like `xiaonian_full_comparison.py` demonstrate:
-1. Generate identical prompts across multiple models
-2. Standardize image generation parameters
-3. Create HTML gallery for side-by-side comparison
-4. Generate professional evaluation reports
-5. Output comparison metrics and rankings
+**Image Generation** (Lines 1371-1458):
+```python
+def generate_article_images(self, theme, article_content, style='auto'):
+    # Extracts 3 key points from article
+    # Generates prompt based on style
+    # Tries Anti-gravity first, falls back to free APIs
+    # Returns list of (image_path, caption) tuples
+```
 
-### AI Self-Correction for Composition Matching
+**Style Prompts**:
+- `auto` - AI intelligent selection
+- `realistic` - Professional photography style
+- `artistic` - Artistic illustration
+- `cartoon` - Cartoon/illustration style
+- `technical` - Technical diagrams (flowcharts/architecture)
 
-**Critical for tutorial generation**: When creating step-by-step painting tutorials:
+**Critical Fix Applied** (Lines 1494-1496):
+```python
+# OLD (WRONG):
+theme = "基于草稿完善"  # This appeared in generated images!
 
-1. **Reference Image**: Start with `bird.jpg` as composition reference
-2. **Generate Steps**: Create 6 steps (铅笔起稿 → 铺底色 → 塑造形体 → 细节刻画 → 调整统一 → 落款装裱)
-3. **Verify Composition**: Use vision API to check each step matches reference:
-   - Check posture/position matches (NOT identical appearance)
-   - Allow different completion levels for intermediate steps
-   - Iterate until composition alignment achieved
-4. **Final Output**: HTML gallery showing progression
+# NEW (CORRECT):
+theme_for_images = draft[:200] if len(draft) > 200 else draft
+```
+**Lesson**: Never use internal mode strings in user-facing outputs.
 
-**Implementation**: See `bird_painting_with_verification.py`, `bird_painting_self_correction.py`
+### Markdown to HTML Conversion
 
-### Social Media Article Generation Pattern
+**Lines 1007-1012**: Proper regex-based conversion
 
-**Platform**: 今日头条 (Toutiao)
+```python
+import re
+# Convert **bold** to <strong>
+para = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', para)
+# Convert newlines to <br>
+para = para.replace('\n', '<br>')
+return f'<p>{para}</p>'
+```
 
-**Research Phase**:
-1. Use WebSearch tool to find real platform data
-2. Analyze high-engagement articles in `今日头条高赞范文_*.md`
-3. Reference platform analytics in `今日头条真实数据分析报告_2026.md`
+**Common Pitfall** (AVOID):
+```python
+# WRONG - replaces ALL **, breaking pairing
+para = para.replace('**', '<strong>').replace('**', '</strong>')
+```
 
-**Content Structure**:
-- **Title** (10%): Numbers + curiosity + benefit
-  - Example: "3个技巧让我从5千到3万"
-- **Hook Intro** (10%): Grab attention immediately
-- **Main Content** (70%): Value delivery, storytelling
-- **Summary** (15%): Key takeaways
-- **Engagement** (5%): Call-to-action (comments, likes)
+### Windows Encoding Issues
 
-**Technical Requirements**:
-- Length: 1500-2500 words (optimal engagement)
-- Images: 3-5 relevant AI-generated images
-- Style: Natural language, avoid "machine feel"
-- Encoding: Use UTF-8 for Chinese characters
+**Problem**: Windows console uses GBK encoding, CANNOT handle Unicode.
 
-**Implementation**: See `article/toutiao_article_generator.py`
-
-## Critical Constraints and Best Practices
-
-### Windows GBK Encoding Issue
-
-**Problem**: Windows console uses GBK encoding and CANNOT handle Unicode symbols.
-
-**Forbidden Characters** (will cause `UnicodeEncodeError`):
-- ✅ ❌ ⚠ ✓ ✗ or any emoji
+**Forbidden Characters** (cause `UnicodeEncodeError`):
+- ✅ ❌ ⚠ ✓ ✗ and most emoji
 
 **Solution**: Always use ASCII text markers:
 - `[OK]` instead of ✓
 - `[ERROR]` instead of ❌
 - `[WARNING]` instead of ⚠
-- `[FAIL]` instead of ✗
+- `[成功]` instead of ✅
 
 **Example**:
 ```python
 # WRONG - will crash on Windows
-print("✅ API调用成功")
+print("✅ 图片生成成功")
 
-# CORRECT - works on all platforms
-print("[OK] API调用成功")
+# CORRECT - works everywhere
+print("[成功] 图片生成成功")
 ```
 
-**Reference**: Fixed in `test/test_gemini_pro_image.py` (all Unicode replaced with ASCII)
-
-### API Rate Limiting
-
-**Gemini Free Tier**:
-- Limit: ~250 requests/day
-- Error: HTTP 429 Too Many Requests
-- Recovery: Automatic after daily UTC 00:00 reset (Beijing 8:00 AM)
-- Strategy: Implement immediate fallback to Seedream or Pollinations
-
-**GLM Models**:
-- Also have quota limits
-- Returns different error codes
-- Recovery: Daily reset (Beijing midnight)
-- Strategy: Monitor with `test/check_quota_status.py`
-
-**Quota Recovery Time Predictions**:
-The test tool `test_antigravity_models_complete.py` automatically calculates and displays:
-- **Gemini系列**: Tomorrow 8:00 AM (hourly countdown shown)
-- **GLM系列**: Tomorrow 12:00 AM (hourly countdown shown)
-- **GPT-4系列**: Next month 1st or after recharge
-- **Claude系列**: Next month 1st
-- **DALL-E系列**: Next month 1st or after recharge
-- **Flux/SD系列**: Next Monday or tomorrow
-- **Gemini图像系列**: Tomorrow 8:00 AM
-
-All times are dynamically calculated based on when the test runs.
-
-### File Organization
-
-**Generated Images**: Saved with descriptive names including timestamp and model
-- Example: `bird_gemini_3_pro_image_4k_步骤1_铅笔起稿.png`
-- Format: `{subject}_{model}_{step}_{description}.{ext}`
-
-**HTML Galleries**: Auto-generated for visual comparison
-- Example: `xiaonian全模型对比_20260127_211758.html`
-- Used for side-by-side model evaluation
-
-**Logs**: Created for long-running processes
-- Example: `bird_self_correction.log`, `bird_volcano.log`
-- Include timestamps and detailed progress tracking
-
-### Background Process Management
-
-Many tools run for extended periods (hours for self-correction):
-
-```bash
-# Check running background processes
-# Use BashOutput tool with process_id to monitor
-
-# Common long-running tools:
-# - bird_painting_self_correction.py (may take hours)
-# - multi_model_api_call.py (API comparison)
-# - ai_trends_2026_comparison.py (comprehensive analysis)
-```
-
-## Tool Manager Customization
-
-### Adding New Tools
-
-**Method 1: Add to Existing Category**
-
-Edit `tool_manager.py`, add to `TOOL_DESCRIPTIONS`:
-```python
-TOOL_DESCRIPTIONS = {
-    "bird/": {
-        "your_new_tool.py": "Description of your tool",
-        # ... existing tools
-    }
-}
-```
-
-**Method 2: Add New Category**
-
-1. Create new subdirectory (e.g., `landscape/`)
-2. Add to categories dict in `get_all_tools()`:
-```python
-categories = {
-    "landscape": "山水画工具",  # Add this
-    "bird": "鸟类绘画工具",
-    # ... existing categories
-}
-```
-
-**Method 3: Auto-Discovery**
-
-Place `.py` files in any category directory - they'll be auto-discovered with default descriptions.
-
-### Frontend Customization
-
-Template: `templates/tool_manager.html`
-
-**Key Features**:
-- Three-column resizable layout
-- Tree view navigation with collapsible categories
-- Real-time status updates
-- Custom scrollbar styling (purple theme: #5a67d8)
-- Dark gradient background
-
-**Modifying Colors**:
-```css
-/* Scrollbar theme */
-.tree-view::-webkit-scrollbar-thumb {
-    background: #5a67d8;  /* Purple */
-}
-
-/* Accent colors */
---primary-color: #805ad5;
---success-color: #38b2ac;
---error-color: #f56565;
-```
+**Reference**: Fixed in `test/test_gemini_pro_image.py` (all Unicode replaced)
 
 ## Common Development Tasks
 
-### Testing API Connectivity
-```bash
-# Test anti-gravity proxy
-cd test && python test_antigravity_simple.py
+### Creating New Article Generator
 
-# Check Gemini quota
-cd test && python check_quota_status.py
+1. **Study existing pattern**: `article/toutiao_article_generator.py`
+2. **Define content structure**: Title → Hook → Content → Summary → CTA
+3. **Use ZhipuAI GLM-4.6**: More stable than GLM-4.7 for article generation
+4. **Implement image generation**: Follow model priority (Anti-gravity → Pollinations)
+5. **Create HTML output**: Embed base64 images or use relative paths
+6. **Add to tool_manager.py**: Configure in `TOOL_DESCRIPTIONS`
+7. **Test in web interface**: Verify form inputs work correctly
 
-# Test all models
-cd test && python test_antigravity_models.py
-```
+### Adding Image Generation to Existing Tool
 
-### Creating New Image Generation Tool
-
-1. **Setup**:
+1. **Import clients**:
 ```python
-from config import get_antigravity_client, get_volcano_client
+from config import get_antigravity_client
 import requests
-
-def generate_with_priority(prompt, filename):
-    """Generate image following priority order"""
 ```
 
-2. **Implement Gemini (first priority)**
-3. **Implement Seedream fallback (429 handling)**
-4. **Implement Pollinations fallback (last resort)**
-5. **Add error handling and logging**
-6. **Save with descriptive filename**
-7. **Test with `test/test_gemini_pro_image.py` pattern**
+2. **Implement priority fallback**:
+```python
+def generate_image(prompt, filename):
+    try:
+        # Try Anti-gravity first
+        client = get_antigravity_client()
+        response = client.images.generate(model="flux-1.1-pro", ...)
+        return save_b64_image(response.data[0].b64_json, filename)
+    except Exception as e:
+        # Fallback to Pollinations
+        url = f"https://image.pollinations.ai/prompt/{prompt}"
+        return download_url(url, filename)
+```
 
-### Adding Article Generation
+3. **Handle base64 responses**:
+```python
+import base64
+from PIL import Image
+import io
 
-1. **Research Platform**: Read `article/今日头条真实数据分析报告_2026.md`
-2. **Study Examples**: Review `article/今日头条高赞范文_*.md`
-3. **Generate Content**: Use `article/toutiao_article_generator.py` as template
-4. **Generate Images**: Use model priority system
-5. **Create HTML**: Combine article + images in single HTML file
+image_data = base64.b64decode(b64_json)
+img = Image.open(io.BytesIO(image_data))
+img.save(filename)
+```
 
-### Running Model Comparison
+### Debugging Tool Manager Status Issues
 
-1. **Use Existing Template**: `picture/xiaonian_full_comparison.py`
-2. **Modify Prompt**: Change for your subject
-3. **Run Comparison**: Generates HTML gallery automatically
-4. **Evaluate Results**: Professional ranking and metrics
+**Problem**: Tool shows "running" indefinitely after completion
+
+**Solutions**:
+
+1. **Check file-based detection** (lines 464-488 in `tool_manager.py`):
+   - Ensure output filename matches glob pattern
+   - Verify file is saved to correct directory
+   - Check 10-second buffer isn't causing delay
+
+2. **Add completion markers** in tool stdout:
+```python
+print("[成功] HTML文件已保存: filename.html")
+import sys
+sys.stdout.flush()  # Force flush
+```
+
+3. **Verify tool_path** is stored:
+```python
+running_processes[process_id] = {
+    'process': process,
+    'tool_path': tool_path,  # Required for file detection
+    ...
+}
+```
+
+4. **Check Windows fcntl issue**: Non-blocking output reading doesn't work on Windows
+   - Solution: Use file-based detection (already implemented)
+   - Or rely on stdout completion markers
 
 ## Security and Best Practices
 
@@ -443,7 +507,9 @@ def generate_with_priority(prompt, filename):
 - **LOG** detailed progress for long-running operations
 - **RESPECT** API rate limits - implement automatic fallback
 - **USE** ASCII markers instead of Unicode for Windows compatibility
-- **VALIDATE** composition matching in tutorial generation tools
+- **VALIDATE** user inputs in web forms (HTML5 validation + backend checks)
+- **FLUSH** stdout after completion markers for reliable status detection
+- **NEVER** use internal mode strings in user-facing outputs (filenames, prompts, content)
 
 ## Troubleshooting
 
@@ -451,40 +517,52 @@ def generate_with_priority(prompt, filename):
 ```
 UnicodeEncodeError: 'gbk' codec can't encode character '\u2713'
 ```
-**Solution**: Replace all Unicode symbols (✓, ❌, ⚠) with ASCII equivalents ([OK], [ERROR], [WARNING])
+**Solution**: Replace all Unicode symbols (✓, ❌, ⚠, ✅) with ASCII equivalents ([OK], [ERROR], [WARNING], [成功])
 
-### Problem: Gemini Returns 429
-**Solution**: Implement automatic fallback to Seedream or Pollinations (see model priority above)
+### Problem: API Returns 429 Quota Exceeded
+**Solution**: Implement automatic fallback:
+1. Try Anti-gravity (primary)
+2. Fallback to Pollinations (free, unlimited)
+3. Display warning to user about quota status
 
 ### Problem: Tool Manager Port Already in Use
-**Solution**: Change port in `tool_manager.py` line 388:
+**Solution**: Change port in `tool_manager.py`:
 ```python
-app.run(host='0.0.0.0', port=5001, debug=True)  # Use 5001 instead of 5000
+app.run(host='0.0.0.0', port=5001, debug=True)
 ```
 
-### Problem: Module Not Found
-**Solution**: Ensure proper Python path setup in tool execution:
-```python
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent))
-```
+### Problem: Status Stuck on "Running"
+**Solution**:
+1. Add `sys.stdout.flush()` after completion marker
+2. Check file path matches glob pattern in status detection
+3. Verify `tool_path` is in `running_processes` dict
+4. Consider 10-second buffer for file write completion
+
+### Problem: Generated Images Have Wrong Text
+**Solution**: Check prompt construction:
+- Never pass internal mode strings to image generation
+- Extract actual content from user input
+- Use descriptive prompts based on article content
 
 ## Dependencies
 
-Install required packages:
+**Core Requirements**:
 ```bash
-pip install flask openai pillow requests python-dotenv zhipuai anthropic
+pip install flask openai pillow requests python-dotenv zhipuai
 ```
 
-**Core Dependencies**:
+**Optional (for video download)**:
+```bash
+pip install selenium webdriver-manager
+```
+
+**Packages**:
 - `flask` - Tool manager web interface
-- `openai` - OpenAI-compatible API clients
-- `pillow` (PIL) - Image processing
-- `requests` - HTTP requests for Pollinations/URL downloads
+- `openai` - OpenAI-compatible API clients (Anti-gravity, Volcano)
+- `pillow` (PIL) - Image processing and base64 conversion
+- `requests` - HTTP requests (Pollinations, URL downloads)
 - `python-dotenv` - Environment variable management
-- `zhipuai` - ZhipuAI GLM models
-- `anthropic` - Anthropic API (optional)
+- `zhipuai` - ZhipuAI GLM models for text generation
 
 ## Related Documentation
 
@@ -494,3 +572,4 @@ pip install flask openai pillow requests python-dotenv zhipuai anthropic
 - `API调用问题排查清单.md` - API troubleshooting
 - `picture/画图模型选择原则.md` - Model selection principles
 - `article/今日头条真实数据分析报告_2026.md` - Platform analytics
+- `article/今日头条文章生成器使用指南.md` - Article generator guide

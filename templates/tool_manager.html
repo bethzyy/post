@@ -892,6 +892,14 @@
                             btn.style.background = '#48bb78';
                             if (data.output) {
                                 addLog('info', '输出结果:\n' + data.output);
+
+                                // 检查是否有生成的HTML文件并添加可点击链接
+                                const htmlMatch = data.output.match(/\[OUTPUT\] HTML: (.+\.html)/);
+                                if (htmlMatch) {
+                                    const htmlFile = htmlMatch[1].trim();
+                                    const viewUrl = `/view/article/${htmlFile}`;
+                                    addLogWithLink('success', `📄 点击查看文章: `, htmlFile, viewUrl);
+                                }
                             }
                         } else {
                             addLog('error', `✗ 运行失败`);
@@ -1160,6 +1168,45 @@
             }
 
             detailsDiv.innerHTML = html;
+
+            // 恢复之前保存的参数
+            const savedParams = restoreToolParams(tool.filename);
+            if (savedParams) {
+                setTimeout(() => {
+                    tool.input_fields.forEach(field => {
+                        const input = document.getElementById(`param-${field.name}`);
+                        if (input && savedParams[field.name]) {
+                            input.value = savedParams[field.name];
+                        }
+                    });
+                    // 触发模式变化处理（如果有的话）
+                    if (savedParams['mode']) {
+                        handleModeChange();
+                    }
+                }, 100);
+            }
+        }
+
+        // 保存工具参数到localStorage
+        function saveToolParams(toolFilename, params) {
+            try {
+                const key = `tool_params_${toolFilename}`;
+                localStorage.setItem(key, JSON.stringify(params));
+            } catch (e) {
+                console.warn('无法保存参数到localStorage:', e);
+            }
+        }
+
+        // 从localStorage恢复工具参数
+        function restoreToolParams(toolFilename) {
+            try {
+                const key = `tool_params_${toolFilename}`;
+                const saved = localStorage.getItem(key);
+                return saved ? JSON.parse(saved) : null;
+            } catch (e) {
+                console.warn('无法从localStorage恢复参数:', e);
+                return null;
+            }
         }
 
         // 运行工具
@@ -1203,18 +1250,21 @@
                     const theme = document.getElementById('theme-input').value;
                     if (theme) {
                         requestData.params = { theme: theme };
+                        // 保存参数到localStorage
+                        saveToolParams(currentTool.filename, requestData.params);
                         addLog('info', `主题: ${theme}`);
                     }
                 }
 
                 // 如果是今日头条文章生成器,获取模式、主题/草稿、字数和配图参数
                 if (currentTool.filename === 'article/toutiao_article_generator.py') {
-                    const mode = document.getElementById('param-mode').value;
-                    const theme = document.getElementById('param-theme').value;
-                    const draft = document.getElementById('param-draft').value;
-                    const length = document.getElementById('param-length').value;
-                    const generateImages = document.getElementById('param-generate_images').value;
-                    const imageStyle = document.getElementById('param-image_style').value;
+                    const mode = document.getElementById('param-mode')?.value || '1';
+                    const theme = document.getElementById('param-theme')?.value || '';
+                    const draft = document.getElementById('param-draft')?.value || '';
+                    const length = document.getElementById('param-length')?.value || '2000';
+                    const style = document.getElementById('param-style')?.value || 'standard';
+                    const generateImages = document.getElementById('param-generate_images')?.value || 'y';
+                    const imageStyle = document.getElementById('param-image_style')?.value || 'realistic';
 
                     // 验证参数
                     if (mode === '1' && !theme) {
@@ -1232,14 +1282,27 @@
                         return;
                     }
 
-                    requestData.params = {
+                    // 根据模式构建参数 - 草稿完善模式不传递theme参数
+                    let params = {
                         mode: mode,
-                        theme: theme,
-                        draft: draft,
                         length: length,
+                        style: style,
                         generate_images: generateImages,
                         image_style: imageStyle
                     };
+
+                    if (mode === '1') {
+                        // 主题生成模式 - 传递theme
+                        params.theme = theme;
+                    } else if (mode === '2') {
+                        // 草稿完善模式 - 传递draft,不传递theme
+                        params.draft = draft;
+                    }
+
+                    requestData.params = params;
+
+                    // 保存参数到localStorage
+                    saveToolParams(currentTool.filename, requestData.params);
 
                     const modeNames = { '1': '主题生成', '2': '草稿完善' };
                     addLog('info', `模式: ${modeNames[mode]}`);
@@ -1273,6 +1336,10 @@
                         url: url,
                         output_filename: outputFilename
                     };
+
+                    // 保存参数到localStorage
+                    saveToolParams(currentTool.filename, requestData.params);
+
                     addLog('info', `视频URL: ${url}`);
                     if (outputFilename) {
                         addLog('info', `输出文件: ${outputFilename}`);
@@ -1346,6 +1413,15 @@
                             addLog('success', `✓ 运行完成! 耗时: ${data.elapsed_time}秒`);
                             if (data.output) {
                                 addLog('info', '输出结果:\n' + data.output);
+
+                                // 检查是否有生成的HTML文件并添加可点击链接
+                                const htmlMatch = data.output.match(/\[OUTPUT\] HTML: (.+\.html)/);
+                                if (htmlMatch) {
+                                    const htmlFile = htmlMatch[1].trim();
+                                    const viewUrl = `/view/article/${htmlFile}`;
+                                    // 添加可点击的链接到日志
+                                    addLogWithLink('success', `📄 点击查看文章: `, htmlFile, viewUrl);
+                                }
                             }
                         } else {
                             addLog('error', `✗ 运行失败 (退出码: ${data.returncode})`);
@@ -1379,6 +1455,23 @@
             logEntry.innerHTML = `
                 <span class="log-time">[${time}]</span>
                 <span class="log-message">${message}</span>
+            `;
+
+            logContent.appendChild(logEntry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        // 添加带可点击链接的日志
+        function addLogWithLink(type, message, linkText, linkUrl) {
+            const logContent = document.getElementById('log-content');
+            const now = new Date();
+            const time = now.toLocaleTimeString('zh-CN');
+
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `
+                <span class="log-time">[${time}]</span>
+                <span class="log-message">${message}<a href="${linkUrl}" target="_blank" style="color: #4299e1; text-decoration: underline; font-weight: bold;">${linkText}</a></span>
             `;
 
             logContent.appendChild(logEntry);

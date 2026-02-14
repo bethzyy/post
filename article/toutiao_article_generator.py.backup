@@ -1,0 +1,1649 @@
+# -*- coding: utf-8 -*-
+"""
+今日头条文章生成器 v3.1 - 增强版
+
+支持功能:
+- 主题生成: AI从零开始创作文章
+- 草稿完善: AI优化和完善您的草稿
+- 智能配图: 自动为文章生成相关配图(5个备用API)
+- 一键发布: 生成可直接发表的HTML文件
+
+图片生成API:
+免费API(默认,无需配置):
+1. Pollinations.ai - AI智能生成 (最推荐)
+2. Unsplash - 专业高质量照片
+3. Pexels - 免费图库
+4. LoremFlickr - 关键词图片
+5. Picsum - 随机图片(保底)
+
+付费API(可选,需配置.env):
+1. DALL-E 3 (OpenAI) - 质量最高
+2. DALL-E 2 (OpenAI)
+3. Flux 1.1 Pro (Black Forest Labs)
+4. Stable Diffusion 3 (Stability AI)
+5. Seedream (Volcano/豆包) - 中国风格
+
+详细文档: 见 README.md
+"""
+
+import sys
+import os
+from pathlib import Path
+from datetime import datetime
+import json
+import base64
+from PIL import Image
+import io
+
+# 设置标准输出编码为UTF-8，避免中文乱码
+if sys.platform == 'win32':
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+
+# 添加父目录到路径以导入config
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from config import get_zhipuai_client, get_antigravity_client
+
+
+class ToutiaoArticleGenerator:
+    """今日头条文章生成器 - AI增强版 v3.1"""
+
+    def __init__(self):
+        self.text_client = get_zhipuai_client()
+        self.image_client = get_antigravity_client()
+
+    def improve_article_draft(self, draft_content, target_length=2000, style='standard'):
+        """根据用户草稿完善文章
+
+        Args:
+            draft_content: 用户草稿内容
+            target_length: 目标字数
+            style: 写作风格 ('standard' 标准风格, 'professional' 资深写手风格)
+        """
+
+        print(f"\n[AI完善] 正在完善您的文章草稿...")
+        print(f"[AI完善] 目标字数: {target_length}字")
+        print(f"[AI完善] 写作风格: {'资深写手' if style == 'professional' else '标准'}\n")
+
+        # 清理草稿内容中的代理字符(surrogate characters)
+        # 这些字符可能导致UTF-8编码错误
+        try:
+            # 尝试编码为UTF-8，如果失败则清理
+            draft_content.encode('utf-8')
+        except UnicodeEncodeError:
+            # 移除代理字符
+            draft_content = draft_content.encode('utf-8', errors='ignore').decode('utf-8')
+            print("[提示] 草稿包含特殊字符，已自动清理")
+
+        # 根据风格选择不同的prompt
+        if style == 'professional':
+            prompt = f"""你是一位资深的专栏作家，擅长用优美的文字和深刻的思考打动读者。请将以下用户草稿完善为一篇有深度、有温度、有新意的文章。
+
+## 用户草稿:
+
+{draft_content}
+
+## 写作要求:
+1. **字数**: {target_length}字左右
+2. **文风**: 资深写手风格
+   - 语言优美流畅，避免机器感和套路化表达
+   - 用词精准，句式多变，长短句结合
+   - 适当运用修辞手法（比喻、排比、设问等）
+   - 文字要有温度，能引起读者共鸣
+3. **结构**:
+   - 引人入胜的开头（可以从个人经历或时代背景切入）
+   - 2-3个深度观点（不要简单罗列，要有逻辑递进）
+   - 意味深长的结尾（留有思考空间）
+4. **内容提升**:
+   - 保留草稿的核心思想和情感基调
+   - 补充2026年AI时代的最新视角和案例
+   - 融入"第三空间"、"知识体验中心"等前沿概念
+   - 加入对人文精神在算法时代的思考
+   - 避免陈词滥调和空话套话
+5. **标题**: 文学性+思想性，15-25字，避免标题党
+6. **禁忌**:
+   - 不得使用"首先、其次、最后"等公文式表达
+   - 不得过度使用emoji（最多2-3处，且要用得恰到好处）
+   - 不得使用"让我们一起"、"不容错过"等营销话术
+   - 不得生硬列举"5个XX"、"3大XX"
+
+请直接输出完善后的文章内容,格式如下:
+
+---
+标题: [文章标题]
+
+[完善后的正文内容]
+
+---
+
+记住:你要写的是一篇能打动人心、引人深思的专栏文章，而不是一篇营销文案。
+"""
+        else:
+            prompt = f"""请将以下用户草稿完善为一篇高质量的今日头条文章。
+
+## 用户草稿:
+
+{draft_content}
+
+## 【重要】原句保留要求:
+1. **必须保留原草稿中的大部分句子**，尽量引用原文
+2. 只在必要时调整句子的顺序和连接
+3. 在原句基础上补充细节，而不是替换原句
+4. 原草稿中的关键句子和表达要尽量完整保留
+
+## 完善要求:
+1. 字数: {target_length}字左右
+2. 风格: 通俗易懂,接地气,有感染力
+3. 结构要求（重要）：
+   - **逻辑清晰**：文章要有明确的逻辑主线，层层递进，论点或观点要有逻辑关系
+   - **流畅完整**：段落之间过渡自然，不要生硬跳跃，前后呼应
+   - **结构完整**：引人入胜的开头 + 3-5个要点（有逻辑递进）+ 感人或启发的结尾 + 互动号召
+4. 内容优化（在保留原句的基础上）:
+   - 在原句之间添加过渡和连接，确保逻辑连贯
+   - 为原句补充具体案例和数据
+   - 在原句基础上增加细节描述
+   - 优化表达,使其更生动有趣
+   - 增加适当的emoji增强可读性
+5. 标题优化: 使用数字+疑问/对比/利益点,字数15-25字
+6. 情感增强: 能引起共鸣,激发情绪(感动/激励/共鸣)
+
+请直接输出完善后的文章内容,格式如下:
+
+---
+标题: [文章标题]
+
+[完善后的正文内容]
+
+---
+
+注意:
+- 【最重要】尽量保留原草稿的句子，在此基础上扩展和完善
+- **确保文章逻辑清晰、流畅完整、前后呼应**
+- 保留草稿的核心思想,不要偏离原意
+- 标题要吸引点击,包含数字或疑问
+- 内容要有真实感,避免空话套话
+- 多用案例和数据说话
+- 适当使用emoji增加可读性
+- 结尾要有情感共鸣或行动号召
+"""
+
+        try:
+            response = self.text_client.chat.completions.create(
+                model="glm-4-flash",  # 使用快速模型
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0.8,
+                max_tokens=4000,
+                top_p=0.9
+            )
+
+            # 提取生成的内容
+            content = response.choices[0].message.content
+
+            # 解析标题和正文
+            lines = content.split('\n')
+            title = ""
+            body_lines = []
+
+            for i, line in enumerate(lines):
+                if line.startswith("标题:"):
+                    title = line.replace("标题:", "").strip()
+                elif line.strip() == "---":
+                    continue
+                elif title:  # 已找到标题后,其余内容为正文
+                    body_lines.append(line)
+
+            body = '\n'.join(body_lines).strip()
+
+            # 如果没有找到标题格式,从第一行提取
+            if not title:
+                title = lines[0].strip() if lines else "今日头条文章"
+
+            return {
+                'title': title,
+                'content': body,
+                'word_count': len(body),
+                'target_length': target_length,
+                'source': 'draft_improvement'
+            }
+
+        except Exception as e:
+            print(f"[ERROR] 草稿完善失败: {e}")
+            return None
+
+    def generate_article_with_ai(self, theme, target_length=2000, style='standard'):
+        """使用AI生成文章
+
+        Args:
+            theme: 文章主题
+            target_length: 目标字数
+            style: 写作风格 ('standard' 标准风格, 'wangzengqi' 汪曾祺风格)
+        """
+
+        print(f"\n[AI生成] 正在为主题'{theme}'生成文章...")
+        print(f"[AI生成] 目标字数: {target_length}字")
+        print(f"[AI生成] 风格: {'汪曾祺' if style == 'wangzengqi' else '标准'}\n")
+
+        # 根据风格选择不同的prompt
+        if style == 'wangzengqi':
+            prompt = f"""你是汪曾祺先生，中国当代著名作家。请用你的散文风格写一篇关于"{theme}"的文章。
+
+## 汪曾祺散文风格特点：
+1. **语言特点**：
+   - 简洁平淡，朴实有趣
+   - 平易自然，富有节奏感
+   - 不用华丽辞藻，但意味深长
+   - 口语化，有生活气息
+
+2. **结构特点**：
+   - 形散神聚，看似随意实则精心
+   - 从小事写起，以小见大
+   - 漫不经心中见真意
+
+3. **情感特点**：
+   - 淡雅怀旧，有温度
+   - 乐观平和的人生态度
+   - 关注日常人事，体察细微
+
+4. **禁忌**：
+   - 不得使用"首先、其次、最后"等公文式表达
+   - 不得过度使用emoji
+   - 不得使用营销话术（"让我们一起"、"不容错过"等）
+   - 不得生硬列举"5个XX"、"3大XX"
+
+## 用户草稿中的情感基调（请保留并发挥）：
+"每次走进图书馆，那种特有的静谧和书香气息总能让我心神安宁..."
+"我想象中的未来图书馆，绝不仅仅是数字化升级后的'智能书库'。它应该是一座城市的'第三空间'——不是家，不是办公室，而是属于心灵的栖息地。"
+
+## 写作要求：
+1. 字数: {target_length}字左右
+2. 主题: {theme}
+3. 开头: 从个人经历或感受写起（比如走进图书馆的那份安宁）
+4. 内容:
+   - 谈谈2026年AI时代的图书馆变化
+   - 保留原草稿中"第三空间"、"心灵栖息地"等核心概念
+   - 用平淡朴实的语言写深刻的思想
+5. 结尾: 留有余韵，引人思考
+6. 标题: 简洁有意境，15-25字
+
+请直接输出文章内容,格式如下:
+
+---
+标题: [文章标题]
+
+[正文内容]
+
+---
+
+记住:你要写的是一篇有温度、有情怀的散文，而不是营销文案。语言要平淡但有力，朴实但深刻。
+"""
+        else:
+            prompt = f"""请为一篇今日头条文章撰写高质量内容。
+
+主题: {theme}
+
+要求:
+1. 字数: {target_length}字左右
+2. 风格: 通俗易懂,接地气,有感染力
+3. 结构: 吸引人的标题 + 引人入胜的开头 + 3-5个要点 + 感人或启发的结尾 + 互动号召
+4. 内容: 真实案例,数据支撑,实用建议
+5. 情感: 能引起共鸣,激发情绪(感动/激励/共鸣)
+6. 标题要求: 使用数字+疑问/对比/利益点,字数15-25字
+
+请直接输出文章内容,格式如下:
+
+---
+标题: [文章标题]
+
+[正文内容]
+
+---
+
+注意:
+- 标题要吸引点击,包含数字或疑问
+- 内容要有真实感,避免空话套话
+- 多用案例和数据说话
+- 适当使用emoji增加可读性
+- 结尾要有情感共鸣或行动号召
+"""
+
+        try:
+            response = self.text_client.chat.completions.create(
+                model="glm-4-flash",  # 使用快速模型
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0.8,
+                max_tokens=4000,
+                top_p=0.9
+            )
+
+            # 提取生成的内容
+            content = response.choices[0].message.content
+
+            # 解析标题和正文
+            lines = content.split('\n')
+            title = ""
+            body_lines = []
+
+            for i, line in enumerate(lines):
+                if line.startswith("标题:"):
+                    title = line.replace("标题:", "").strip()
+                elif line.strip() == "---":
+                    continue
+                elif title:  # 已找到标题后,其余内容为正文
+                    body_lines.append(line)
+
+            body = '\n'.join(body_lines).strip()
+
+            # 如果没有找到标题格式,从第一行提取
+            if not title:
+                title = lines[0].strip() if lines else f"关于{theme}的思考"
+
+            return {
+                'title': title,
+                'content': body,
+                'word_count': len(body),
+                'target_length': target_length
+            }
+
+        except Exception as e:
+            print(f"[ERROR] AI生成失败: {e}")
+            return None
+
+    def generate_article_images(self, theme, article_content="", image_style="realistic"):
+        """根据文章主题和内容生成相关配图（带重试机制）"""
+
+        print(f"\n[配图生成] 正在为主题'{theme}'生成相关配图...")
+        print(f"[配图生成] 配图风格: {image_style}\n")
+
+        # 根据主题和文章内容生成3张不同场景的配图
+        image_prompts = self._generate_image_prompts(theme, article_content, image_style)
+        generated_images = []
+
+        for i, (img_prompt, img_desc, insert_position) in enumerate(image_prompts, 1):
+            print(f"[配图{i}] {img_desc}...")
+
+            # 保存图片到工具所在目录
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f"文章配图{i}_{img_desc}_{timestamp}.jpg"
+
+            # 获取工具所在目录
+            from pathlib import Path
+            tool_dir = Path(__file__).parent
+            img_path = str(tool_dir / filename)
+
+            success = False
+
+            # 优先使用Anti-gravity API (如果可用)
+            if self.image_client:
+                try:
+                    print(f"    [尝试] Anti-gravity API (高质量AI生成)...")
+                    import base64
+
+                    response = self.image_client.images.generate(
+                        model='flux-1.1-pro',  # 使用Flux 1.1 Pro模型
+                        prompt=img_prompt,
+                        size='1024x1024',
+                        n=1,
+                    )
+
+                    if hasattr(response, 'data') and len(response.data) > 0:
+                        image_data = response.data[0]
+                        b64_json = getattr(image_data, 'b64_json', None)
+
+                        if b64_json:
+                            image_bytes = base64.b64decode(b64_json)
+                            with open(img_path, 'wb') as f:
+                                f.write(image_bytes)
+
+                            generated_images.append({
+                                'path': img_path,
+                                'description': img_desc,
+                                'insert_position': insert_position
+                            })
+                            print(f"    [成功] {img_path}")
+                            success = True
+                except Exception as e:
+                    print(f"    [跳过] Anti-gravity API失败: {str(e)[:50]}...")
+
+            # 如果Anti-gravity失败，尝试免费API
+            if not success:
+                try:
+                    import urllib.request
+                    import urllib.parse
+                    import ssl
+
+                    # 对提示词进行URL编码
+                    encoded_prompt = urllib.parse.quote(img_prompt.strip())
+
+                    # 尝试多个免费图片API
+                    seed = int(datetime.now().timestamp())
+
+                    # 为LoremFlickr准备更简单的关键词（只保留英文关键词）
+                    keywords = ' '.join([w for w in img_prompt.split() if w.isalpha() and len(w) > 2])[:50]
+
+                    apis = [
+                        # 1. Pollinations.ai - AI生成图片(最推荐，但可能不稳定)
+                        {
+                            'url': f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&seed={seed}&nologo=true",
+                            'name': 'pollinations.ai'
+                        },
+                        # 2. LoremFlickr - 基于关键词的图片(会搜索相关照片)
+                        {
+                            'url': f"https://loremflickr.com/1024/1024/{keywords}?lock={seed}",
+                            'name': 'loremflickr.com'
+                        },
+                        # 3. Picsum - 随机高质量图片(保底方案)
+                        {
+                            'url': f"https://picsum.photos/seed/{seed}/1024/1024",
+                            'name': 'picsum.photos'
+                        },
+                    ]
+
+                    for api in apis:
+                        api_url = api['url']
+                        api_name = api['name']
+                        try:
+                            print(f"    [尝试] {api_name}...")
+                            # 创建SSL上下文(避免SSL验证错误)
+                            ssl_context = ssl.create_default_context()
+                            ssl_context.check_hostname = False
+                            ssl_context.verify_mode = ssl.CERT_NONE
+
+                            # 创建请求并添加User-Agent头(很多API需要这个)
+                            req = urllib.request.Request(
+                                api_url,
+                                headers={
+                                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                                }
+                            )
+
+                            # 使用自定义opener
+                            opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=ssl_context))
+
+                            # 下载图片
+                            response = opener.open(req, timeout=30)
+                            with open(img_path, 'wb') as f:
+                                f.write(response.read())
+
+                            # 验证文件是否成功下载
+                            if Path(img_path).exists() and Path(img_path).stat().st_size > 1000:
+                                generated_images.append({
+                                    'path': img_path,
+                                    'description': img_desc,
+                                    'insert_position': insert_position
+                                })
+                                print(f"    [成功] {img_path}")
+                                success = True
+                                break
+                        except Exception as e:
+                            print(f"    [跳过] {str(e)[:50]}...")
+                            continue
+
+                    if not success:
+                        print(f"    [失败] 所有API均不可用")
+
+                except Exception as e:
+                    print(f"    [失败] {str(e)[:100]}")
+                    continue
+
+        # 输出统计信息
+        print(f"\n[配图统计] 计划生成: {len(image_prompts)}张")
+        print(f"[配图统计] 成功生成: {len(generated_images)}张")
+        print(f"[配图统计] 失败数量: {len(image_prompts) - len(generated_images)}张")
+
+        return generated_images
+
+    def _generate_image_prompts(self, theme, article_content="", style="realistic"):
+        """根据主题和文章内容智能生成相关的配图提示词"""
+
+        # 使用AI分析文章内容，智能生成配图方案
+        image_plan = self._analyze_content_for_images(theme, article_content, style)
+
+        # 根据AI分析的结果生成实际的图片提示词
+        prompts = []
+        for i, plan in enumerate(image_plan, 1):
+            prompt = self._create_image_prompt_from_plan(theme, article_content, plan, style)
+            prompts.append((prompt, plan['description'], plan['position']))
+
+        return prompts
+
+    def _analyze_content_for_images(self, theme, content, style):
+        """使用AI分析文章内容，规划配图方案"""
+
+        # 提取文章关键段落
+        content_sample = content[:800] if content else ""
+
+        # 构建分析提示词
+        analysis_prompt = f"""请分析以下文章内容，为文章规划3张配图的插入方案。
+
+文章主题：{theme}
+
+文章内容片段：
+{content_sample}
+
+【最关键原则】
+**配图必须与文章内容浑然一体、相互呼应**
+- 每张配图都要紧密呼应它所在段落的具体内容
+- 配图要能直接帮助读者理解该段落的文字描述
+- 配图内容必须在文章中有明确的文字对应
+- 避免使用与文章内容脱节的通用图片
+
+【其他重要原则】
+1. **配图多样性**：即使是技术文章，也要灵活搭配不同类型的配图，避免全是流程图或架构图
+2. **内容相关性**：配图必须与该部分文章内容直接相关，能够帮助读者理解
+3. **视觉吸引力**：适当加入实际场景、应用案例、用户体验等真实感图片
+4. **逻辑递进**：3张配图要在文章中形成逻辑递进，分别服务于开头引入、中间说明、结尾总结
+
+技术文章配图建议（灵活搭配，不必全部使用）：
+- **开头**：可以用吸引眼球的应用场景图、问题示意图、或者概念引入图
+- **中间**：根据内容选择技术架构图、流程图、代码示例、功能截图、对比图等
+- **结尾**：可以用效果展示图、总结思维导图、未来展望图等
+
+其他类型文章配图建议：
+- 产品类：产品截图、使用场景图、功能展示图、对比图
+- 观点类：概念图、对比图、思维导图、数据图表
+- 生活类：场景图、实物图、人物图、氛围图
+
+请以JSON格式输出规划方案：
+[
+  {{
+    "description": "配图描述（中文，10字以内）",
+    "position": "开头/中间/结尾",
+    "purpose": "这张配图的用途（中文，30字以内）",
+    "content_hint": "这张配图应该展示什么内容，必须与文章具体段落呼应（中文，50字以内）",
+    "image_type": "配图类型（technical_diagram/photo/screenshot/scene/infographic等）"
+  }}
+]
+
+只输出JSON，不要有其他内容。"""
+
+        try:
+            # 调用AI进行分析
+            response = self.text_client.chat.completions.create(
+                model="glm-4-flash",
+                messages=[
+                    {"role": "user", "content": analysis_prompt}
+                ],
+                temperature=0.7,
+                max_tokens=1000
+            )
+
+            # 解析AI响应
+            result = response.choices[0].message.content.strip()
+
+            # 尝试提取JSON（如果被包裹在代码块中）
+            if "```json" in result:
+                result = result.split("```json")[1].split("```")[0].strip()
+            elif "```" in result:
+                result = result.split("```")[1].split("```")[0].strip()
+
+            # 解析JSON
+            import json
+            image_plan = json.loads(result)
+
+            # 验证和修正数据
+            if len(image_plan) != 3:
+                # 如果AI返回的不足3张，补充默认方案
+                while len(image_plan) < 3:
+                    image_plan.append({
+                        "description": f"配图{len(image_plan)+1}",
+                        "position": "中间" if len(image_plan) == 1 else ("结尾" if len(image_plan) == 2 else "开头"),
+                        "purpose": "补充文章内容",
+                        "content_hint": f"关于{theme}的相关图片"
+                    })
+
+            return image_plan[:3]  # 确保只返回3张
+
+        except Exception as e:
+            print(f"[AI分析失败] 使用智能默认方案: {str(e)[:50]}")
+            # AI分析失败时，使用智能默认方案
+            return self._get_fallback_image_plan(theme, content, style)
+
+    def _auto_select_style(self, theme, content, purpose):
+        """使用AI智能选择最适合的图片风格"""
+        try:
+            # 构建AI分析提示
+            prompt = f"""请分析以下文章内容，选择最合适的配图风格。
+
+文章主题：{theme}
+图片用途：{purpose}
+文章内容片段：{content[:500]}
+
+可选风格：
+1. realistic - 真实照片（适合新闻、纪实、生活类）
+2. artistic - 艺术创作（适合情感、文艺、抽象类）
+3. cartoon - 卡通插画（适合轻松、幽默、教育类）
+4. technical - 技术图表（适合技术、编程、架构类）
+
+请只返回一个风格名称（realistic/artistic/cartoon/technical），不要其他内容。"""
+
+            # 调用AI进行风格选择
+            response = self.text_client.messages.create(
+                model="glm-4-flash",
+                messages=[
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3
+            )
+
+            # 解析AI的选择
+            selected_style = response.content[0].text.strip().lower()
+
+            # 验证选择的有效性
+            valid_styles = ["realistic", "artistic", "cartoon", "technical"]
+            if selected_style in valid_styles:
+                print(f"[AI智能选择] 选择风格: {selected_style}")
+                return selected_style
+            else:
+                print(f"[AI选择无效] '{selected_style}'，使用默认风格")
+                return "realistic"
+
+        except Exception as e:
+            print(f"[AI风格选择失败] 使用默认风格: {str(e)[:30]}")
+            return "realistic"
+
+    def _get_fallback_image_plan(self, theme, content, style):
+        """AI分析失败时的智能默认方案"""
+
+        # 检测是否为技术文章
+        is_tech = self._is_technical_article(theme, content)
+
+        if is_tech:
+            return [
+                {
+                    "description": "系统架构图",
+                    "position": "开头",
+                    "purpose": "展示系统的整体架构和组件关系",
+                    "content_hint": f"展示{theme}的架构设计，包含主要组件和数据流"
+                },
+                {
+                    "description": "核心流程图",
+                    "position": "中间",
+                    "purpose": "说明关键的工作流程和步骤",
+                    "content_hint": f"展示{theme}的工作流程，标注关键步骤和决策点"
+                },
+                {
+                    "description": "应用场景图",
+                    "position": "结尾",
+                    "purpose": "展示实际应用和部署方案",
+                    "content_hint": f"展示{theme}的实际应用场景或部署架构"
+                }
+            ]
+        else:
+            return [
+                {
+                    "description": "主题场景图",
+                    "position": "开头",
+                    "purpose": "引入主题，营造氛围",
+                    "content_hint": f"展示{theme}相关的典型场景或主题画面"
+                },
+                {
+                    "description": "内容细节图",
+                    "position": "中间",
+                    "purpose": "突出重点内容",
+                    "content_hint": f"展示{theme}的具体细节或关键元素"
+                },
+                {
+                    "description": "应用效果图",
+                    "position": "结尾",
+                    "purpose": "展示应用效果或总结",
+                    "content_hint": f"展示{theme}的应用场景或效果体现"
+                }
+            ]
+
+    def _create_image_prompt_from_plan(self, theme, content, plan, style):
+        """根据AI规划的方案创建实际的图片生成提示词"""
+
+        content_hint = plan.get('content_hint', '')
+        purpose = plan.get('purpose', '')
+        image_type = plan.get('image_type', '')  # 获取AI规划的图片类型
+
+        # 如果是自动模式，让AI智能选择风格
+        if style == "auto":
+            # 使用AI分析内容，自动选择最适合的风格
+            style = self._auto_select_style(theme, content, purpose)
+
+        # 根据image_type和style智能生成提示词
+        # 优先使用AI规划的image_type，如果没有则使用用户选择的style
+        prompt_parts = []
+
+        # 1. 根据图片类型确定基础描述
+        if image_type == "technical_diagram":
+            prompt_parts.append(f"Professional technical diagram or infographic about {theme}")
+            prompt_parts.append("Clean technical illustration style with clear labels and structured layout")
+        elif image_type == "photo":
+            prompt_parts.append(f"Professional photograph about {theme}")
+            prompt_parts.append("Realistic photography with professional lighting and composition")
+        elif image_type == "screenshot":
+            prompt_parts.append(f"Software interface screenshot or product demo about {theme}")
+            prompt_parts.append("Clean UI mockup with clear interface elements and modern design")
+        elif image_type == "scene":
+            prompt_parts.append(f"Real-world application scenario about {theme}")
+            prompt_parts.append("Authentic scene with natural environment and realistic atmosphere")
+        elif image_type == "infographic":
+            prompt_parts.append(f"Information visualization or data infographic about {theme}")
+            prompt_parts.append("Clean infographic design with clear data visualization and modern layout")
+        else:
+            # 如果没有指定image_type，使用用户选择的style
+            if style == "realistic":
+                prompt_parts.append(f"Professional high-quality image about {theme}")
+                prompt_parts.append("Realistic photography, professional lighting, high resolution")
+            elif style == "artistic":
+                prompt_parts.append(f"Artistic illustration of {theme}")
+                prompt_parts.append("Artistic style, creative design, vibrant colors, museum quality")
+            elif style == "cartoon":
+                prompt_parts.append(f"Cartoon illustration of {theme}")
+                prompt_parts.append("Cute cartoon style, bright colors, friendly atmosphere")
+            elif style == "technical":
+                prompt_parts.append(f"Technical diagram or infographic about {theme}")
+                prompt_parts.append("Clean technical illustration, professional design, clear labels")
+            else:
+                prompt_parts.append(f"Professional image about {theme}")
+                prompt_parts.append("High quality, professional design")
+
+        # 2. 添加AI规划的内容提示
+        prompt_parts.append(f"Focus on: {content_hint}")
+        prompt_parts.append(f"Purpose: {purpose}")
+
+        # 3. 添加通用质量要求
+        prompt_parts.append("High resolution, 1024x1024, professional quality")
+
+        # 组合完整提示词
+        full_prompt = ". ".join(prompt_parts) + "."
+
+        return full_prompt
+
+    def create_article_html(self, title, content, theme, images=None):
+        """创建HTML格式的文章(包含智能插入的配图)"""
+
+        # 将图片智能插入到文章内容中
+        content_with_images = self._insert_images_into_content(content, images)
+
+        html_content = f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+
+        body {{
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }}
+
+        .container {{
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }}
+
+        .header {{
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }}
+
+        .title {{
+            font-size: 2em;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }}
+
+        .content {{
+            font-size: 1.1em;
+            line-height: 2;
+        }}
+
+        .content p {{
+            margin-bottom: 20px;
+            text-indent: 0;
+            padding-left: 0;
+        }}
+
+        .content h2 {{
+            font-size: 1.5em;
+            color: #5a67d8;
+            margin: 30px 0 15px 0;
+            padding-left: 15px;
+            border-left: 4px solid #5a67d8;
+        }}
+
+        .content h3 {{
+            font-size: 1.3em;
+            color: #6b46c1;
+            margin: 25px 0 10px 0;
+        }}
+
+        .content strong {{
+            color: #2d3748;
+            font-weight: 600;
+        }}
+
+        .article-image {{
+            margin: 30px 0;
+            text-align: center;
+        }}
+
+        .article-image img {{
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }}
+
+        .article-image-caption {{
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+            font-style: italic;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">{title}</div>
+        </div>
+
+        <div class="content">
+            {content_with_images}
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+        return html_content
+
+    def _insert_images_into_content(self, content, images):
+        """将图片智能插入到文章内容的合适位置
+
+        资深编辑原则：
+        1. 先文后图 - 读者需要先了解背景，再看到配图
+        2. 避免突兀 - 文章开头不应该直接插入配图
+        3. 自然过渡 - 配图应该出现在文字描述之后
+        4. 画龙点睛 - 配图作为对文字的视觉化补充
+        """
+
+        if not images:
+            return self._format_content_to_html(content)
+
+        # 将文章内容分段
+        paragraphs = content.split('\n\n')
+        total_paragraphs = len(paragraphs)
+
+        # 按插入位置分组图片
+        images_by_position = {"开头": [], "中间": [], "结尾": []}
+        for img in images:
+            if isinstance(img, dict):
+                position = img.get('insert_position', '中间')
+                images_by_position[position].append(img)
+            else:
+                # 兼容旧格式（字符串路径）
+                images_by_position["中间"].append({
+                    'path': img,
+                    'description': '配图',
+                    'insert_position': '中间'
+                })
+
+        # 为每个段落生成HTML，并在合适位置插入图片
+        html_paragraphs = []
+        images_used = {"开头": 0, "中间": 0, "结尾": 0}
+
+        # 计算合适的插入位置
+        # 资深编辑原则：至少让读者阅读2-3段内容后再插入第一张配图
+        min_paragraphs_before_first_image = max(2, total_paragraphs // 5)  # 至少2段，或总段数的20%
+
+        for i, para in enumerate(paragraphs):
+            para = para.strip()
+            if not para:
+                continue
+
+            # 转换段落为HTML
+            para_html = self._format_paragraph_to_html(para)
+
+            # 决定是否在这个段落后插入图片
+            # 改进的插入策略：
+            # - 开头位置的图片：不在第1段插入，至少等待2-3段后再插入
+            # - 中间位置的图片：在文章中后部插入
+            # - 结尾位置的图片：在倒数1-2段插入
+            should_insert = False
+            position = self._get_paragraph_position(i, total_paragraphs)
+            images_to_insert = images_by_position.get(position, [])
+
+            # 开头位置的图片：延迟插入，避免突兀
+            if position == "开头" and images_to_insert:
+                if i >= min_paragraphs_before_first_image and images_used["开头"] < len(images_to_insert):
+                    should_insert = True
+
+            # 中间位置的图片：在文章中后部插入
+            elif position == "中间" and images_to_insert:
+                if i >= total_paragraphs * 0.4 and images_used["中间"] < len(images_to_insert):
+                    should_insert = True
+
+            # 结尾位置的图片：在倒数1-2段插入
+            elif position == "结尾" and images_to_insert:
+                if i >= total_paragraphs - 2 and images_used["结尾"] < len(images_to_insert):
+                    should_insert = True
+
+            # 插入图片
+            if should_insert:
+                img = images_to_insert[images_used[position]]
+                img_html = f"""
+                <div class="article-image">
+                    <img src="{img['path']}" alt="{img['description']}">
+                    <div class="article-image-caption">{img['description']}</div>
+                </div>
+                """
+                para_html += img_html
+                images_used[position] += 1
+
+            html_paragraphs.append(para_html)
+
+        return '\n'.join(html_paragraphs)
+
+    def _get_paragraph_position(self, index, total):
+        """判断段落的位置（开头/中间/结尾）"""
+
+        if total <= 5:
+            # 文章较短时，位置划分更细致
+            if index == 0 or index == 1:
+                return "开头"
+            elif index == total - 1:
+                return "结尾"
+            else:
+                return "中间"
+        else:
+            # 文章较长时，按比例划分
+            ratio = index / total
+            if ratio < 0.3:
+                return "开头"
+            elif ratio > 0.7:
+                return "结尾"
+            else:
+                return "中间"
+
+    def _format_paragraph_to_html(self, para):
+        """将单个段落转换为HTML"""
+
+        # 处理标题
+        if para.startswith('### '):
+            return f'<h3>{para[4:]}</h3>'
+        elif para.startswith('## '):
+            return f'<h2>{para[3:]}</h2>'
+        elif para.startswith('# '):
+            return f'<h2>{para[2:]}</h2>'
+        # 处理高亮块
+        elif para.startswith('>'):
+            return f'<div class="highlight">{para[1:].strip()}</div>'
+        # 普通段落
+        else:
+            # 处理加粗 - 使用正则表达式成对替换
+            import re
+            para = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', para)
+            # 处理换行
+            para = para.replace('\n', '<br>')
+            return f'<p>{para}</p>'
+
+    def _format_content_to_html(self, content):
+        """将Markdown格式内容转换为HTML"""
+
+        html = content
+
+        # 转换段落
+        paragraphs = html.split('\n\n')
+        html_paragraphs = []
+
+        for para in paragraphs:
+            para = para.strip()
+            if not para:
+                continue
+
+            # 处理标题
+            if para.startswith('### '):
+                html_paragraphs.append(f'<h3>{para[4:]}</h3>')
+            elif para.startswith('## '):
+                html_paragraphs.append(f'<h2>{para[3:]}</h2>')
+            elif para.startswith('# '):
+                html_paragraphs.append(f'<h2>{para[2:]}</h2>')
+            # 处理高亮块
+            elif para.startswith('>'):
+                html_paragraphs.append(f'<div class="highlight">{para[1:].strip()}</div>')
+            # 普通段落
+            else:
+                # 正确处理加粗 - 成对替换
+                import re
+                para = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', para)
+                # 处理换行
+                para = para.replace('\n', '<br>')
+                html_paragraphs.append(f'<p>{para}</p>')
+
+        return '\n'.join(html_paragraphs)
+
+
+def get_user_input_mode():
+    """获取用户选择:主题生成 or 草稿完善"""
+
+    print("\n" + "="*80)
+    print("今日头条文章生成器 v3.1 - 增强版")
+    print("="*80)
+    print()
+    print("请选择文章生成方式:")
+    print()
+    print("  1. 主题生成 - 输入主题,AI从零开始生成文章")
+    print("  2. 草稿完善 - 输入您的草稿,AI优化完善")
+    print()
+
+    # 检查是否有标准输入(从Web界面调用)
+    import sys
+    if not sys.stdin.isatty():
+        # 从管道或文件读取
+        try:
+            mode = sys.stdin.readline().strip()
+            if mode and mode in ['1', '2']:
+                print(f"[Web模式] 模式: {'主题生成' if mode == '1' else '草稿完善'}")
+                return int(mode)
+        except:
+            pass
+
+    while True:
+        try:
+            choice = input("请选择 (默认为1): ").strip()
+
+            if not choice:
+                return 1  # 默认主题生成
+
+            if choice in ["1", "主题", "生成"]:
+                return 1
+            elif choice in ["2", "草稿", "完善"]:
+                return 2
+            else:
+                print("[提示] 请输入 1 或 2")
+
+        except KeyboardInterrupt:
+            print("\n\n[提示] 用户取消输入")
+            return None
+        except Exception as e:
+            print(f"[错误] 输入错误: {e}")
+            return 1
+
+
+def get_user_draft():
+    """获取用户输入的草稿 - 支持文件路径或直接输入"""
+
+    print("\n" + "-"*80)
+    print("草稿完善模式")
+    print("-"*80)
+    print()
+    print("请选择草稿输入方式:")
+    print("  1. 输入草稿文件路径 (推荐)")
+    print("  2. 直接粘贴草稿内容")
+    print()
+
+    # 检查是否有标准输入(从Web界面调用)
+    import sys
+    import os
+    from pathlib import Path
+
+    if not sys.stdin.isatty():
+        # Web模式：检查输入是文件路径还是草稿内容
+        try:
+            lines = []
+            for line in sys.stdin:
+                line = line.strip()
+                if line == 'END':
+                    break
+                lines.append(line)
+
+            if lines:
+                input_text = '\n'.join(lines)
+
+                # 尝试判断是否为文件路径
+                # 如果输入较短且包含路径特征，则当作文件路径
+                if len(input_text) < 200 and ('\\' in input_text or '/' in input_text):
+                    # 可能是文件路径
+                    file_path = input_text.strip().strip('"').strip("'")
+
+                    if os.path.exists(file_path):
+                        # 读取文件内容
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            draft = f.read()
+
+                        # 清理代理字符
+                        try:
+                            draft.encode('utf-8')
+                        except UnicodeEncodeError:
+                            draft = draft.encode('utf-8', errors='ignore').decode('utf-8')
+                            print("[提示] 草稿包含特殊字符，已自动清理")
+
+                        print(f"[Web模式] 已从文件读取草稿: {len(draft)}字")
+                        print(f"[Web模式] 文件路径: {file_path}")
+                        return draft
+                    else:
+                        print(f"[Web模式] 文件不存在: {file_path}")
+                        print(f"[Web模式] 将输入内容作为草稿文本处理")
+
+                # 直接使用输入内容作为草稿
+                draft = input_text
+
+                # 清理代理字符
+                try:
+                    draft.encode('utf-8')
+                except UnicodeEncodeError:
+                    draft = draft.encode('utf-8', errors='ignore').decode('utf-8')
+                    print("[提示] 草稿包含特殊字符，已自动清理")
+
+                print(f"[Web模式] 已读取草稿: {len(draft)}字")
+                return draft
+        except Exception as e:
+            print(f"[Web模式] 读取草稿失败: {e}")
+            pass
+
+    # 手动输入模式
+    try:
+        choice = input("请选择 (默认为1): ").strip()
+
+        if not choice or choice == "1":
+            # 文件路径模式
+            print()
+            file_path = input("请输入草稿文件路径: ").strip().strip('"').strip("'")
+
+            if not file_path:
+                print("[错误] 文件路径为空")
+                return None
+
+            # 检查文件是否存在
+            if not os.path.exists(file_path):
+                # 尝试相对路径
+                tool_dir = Path(__file__).parent
+                relative_path = tool_dir / file_path
+
+                if relative_path.exists():
+                    file_path = str(relative_path)
+                else:
+                    print(f"[错误] 文件不存在: {file_path}")
+                    return None
+
+            # 读取文件
+            with open(file_path, 'r', encoding='utf-8') as f:
+                draft = f.read()
+
+            # 清理代理字符
+            try:
+                draft.encode('utf-8')
+            except UnicodeEncodeError:
+                draft = draft.encode('utf-8', errors='ignore').decode('utf-8')
+                print("[提示] 草稿包含特殊字符，已自动清理")
+
+            print(f"\n[成功] 已读取草稿: {len(draft)}字")
+            print(f"[文件] {file_path}")
+            return draft
+
+        elif choice == "2":
+            # 直接输入模式
+            print()
+            print("请输入您的文章草稿(支持多行输入)")
+            print("提示: 输入完成后,在新的一行输入 'END' 并回车结束")
+            print()
+
+            draft_lines = []
+            print("开始输入草稿内容:")
+            print()
+
+            while True:
+                line = input()
+
+                if line.strip() == 'END':
+                    break
+
+                draft_lines.append(line)
+
+            draft = '\n'.join(draft_lines).strip()
+
+            # 清理代理字符
+            try:
+                draft.encode('utf-8')
+            except UnicodeEncodeError:
+                draft = draft.encode('utf-8', errors='ignore').decode('utf-8')
+                print("[提示] 草稿包含特殊字符，已自动清理")
+
+            if draft:
+                print(f"\n[成功] 已读取草稿: {len(draft)}字")
+                return draft
+            else:
+                print("\n[错误] 草稿为空")
+                return None
+        else:
+            print("[错误] 无效选择")
+            return None
+
+    except KeyboardInterrupt:
+        print("\n\n[提示] 用户取消输入")
+        return None
+    except Exception as e:
+        print(f"[错误] 输入错误: {e}")
+        return None
+
+
+def get_user_theme():
+    """获取用户输入的主题"""
+
+    print("\n" + "="*80)
+    print("今日头条文章生成器 - AI增强版 v3.1")
+    print("="*80)
+    print()
+
+    # 检查是否有标准输入(从Web界面调用)
+    import sys
+    if not sys.stdin.isatty():
+        # 从管道或文件读取
+        try:
+            theme = sys.stdin.readline().strip()
+            if theme:
+                print(f"[Web模式] 主题: {theme}")
+                return theme
+        except:
+            pass
+
+    print("请输入您想要生成文章的主题")
+    print()
+    print("示例主题:")
+    themes = [
+        "过年回老家",
+        "职场新人必看",
+        "健康养生小贴士",
+        "理财投资心得",
+        "教育孩子感悟",
+        "情感关系建议"
+    ]
+
+    for i, theme in enumerate(themes, 1):
+        print(f"  {i}. {theme}")
+
+    print()
+    print("您可以输入上述主题,或输入自定义主题")
+    print()
+
+    while True:
+        try:
+            user_input = input("请输入主题 (输入 'q' 退出): ").strip()
+
+            if user_input.lower() == 'q':
+                return None
+
+            if user_input:
+                print(f"\n[确认] 主题: {user_input}")
+                return user_input
+            else:
+                print("[提示] 主题不能为空,请重新输入")
+
+        except KeyboardInterrupt:
+            print("\n\n[提示] 用户取消输入")
+            return None
+        except Exception as e:
+            print(f"[错误] 输入错误: {e}")
+            return None
+
+
+def get_target_length():
+    """获取目标字数"""
+
+    # 检查是否有标准输入(从Web界面调用)
+    import sys
+    if not sys.stdin.isatty():
+        # 从管道或文件读取
+        try:
+            length = sys.stdin.readline().strip()
+            # 写入调试文件
+            with open('debug_log.txt', 'a', encoding='utf-8') as f:
+                f.write(f"[DEBUG] get_target_length读取到: '{length}'\n")
+            print(f"[DEBUG] get_target_length读取到: '{length}'")
+            if length and length.isdigit():
+                print(f"[Web模式] 字数: {length}")
+                return int(length)
+        except Exception as e:
+            with open('debug_log.txt', 'a', encoding='utf-8') as f:
+                f.write(f"[DEBUG] get_target_length异常: {e}\n")
+            print(f"[DEBUG] get_target_length异常: {e}")
+            pass
+
+    print()
+    print("请选择文章长度:")
+    print("  1. 1500字左右 (快速阅读)")
+    print("  2. 2000字左右 (标准长度)")
+    print("  3. 2500字左右 (深度文章)")
+
+    while True:
+        try:
+            choice = input("\n请选择 (默认为2): ").strip()
+
+            if not choice:
+                choice = "2"
+
+            if choice in ["1", "2", "3"]:
+                lengths = {"1": 1500, "2": 2000, "3": 2500}
+                return lengths[choice]
+            else:
+                print("[提示] 请输入 1、2 或 3")
+
+        except KeyboardInterrupt:
+            print("\n\n[提示] 用户取消输入")
+            return 2000
+        except Exception as e:
+            print(f"[错误] 输入错误: {e}")
+            return 2000
+
+
+def get_generate_images():
+    """询问是否生成配图"""
+
+    # 检查是否有标准输入(从Web界面调用)
+    import sys
+    if not sys.stdin.isatty():
+        # 从管道或文件读取
+        try:
+            choice = sys.stdin.readline().strip()
+            # 写入调试文件
+            with open('debug_log.txt', 'a', encoding='utf-8') as f:
+                f.write(f"[DEBUG] get_generate_images读取到: '{choice}'\n")
+            print(f"[DEBUG] get_generate_images读取到: '{choice}'")
+            if choice:
+                result = choice.lower() == 'y'
+                with open('debug_log.txt', 'a', encoding='utf-8') as f:
+                    f.write(f"[DEBUG] get_generate_images返回: {result}\n")
+                print(f"[DEBUG] get_generate_images返回: {result}")
+                return result
+        except Exception as e:
+            with open('debug_log.txt', 'a', encoding='utf-8') as f:
+                f.write(f"[DEBUG] get_generate_images异常: {e}\n")
+            print(f"[DEBUG] get_generate_images异常: {e}")
+            pass
+
+    print()
+    while True:
+        try:
+            choice = input("是否生成配图? (y/n, 默认: y): ").strip().lower()
+            if not choice:
+                return True
+            if choice in ['y', 'yes', '是']:
+                return True
+            elif choice in ['n', 'no', '否']:
+                return False
+            else:
+                print("[提示] 请输入 y 或 n")
+        except KeyboardInterrupt:
+            print("\n\n[提示] 用户取消输入")
+            return False
+        except Exception as e:
+            print(f"[错误] 输入错误: {e}")
+            return False
+
+
+def get_image_style():
+    """获取配图风格"""
+
+    # 检查是否有标准输入(从Web界面调用)
+    import sys
+    if not sys.stdin.isatty():
+        # 从管道或文件读取
+        try:
+            style = sys.stdin.readline().strip()
+            # 写入调试文件
+            with open('debug_log.txt', 'a', encoding='utf-8') as f:
+                f.write(f"[DEBUG] get_image_style读取到: '{style}'\n")
+            print(f"[DEBUG] get_image_style读取到: '{style}'")
+            if style:
+                return style
+        except Exception as e:
+            with open('debug_log.txt', 'a', encoding='utf-8') as f:
+                f.write(f"[DEBUG] get_image_style异常: {e}\n")
+            print(f"[DEBUG] get_image_style异常: {e}")
+            pass
+
+    print()
+    print("请选择配图风格:")
+    print("  1. 真实照片 (realistic)")
+    print("  2. 艺术创作 (artistic)")
+    print("  3. 卡通插画 (cartoon)")
+
+    while True:
+        try:
+            choice = input("\n请选择 (默认为1): ").strip().lower()
+
+            if not choice:
+                return "realistic"
+
+            if choice in ["1", "realistic", "真实"]:
+                return "realistic"
+            elif choice in ["2", "artistic", "艺术"]:
+                return "artistic"
+            elif choice in ["3", "cartoon", "卡通"]:
+                return "cartoon"
+            else:
+                print("[提示] 请输入 1、2 或 3")
+        except KeyboardInterrupt:
+            print("\n\n[提示] 用户取消输入")
+            return "realistic"
+        except Exception as e:
+            print(f"[错误] 输入错误: {e}")
+            return "realistic"
+
+
+def main():
+    """主函数"""
+
+    print("="*80)
+    print("今日头条文章生成器 v3.1 - 增强版")
+    print("支持文章生成 + 草稿完善 + 智能配图")
+    print("="*80)
+    print()
+
+    # 获取用户选择的模式
+    mode = get_user_input_mode()
+
+    if not mode:
+        print("\n[退出] 未选择模式,程序退出")
+        return
+
+    # 根据模式获取输入
+    theme = None
+    draft = None
+    theme_for_images = None  # 用于配图生成的主题
+
+    if mode == 1:
+        # 主题生成模式
+        theme = get_user_theme()
+        if not theme:
+            print("\n[退出] 未输入主题,程序退出")
+            return
+        theme_for_images = theme  # 主题生成模式直接使用用户输入的主题
+    elif mode == 2:
+        # 草稿完善模式
+        draft = get_user_draft()
+        if not draft:
+            print("\n[退出] 未输入草稿,程序退出")
+            return
+        # 从草稿中提取主题用于配图生成和文件命名(取前20字符)
+        theme_for_images = draft[:200] if len(draft) > 200 else draft
+        # 从草稿第一行提取简短主题用于文件命名(最多20字)
+        first_line = draft.split('\n')[0].strip()
+        theme = first_line[:20] if first_line else "今日头条文章"  # 用于文件命名
+
+    # 获取目标字数
+    target_length = get_target_length()
+
+    print(f"\n[设置] 目标字数: {target_length}字")
+
+    # 询问是否生成配图
+    generate_images = get_generate_images()
+
+    # 调试: 强制设置为True来测试图片生成功能
+    import sys
+    if not sys.stdin.isatty():
+        # Web模式: 强制启用配图生成
+        print("[DEBUG] Web模式检测到,强制启用配图生成")
+        generate_images = True
+
+    image_style = "realistic"
+    if generate_images:
+        image_style = get_image_style()
+        print(f"[设置] 配图风格: {image_style}")
+
+    # 创建生成器
+    generator = ToutiaoArticleGenerator()
+
+    if not generator.text_client:
+        print("\n[ERROR] 无法初始化AI文本客户端")
+        print("[ERROR] 请检查config.py中的ZHIPU_API_KEY配置")
+        return
+
+    # 注意: 不再检查image_client，因为工具支持5个免费图片API，无需API key
+    # if generate_images and not generator.image_client:
+    #     print("\n[WARNING] 无法初始化AI图像客户端")
+    #     print("[WARNING] 将跳过配图生成")
+    #     generate_images = False
+
+    print(f"\n[DEBUG] image_client状态: {generator.image_client}")
+    print(f"[DEBUG] 将使用免费图片API生成配图 (Pollinations.ai等)")
+
+    # 生成/完善文章
+    print()
+    print("-"*80)
+    print()
+
+    if mode == 1:
+        article = generator.generate_article_with_ai(theme, target_length)
+        if not article:
+            print("\n[ERROR] 文章生成失败")
+            return
+    else:
+        article = generator.improve_article_draft(draft, target_length)
+        if not article:
+            print("\n[ERROR] 草稿完善失败")
+            return
+
+    # 显示生成的文章
+    print()
+    print("-"*80)
+    print()
+    print(f"[成功] {'文章生成' if mode == 1 else '草稿完善'}成功!")
+    print()
+    print("="*80)
+    print(f"标题: {article['title']}")
+    print("="*80)
+    # 跳过打印正文内容，避免控制台编码问题
+    # 正文内容将直接保存到文件中
+    print()
+    print("[提示] 文章正文包含特殊字符，已跳过控制台显示")
+    print("[提示] 请查看生成的HTML或Markdown文件查看完整内容")
+    print()
+    print("="*80)
+    print(f"字数: {article['word_count']}字")
+    print(f"目标: {article['target_length']}字")
+    print(f"完成度: {article['word_count']/article['target_length']*100:.1f}%")
+    if mode == 2:
+        print(f"来源: 草稿完善")
+    print("="*80)
+    print()
+
+    # 生成配图
+    generated_images = []
+    print(f"\n[DEBUG] generate_images参数值: {generate_images}, 类型: {type(generate_images)}")
+
+    if generate_images:
+        print()
+        print("-"*80)
+        print()
+        print("[配图] 开始生成配图...")
+        # 使用theme_for_images生成配图(主题生成和草稿完善模式都已设置)
+        print(f"[DEBUG] image_theme: {theme_for_images[:100] if len(theme_for_images) > 100 else theme_for_images}...")
+        print(f"[DEBUG] image_style: {image_style}")
+        print()
+        generated_images = generator.generate_article_images(theme_for_images, article['content'], image_style)
+
+        print(f"\n[DEBUG] generated_images结果: {generated_images}")
+        if generated_images:
+            print(f"\n[成功] 成功生成 {len(generated_images)} 张配图")
+        else:
+            print("\n[警告] 配图生成失败,但文章已成功生成")
+    else:
+        print("\n[DEBUG] 跳过配图生成(generate_images=False)")
+
+    # 只保存HTML文件(不生成Markdown文件)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    file_prefix = "今日头条文章"  # 统一使用相同的前缀,不区分模式
+
+    # 保存到工具所在目录
+    tool_dir = Path(__file__).parent
+
+    # 生成HTML文件
+    html_filename = f"{file_prefix}_{theme}_{timestamp}.html"
+    html_path = str(tool_dir / html_filename)
+    html_content = generator.create_article_html(article['title'], article['content'], theme, generated_images)
+
+    with open(html_path, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+
+    print(f"\n[成功] HTML文件已保存: {html_path}")
+
+    # 自动打开HTML文件
+    try:
+        import webbrowser
+        webbrowser.open(f'file:///{os.path.abspath(html_path)}'.replace('\\', '/'))
+        print(f"[成功] 已在浏览器中打开文章预览")
+    except:
+        print(f"[提示] 请手动打开HTML文件查看文章: {html_path}")
+
+    print()
+    print("="*80)
+    print("生成完成!")
+    print(f"[文件] HTML: {html_filename}")
+    if generated_images:
+        print(f"[配图] 配图: {len(generated_images)}张")
+    print("="*80)
+    print()
+
+    # 刷新输出缓冲区,确保立即输出
+    import sys
+    sys.stdout.flush()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\n[提示] 程序被用户中断")
+        import sys
+        sys.stdout.flush()
+    except Exception as e:
+        print(f"\n\n[ERROR] 发生错误: {e}")
+        import traceback
+        traceback.print_exc()
+        import sys
+        sys.stdout.flush()

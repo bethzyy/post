@@ -1,0 +1,17 @@
+[DEBUG] get_target_length读取到: '2000'
+[DEBUG] get_generate_images读取到: 'y'
+[DEBUG] get_generate_images返回: True
+[DEBUG] get_image_style读取到: 'realistic'
+[DEBUG] get_target_length读取到: '2000'
+[DEBUG] get_generate_images读取到: 'y'
+[DEBUG] get_generate_images返回: True
+[DEBUG] get_image_style读取到: 'realistic'
+[DEBUG] get_target_length读取到: 'n'
+[DEBUG] get_generate_images读取到: ''
+[DEBUG] get_image_style读取到: ''
+[DEBUG] get_user_theme异常: 'utf-8' codec can't encode character '\udcad' in position 30: surrogates not allowed
+[DEBUG] get_user_theme读取到: '鏄ュｉギ椋熷吇鐢'
+[DEBUG] get_target_length读取到: '2000'
+[DEBUG] get_generate_images读取到: 'n'
+[DEBUG] get_generate_images返回: False
+[DEBUG] get_image_style读取到: ''

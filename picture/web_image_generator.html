@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI图像生成器 - 即梦AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-panel, .result-panel {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .panel-title {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-btn:hover {
+            background: #f0f0ff;
+        }
+
+        .mode-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .input-group textarea,
+        .input-group input[type="text"],
+        .input-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .input-group textarea:focus,
+        .input-group input[type="text"]:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .image-upload {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .image-upload:hover {
+            background: #f0f0ff;
+        }
+
+        .image-upload.has-image {
+            padding: 10px;
+        }
+
+        .image-upload input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .image-upload .upload-text {
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .image-upload .upload-hint {
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            display: none;
+            margin: 0 auto;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-image-container {
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .placeholder-text {
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .generated-image {
+            max-width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-info {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result-info h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-info p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .download-btn {
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            background: #5568d3;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 AI图像生成器</h1>
+            <p>基于即梦AI(Seedream)的智能图像生成工具</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-panel">
+                <h2 class="panel-title">输入设置</h2>
+
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="theme">主题描述</button>
+                    <button class="mode-btn" data-mode="reference">参考图片</button>
+                </div>
+
+                <div id="theme-input-group" class="input-group">
+                    <label for="theme">主题描述</label>
+                    <textarea id="theme" placeholder="例如:东北粘火烧外皮金黄酥脆,内里软糯拉丝。黄米面做皮,红豆做馅,香甜不腻,也是寓意生活'粘'粘乎乎,甜甜蜜蜜 ✨"></textarea>
+                </div>
+
+                <div id="reference-input-group" class="input-group hidden">
+                    <label>参考图片</label>
+                    <div class="image-upload" id="imageUpload">
+                        <input type="file" id="referenceImage" accept="image/*">
+                        <div class="upload-text">点击或拖拽上传图片</div>
+                        <div class="upload-hint">支持 JPG、PNG 等常见格式</div>
+                        <img id="imagePreview" class="image-preview" alt="预览">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="style">画图风格</label>
+                    <select id="style">
+                        <option value="guofeng_gongbi">国风工笔 - 中国传统工笔画风格</option>
+                        <option value="guofeng_shuimo">国风水墨 - 中国水墨画风格</option>
+                        <option value="shuica">水彩画 - 色彩通透,轻盈自然</option>
+                        <option value="youhua">油画 - 色彩丰富,笔触明显</option>
+                        <option value="manhua">动漫插画 - 日式动漫风格</option>
+                        <option value="shisu">写实摄影 - 真实照片风格</option>
+                        <option value="cartoon">卡通插画 - 可爱卡通风格</option>
+                    </select>
+                </div>
+
+                <button class="generate-btn" id="generateBtn">开始生成</button>
+            </div>
+
+            <div class="result-panel">
+                <h2 class="panel-title">生成结果</h2>
+                <div class="result-image-container" id="resultContainer">
+                    <div class="placeholder-text">
+                        <p>👈 请在左侧输入主题或上传参考图片</p>
+                        <p>然后点击"开始生成"按钮</p>
+                    </div>
+                </div>
+                <div class="result-info" id="resultInfo">
+                    <h3>生成信息</h3>
+                    <p><strong>风格:</strong> <span id="resultStyle"></span></p>
+                    <p><strong>模型:</strong> <span id="resultModel"></span></p>
+                    <p><strong>时间:</strong> <span id="resultTime"></span></p>
+                    <p><strong>提示词:</strong> <span id="resultPrompt"></span></p>
+                    <button class="download-btn" id="downloadBtn">下载图片</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素
+        const modeBtns = document.querySelectorAll('.mode-btn');
+        const themeInputGroup = document.getElementById('theme-input-group');
+        const referenceInputGroup = document.getElementById('reference-input-group');
+        const themeInput = document.getElementById('theme');
+        const referenceImageInput = document.getElementById('referenceImage');
+        const imageUpload = document.getElementById('imageUpload');
+        const imagePreview = document.getElementById('imagePreview');
+        const styleSelect = document.getElementById('style');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultInfo = document.getElementById('resultInfo');
+
+        let currentMode = 'theme';
+        let referenceImageBase64 = null;
+
+        // 模式切换
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMode = btn.dataset.mode;
+
+                if (currentMode === 'theme') {
+                    themeInputGroup.classList.remove('hidden');
+                    referenceInputGroup.classList.add('hidden');
+                } else {
+                    themeInputGroup.classList.add('hidden');
+                    referenceInputGroup.classList.remove('hidden');
+                }
+            });
+        });
+
+        // 图片上传处理
+        // 移除imageUpload的click事件监听,避免文件对话框弹出两次
+        // 因为file input已经覆盖了整个imageUpload区域,点击它会自动触发
+
+        referenceImageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imagePreview.src = event.target.result;
+                    imagePreview.style.display = 'block';
+                    imageUpload.classList.add('has-image');
+                    referenceImageBase64 = event.target.result.split(',')[1];
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 生成按钮点击
+        generateBtn.addEventListener('click', async () => {
+            // 验证输入
+            const theme = themeInput.value.trim();
+            if (currentMode === 'theme' && !theme) {
+                alert('请输入主题描述');
+                return;
+            }
+            if (currentMode === 'reference' && !referenceImageBase64) {
+                alert('请上传参考图片');
+                return;
+            }
+
+            // 禁用按钮,显示加载状态
+            generateBtn.disabled = true;
+            generateBtn.textContent = '生成中...';
+            resultContainer.innerHTML = '<div class="loading-spinner"></div><p style="margin-top: 20px; color: #666;">AI正在创作中,请稍候...</p>';
+            resultInfo.style.display = 'none';
+
+            try {
+                // 准备参数
+                const params = {
+                    mode: currentMode,
+                    theme: theme,
+                    reference_image: referenceImageBase64 || '',
+                    style: styleSelect.value
+                };
+
+                // 调用Python后端
+                const response = await fetch('/api/generate-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(params)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // 显示生成的图片
+                    const imgSrc = 'data:image/png;base64,' + result.image_base64;
+                    resultContainer.innerHTML = `<img src="${imgSrc}" class="generated-image" alt="生成的图片">`;
+
+                    // 显示生成信息
+                    document.getElementById('resultStyle').textContent = result.style;
+                    document.getElementById('resultModel').textContent = result.model.toUpperCase();
+                    document.getElementById('resultTime').textContent = result.timestamp;
+                    document.getElementById('resultPrompt').textContent = result.prompt;
+                    resultInfo.style.display = 'block';
+
+                    // 下载按钮
+                    document.getElementById('downloadBtn').onclick = () => {
+                        const link = document.createElement('a');
+                        link.href = imgSrc;
+                        link.download = result.image_filename;
+                        link.click();
+                    };
+                } else {
+                    resultContainer.innerHTML = `<p style="color: #721c24; font-size: 1.2em;">❌ 生成失败</p><p style="color: #666; margin-top: 10px;">${result.error}</p>`;
+                }
+            } catch (error) {
+                resultContainer.innerHTML = `<p style="color: #721c24; font-size: 1.2em;">❌ 请求失败</p><p style="color: #666; margin-top: 10px;">${error.message}</p>`;
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '开始生成';
+            }
+        });
+    </script>
+</body>
+</html>

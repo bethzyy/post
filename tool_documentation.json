@@ -11,12 +11,12 @@
         "2. 批量生成 - 一次生成所有步骤，减少握手开销",
         "3. 错误恢复 - 遇到错误自动等待重试",
         "4. 降级方案 - 无法自我修正时仍可完成",
-        "使用的模型/API: gemini, get_antigravity_client",
+        "使用的模型/API: get_antigravity_client, gemini",
         "主要函数: wait_for_server_capacity, check_composition_match, generate_single_step, generate_all_steps_optimized, create_html_gallery"
       ],
       "models_used": [
-        "gemini",
-        "get_antigravity_client"
+        "get_antigravity_client",
+        "gemini"
       ],
       "main_functions": [
         "wait_for_server_capacity",
@@ -30,20 +30,20 @@
         "OptimizedPaintingGenerator"
       ],
       "imports": [
-        "Path",
-        "Image",
-        "io",
-        "get_antigravity_client",
+        "os",
         "datetime",
+        "webbrowser",
         "config",
-        "time",
+        "get_antigravity_client",
+        "Path",
+        "PIL",
         "pathlib",
         "logging",
-        "PIL",
-        "sys",
-        "webbrowser",
+        "io",
         "base64",
-        "os"
+        "time",
+        "sys",
+        "Image"
       ]
     },
     "bird_painting_self_correction.py": {
@@ -58,12 +58,12 @@
         "3. 进行修改",
         "4. 重复直到完全匹配",
         "遇到限制自动等待，但不降低要求",
-        "使用的模型/API: gemini, get_antigravity_client",
+        "使用的模型/API: get_antigravity_client, gemini",
         "主要函数: encode_image_to_base64, ask_model_to_compare, generate_with_self_correction, generate_all_with_self_correction, create_final_html_with_logs"
       ],
       "models_used": [
-        "gemini",
-        "get_antigravity_client"
+        "get_antigravity_client",
+        "gemini"
       ],
       "main_functions": [
         "encode_image_to_base64",
@@ -77,22 +77,22 @@
         "SelfCorrectingPaintingGenerator"
       ],
       "imports": [
+        "os",
+        "datetime",
+        "webbrowser",
+        "config",
         "Path",
-        "Image",
+        "json",
+        "PIL",
+        "pathlib",
         "requests",
+        "logging",
         "io",
         "Config,",
-        "datetime",
-        "config",
-        "time",
-        "pathlib",
-        "logging",
-        "PIL",
-        "sys",
-        "json",
-        "webbrowser",
         "base64",
-        "os"
+        "time",
+        "sys",
+        "Image"
       ]
     },
     "bird_painting_steps_generator.py": {
@@ -102,13 +102,13 @@
       "description": "为bird.jpg生成绘画步骤图",
       "features": [
         "调用所有AI大模型生成6个绘画步骤",
-        "使用的模型/API: pollinations, gemini, get_antigravity_client, flux",
+        "使用的模型/API: pollinations, get_antigravity_client, gemini, flux",
         "主要函数: generate_with_gemini, generate_with_pollinations, generate_all_steps, generate_html_gallery, main"
       ],
       "models_used": [
         "pollinations",
-        "gemini",
         "get_antigravity_client",
+        "gemini",
         "flux"
       ],
       "main_functions": [
@@ -122,20 +122,20 @@
         "BirdPaintingGenerator"
       ],
       "imports": [
-        "Path",
-        "Image",
-        "requests",
-        "io",
-        "Config,",
         "datetime",
-        "config",
-        "time",
-        "pathlib",
-        "PIL",
-        "sys",
         "webbrowser",
+        "config",
+        "Path",
+        "urllib.parse",
+        "PIL",
+        "pathlib",
+        "requests",
+        "Config,",
+        "io",
         "base64",
-        "urllib.parse"
+        "time",
+        "sys",
+        "Image"
       ]
     },
     "bird_painting_steps_teaching.py": {
@@ -145,12 +145,12 @@
       "description": "为bird.jpg生成严格对应的教学绘画步骤图",
       "features": [
         "每个步骤都必须是画同一只鸟的渐进过程",
-        "使用的模型/API: gemini, get_antigravity_client",
+        "使用的模型/API: get_antigravity_client, gemini",
         "主要函数: encode_image, generate_with_gemini, generate_all_steps, generate_teaching_html, main"
       ],
       "models_used": [
-        "gemini",
-        "get_antigravity_client"
+        "get_antigravity_client",
+        "gemini"
       ],
       "main_functions": [
         "encode_image",
@@ -163,19 +163,19 @@
         "TeachingStepGenerator"
       ],
       "imports": [
-        "Path",
-        "Image",
-        "requests",
-        "io",
-        "Config,",
         "datetime",
-        "config",
-        "time",
-        "pathlib",
-        "PIL",
-        "sys",
         "webbrowser",
-        "base64"
+        "config",
+        "Path",
+        "PIL",
+        "pathlib",
+        "requests",
+        "Config,",
+        "io",
+        "base64",
+        "time",
+        "sys",
+        "Image"
       ]
     },
     "bird_painting_volcano.py": {
@@ -185,12 +185,12 @@
       "description": "使用Volcano/Seedream生成鸟儿水彩画教程",
       "features": [
         "严格对应参考图构图，AI自我修正机制",
-        "使用的模型/API: get_volcano_client, seedream",
+        "使用的模型/API: seedream, get_volcano_client",
         "主要函数: generate_single_step, generate_all_steps, create_html_gallery, main"
       ],
       "models_used": [
-        "get_volcano_client",
-        "seedream"
+        "seedream",
+        "get_volcano_client"
       ],
       "main_functions": [
         "generate_single_step",
@@ -202,17 +202,17 @@
         "VolcanoPaintingGenerator"
       ],
       "imports": [
-        "Path",
-        "requests",
+        "os",
         "datetime",
-        "config",
-        "get_volcano_client",
-        "time",
-        "pathlib",
-        "logging",
-        "sys",
         "webbrowser",
-        "os"
+        "get_volcano_client",
+        "config",
+        "Path",
+        "pathlib",
+        "requests",
+        "logging",
+        "time",
+        "sys"
       ]
     },
     "bird_painting_with_verification.py": {
@@ -222,12 +222,12 @@
       "description": "带验证机制的鸟儿绘画步骤生成器",
       "features": [
         "每张图生成后都会与原图对比验证，确保严格匹配",
-        "使用的模型/API: gemini, get_antigravity_client",
+        "使用的模型/API: get_antigravity_client, gemini",
         "主要函数: verify_image_match, generate_with_retry, generate_all_steps_with_verification, generate_verified_html, main"
       ],
       "models_used": [
-        "gemini",
-        "get_antigravity_client"
+        "get_antigravity_client",
+        "gemini"
       ],
       "main_functions": [
         "verify_image_match",
@@ -240,20 +240,20 @@
         "VerifiedPaintingGenerator"
       ],
       "imports": [
-        "Path",
-        "Image",
-        "requests",
-        "io",
-        "Config,",
         "datetime",
-        "config",
-        "time",
-        "pathlib",
-        "PIL",
-        "sys",
-        "json",
         "webbrowser",
-        "base64"
+        "config",
+        "Path",
+        "json",
+        "PIL",
+        "pathlib",
+        "requests",
+        "Config,",
+        "io",
+        "base64",
+        "time",
+        "sys",
+        "Image"
       ]
     },
     "bird_pollinations_simple.py": {
@@ -279,15 +279,15 @@
         "PollinationsPaintingGenerator"
       ],
       "imports": [
-        "Path",
-        "requests",
+        "os",
         "datetime",
-        "time",
-        "pathlib",
-        "logging",
-        "sys",
         "webbrowser",
-        "os"
+        "Path",
+        "pathlib",
+        "requests",
+        "logging",
+        "time",
+        "sys"
       ]
     },
     "create_final_teaching_page.py": {
@@ -308,11 +308,11 @@
       ],
       "classes": [],
       "imports": [
-        "Path",
         "datetime",
-        "time",
+        "webbrowser",
+        "Path",
         "pathlib",
-        "webbrowser"
+        "time"
       ]
     },
     "create_simple_tutorial.py": {
@@ -332,10 +332,10 @@
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "webbrowser",
         "pathlib",
-        "datetime"
+        "datetime",
+        "webbrowser",
+        "Path"
       ]
     },
     "generate_bird_gallery.py": {
@@ -344,23 +344,23 @@
       "docstring": "生成鸟儿绘画步骤展示网页",
       "description": "生成鸟儿绘画步骤展示网页",
       "features": [
-        "使用的模型/API: pollinations, gemini, openai",
+        "使用的模型/API: openai, pollinations, gemini",
         "主要函数: generate_html"
       ],
       "models_used": [
+        "openai",
         "pollinations",
-        "gemini",
-        "openai"
+        "gemini"
       ],
       "main_functions": [
         "generate_html"
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "webbrowser",
         "pathlib",
-        "datetime"
+        "datetime",
+        "webbrowser",
+        "Path"
       ]
     },
     "generate_pencil_sketch.py": {
@@ -370,12 +370,12 @@
       "description": "为bird.jpg生成铅笔起稿图",
       "features": [
         "使用Volcano/Seedream模型",
-        "使用的模型/API: get_volcano_client, seedream",
+        "使用的模型/API: seedream, get_volcano_client",
         "主要函数: generate_pencil_sketch, main"
       ],
       "models_used": [
-        "get_volcano_client",
-        "seedream"
+        "seedream",
+        "get_volcano_client"
       ],
       "main_functions": [
         "generate_pencil_sketch",
@@ -383,18 +383,98 @@
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "requests",
+        "os",
         "datetime",
-        "config",
         "get_volcano_client",
+        "config",
+        "Path",
         "pathlib",
-        "sys",
-        "os"
+        "requests",
+        "sys"
       ]
     }
   },
   "picture": {
+    "advanced_watermark_remover.py": {
+      "file": "advanced_watermark_remover.py",
+      "relative_path": "picture\\advanced_watermark_remover.py",
+      "docstring": "高级去水印工具 - 集成多种SOTA算法\n结合油猴脚本智能检测 + 多种Inpainting算法",
+      "description": "高级去水印工具 - 集成多种SOTA算法",
+      "features": [
+        "结合油猴脚本智能检测 + 多种Inpainting算法",
+        "主要函数: smart_detect_watermark, inpaint_telea, inpaint_ns, inpaint_hybrid, inpaint_advanced"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "smart_detect_watermark",
+        "inpaint_telea",
+        "inpaint_ns",
+        "inpaint_hybrid",
+        "inpaint_advanced",
+        "remove_watermark_best_quality",
+        "create_widgets",
+        "select_files",
+        "select_output_dir",
+        "process_images"
+      ],
+      "classes": [
+        "AdvancedWatermarkRemover",
+        "AdvancedWatermarkRemoverGUI"
+      ],
+      "imports": [
+        "filedialog,",
+        "tkinter",
+        "sys",
+        "Path",
+        "cv2",
+        "PIL",
+        "pathlib",
+        "Image,",
+        "io",
+        "os",
+        "numpy",
+        "Image"
+      ]
+    },
+    "doubao_smart_remove.py": {
+      "file": "doubao_smart_remove.py",
+      "relative_path": "picture\\doubao_smart_remove.py",
+      "docstring": "豆包智能去水印工具\n参考油猴脚本doubao-no-watermark的实现原理",
+      "description": "豆包智能去水印工具",
+      "features": [
+        "参考油猴脚本doubao-no-watermark的实现原理",
+        "主要函数: detect_watermark_region, remove_watermark_inpainting, create_widgets, select_files, select_output_dir"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "detect_watermark_region",
+        "remove_watermark_inpainting",
+        "create_widgets",
+        "select_files",
+        "select_output_dir",
+        "process_images",
+        "log",
+        "main"
+      ],
+      "classes": [
+        "DoubaoSmartRemover",
+        "DoubaoSmartRemoverGUI"
+      ],
+      "imports": [
+        "filedialog,",
+        "tkinter",
+        "sys",
+        "Path",
+        "cv2",
+        "PIL",
+        "pathlib",
+        "Image,",
+        "io",
+        "os",
+        "numpy",
+        "Image"
+      ]
+    },
     "generate_festival_images.py": {
       "file": "generate_festival_images.py",
       "relative_path": "picture\\generate_festival_images.py",
@@ -402,18 +482,18 @@
       "description": "节日主题图像生成器 - 整合版",
       "features": [
         "支持用户自定义主题，使用多个模型生成图像并生成HTML对比页面",
-        "使用的模型/API: seedream, gemini, get_antigravity_client, pollinations, flux, openai, dall-e, get_volcano_client",
+        "使用的模型/API: openai, get_volcano_client, seedream, flux, dall-e, pollinations, gemini, get_antigravity_client",
         "主要函数: generate_with_antigravity, generate_with_pollinations, generate_with_volcano, generate_with_gemini, generate_html_report"
       ],
       "models_used": [
-        "seedream",
-        "gemini",
-        "get_antigravity_client",
-        "pollinations",
-        "flux",
         "openai",
+        "get_volcano_client",
+        "seedream",
+        "flux",
         "dall-e",
-        "get_volcano_client"
+        "pollinations",
+        "gemini",
+        "get_antigravity_client"
       ],
       "main_functions": [
         "generate_with_antigravity",
@@ -425,24 +505,46 @@
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "get_antigravity_client,",
-        "requests",
-        "Image",
-        "io",
-        "subprocess",
+        "os",
         "datetime",
+        "webbrowser",
         "config",
         "BytesIO",
-        "time",
-        "pathlib",
-        "PIL",
-        "sys",
-        "json",
-        "webbrowser",
-        "base64",
+        "Path",
         "urllib.parse",
-        "os"
+        "json",
+        "PIL",
+        "pathlib",
+        "get_antigravity_client,",
+        "requests",
+        "io",
+        "base64",
+        "time",
+        "sys",
+        "Image",
+        "subprocess"
+      ]
+    },
+    "quick_test.py": {
+      "file": "quick_test.py",
+      "relative_path": "picture\\quick_test.py",
+      "docstring": "快速测试升级后的豆包去水印工具",
+      "description": "快速测试升级后的豆包去水印工具",
+      "features": [
+        "主要函数: quick_test"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "quick_test"
+      ],
+      "classes": [],
+      "imports": [
+        "picture.remove_doubao_watermark",
+        "Path",
+        "pathlib",
+        "traceback",
+        "sys",
+        "DoubaoWatermarkRemover"
       ]
     },
     "xiaonian_full_comparison.py": {
@@ -452,15 +554,15 @@
       "description": "为小年生成中国风水粉画 - 全模型对比评价",
       "features": [
         "包含：Volcano/Seedream、Gemini、Pollinations.ai",
-        "使用的模型/API: seedream, pollinations, gemini, get_antigravity_client, get_volcano_client",
+        "使用的模型/API: get_volcano_client, seedream, pollinations, gemini, get_antigravity_client",
         "主要函数: generate_with_volcano, generate_with_gemini, generate_with_pollinations, evaluate_all, generate_html"
       ],
       "models_used": [
+        "get_volcano_client",
         "seedream",
         "pollinations",
         "gemini",
-        "get_antigravity_client",
-        "get_volcano_client"
+        "get_antigravity_client"
       ],
       "main_functions": [
         "generate_with_volcano",
@@ -474,21 +576,21 @@
         "FullModelComparison"
       ],
       "imports": [
+        "os",
+        "datetime",
+        "webbrowser",
+        "config",
         "Path",
-        "Image",
+        "urllib.parse",
+        "PIL",
+        "pathlib",
         "requests",
         "io",
         "get_volcano_client,",
-        "datetime",
-        "config",
-        "time",
-        "pathlib",
-        "PIL",
-        "sys",
-        "webbrowser",
         "base64",
-        "urllib.parse",
-        "os"
+        "time",
+        "sys",
+        "Image"
       ]
     },
     "xiaonian_watercolor_comparison.py": {
@@ -498,14 +600,14 @@
       "description": "为小年生成中国风水粉画 - 多模型对比评价",
       "features": [
         "调用所有可用的大模型，生成后进行专业评价排名",
-        "使用的模型/API: get_volcano_client, gemini, get_antigravity_client, seedream",
+        "使用的模型/API: seedream, get_antigravity_client, gemini, get_volcano_client",
         "主要函数: generate_with_volcano, generate_with_gemini, evaluate_paintings, generate_report, generate_html_gallery"
       ],
       "models_used": [
-        "get_volcano_client",
-        "gemini",
+        "seedream",
         "get_antigravity_client",
-        "seedream"
+        "gemini",
+        "get_volcano_client"
       ],
       "main_functions": [
         "generate_with_volcano",
@@ -519,25 +621,109 @@
         "LittleNewYearPaintingComparison"
       ],
       "imports": [
+        "os",
+        "datetime",
+        "webbrowser",
+        "config",
         "Path",
-        "Image",
+        "json",
+        "PIL",
+        "pathlib",
         "requests",
         "io",
         "get_volcano_client,",
-        "datetime",
-        "config",
-        "time",
-        "pathlib",
-        "PIL",
-        "sys",
-        "json",
-        "webbrowser",
         "base64",
-        "os"
+        "time",
+        "sys",
+        "Image"
       ]
     }
   },
   "article": {
+    "add_custom_style_support.py": {
+      "file": "add_custom_style_support.py",
+      "relative_path": "article\\add_custom_style_support.py",
+      "docstring": "添加自定义文风支持",
+      "description": "添加自定义文风支持",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": []
+    },
+    "add_debug_logging.py": {
+      "file": "add_debug_logging.py",
+      "relative_path": "article\\add_debug_logging.py",
+      "docstring": "添加调试日志",
+      "description": "添加调试日志",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "re"
+      ]
+    },
+    "add_images_to_article.py": {
+      "file": "add_images_to_article.py",
+      "relative_path": "article\\add_images_to_article.py",
+      "docstring": "补充图片到已生成的文章",
+      "description": "补充图片到已生成的文章",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "datetime",
+        "webbrowser",
+        "Path",
+        "re",
+        "pathlib",
+        "os"
+      ]
+    },
+    "add_luxun_style.py": {
+      "file": "add_luxun_style.py",
+      "relative_path": "article\\add_luxun_style.py",
+      "docstring": "添加鲁迅风格到generate_article_with_ai方法",
+      "description": "添加鲁迅风格到generate_article_with_ai方法",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": []
+    },
+    "add_writing_styles.py": {
+      "file": "add_writing_styles.py",
+      "relative_path": "article\\add_writing_styles.py",
+      "docstring": "为今日头条文章生成器添加更多写作风格",
+      "description": "为今日头条文章生成器添加更多写作风格",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "re"
+      ]
+    },
+    "apply_fix.py": {
+      "file": "apply_fix.py",
+      "relative_path": "article\\apply_fix.py",
+      "docstring": "修复文章解析逻辑 - 使用更简单的方法",
+      "description": "修复文章解析逻辑 - 使用更简单的方法",
+      "features": [
+        "主要函数: generate_article_with_ai, generate_article_with_ai, generate_article_images, generate_article_images"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "generate_article_with_ai",
+        "generate_article_with_ai",
+        "generate_article_images",
+        "generate_article_images"
+      ],
+      "classes": [],
+      "imports": []
+    },
     "article_review_and_revision.py": {
       "file": "article_review_and_revision.py",
       "relative_path": "article\\article_review_and_revision.py",
@@ -557,14 +743,14 @@
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "dotenv",
-        "ZhipuAI",
+        "os",
         "load_dotenv",
-        "zhipuai",
+        "dotenv",
+        "Path",
         "pathlib",
         "sys",
-        "os"
+        "ZhipuAI",
+        "zhipuai"
       ]
     },
     "article_review_and_revision_local.py": {
@@ -581,10 +767,287 @@
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "subprocess",
+        "sys",
         "pathlib",
+        "Path",
+        "subprocess"
+      ]
+    },
+    "baidu_video_downloader.py": {
+      "file": "baidu_video_downloader.py",
+      "relative_path": "article\\baidu_video_downloader.py",
+      "docstring": "百度视频下载工具\n支持下载百度新闻、百家号等平台的视频",
+      "description": "百度视频下载工具",
+      "features": [
+        "支持下载百度新闻、百家号等平台的视频",
+        "主要函数: get_video_info, download_video, download_from_url, get_user_url, get_output_filename"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "get_video_info",
+        "download_video",
+        "download_from_url",
+        "get_user_url",
+        "get_output_filename",
+        "main"
+      ],
+      "classes": [
+        "BaiduVideoDownloader"
+      ],
+      "imports": [
+        "os",
+        "Path",
+        "re",
+        "json",
+        "pathlib",
+        "requests",
+        "traceback",
+        "urljoin,",
+        "urllib.parse",
         "sys"
+      ]
+    },
+    "baidu_video_downloader_v2.py": {
+      "file": "baidu_video_downloader_v2.py",
+      "relative_path": "article\\baidu_video_downloader_v2.py",
+      "docstring": "百度视频下载工具 v2.0 - Selenium增强版\n使用Selenium绕过百度安全验证,支持下载百度新闻、百家号等平台的视频",
+      "description": "百度视频下载工具 v2.0 - Selenium增强版",
+      "features": [
+        "使用Selenium绕过百度安全验证,支持下载百度新闻、百家号等平台的视频",
+        "主要函数: get_video_info_with_selenium, get_video_info_basic, get_video_info, download_video, download_from_url"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "get_video_info_with_selenium",
+        "get_video_info_basic",
+        "get_video_info",
+        "download_video",
+        "download_from_url",
+        "main"
+      ],
+      "classes": [
+        "BaiduVideoDownloader"
+      ],
+      "imports": [
+        "sys",
+        "pathlib",
+        "requests",
+        "traceback",
+        "time",
+        "urllib.parse",
+        "By",
+        "selenium",
+        "WebDriverWait",
+        "selenium.webdriver.chrome.service",
+        "re",
+        "json",
+        "selenium.webdriver.chrome.options",
+        "urljoin,",
+        "selenium.webdriver.support",
+        "Options",
+        "webdriver",
+        "Path",
+        "Service",
+        "expected_conditions",
+        "os",
+        "selenium.webdriver.common.by",
+        "selenium.webdriver.support.ui"
+      ]
+    },
+    "create_final_wangzengqi_article.py": {
+      "file": "create_final_wangzengqi_article.py",
+      "relative_path": "article\\create_final_wangzengqi_article.py",
+      "docstring": "创建最终的汪曾祺风格文章（包含内容和配图）",
+      "description": "创建最终的汪曾祺风格文章（包含内容和配图）",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "ToutiaoArticleGenerator",
+        "datetime",
+        "webbrowser",
+        "Path",
+        "json",
+        "pathlib",
+        "toutiao_article_generator",
+        "os"
+      ]
+    },
+    "debug_wangzengqi_response.py": {
+      "file": "debug_wangzengqi_response.py",
+      "relative_path": "article\\debug_wangzengqi_response.py",
+      "docstring": "Debug script to see actual AI response",
+      "description": "Debug script to see actual AI response",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "os",
+        "ZhipuAI",
+        "zhipuai"
+      ]
+    },
+    "designer_layout.py": {
+      "file": "designer_layout.py",
+      "relative_path": "article\\designer_layout.py",
+      "docstring": "专业平面设计师排版版本",
+      "description": "专业平面设计师排版版本",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "datetime",
+        "webbrowser",
+        "Path",
+        "pathlib",
+        "os"
+      ]
+    },
+    "final_article_generator.py": {
+      "file": "final_article_generator.py",
+      "relative_path": "article\\final_article_generator.py",
+      "docstring": "生成高质量今日头条文章 - 最终版",
+      "description": "生成高质量今日头条文章 - 最终版",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "ToutiaoArticleGenerator",
+        "datetime",
+        "webbrowser",
+        "Path",
+        "pathlib",
+        "toutiao_article_generator",
+        "os"
+      ]
+    },
+    "final_complete_article.py": {
+      "file": "final_complete_article.py",
+      "relative_path": "article\\final_complete_article.py",
+      "docstring": "完整版：生成汪曾祺风格文章 + 原草稿引用 + 真实图片 + 专业排版",
+      "description": "完整版：生成汪曾祺风格文章 + 原草稿引用 + 真实图片 + 专业排版",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "ToutiaoArticleGenerator",
+        "datetime",
+        "webbrowser",
+        "Path",
+        "json",
+        "pathlib",
+        "toutiao_article_generator",
+        "os",
+        "ZhipuAI",
+        "zhipuai"
+      ]
+    },
+    "fix_colon_parsing.py": {
+      "file": "fix_colon_parsing.py",
+      "relative_path": "article\\fix_colon_parsing.py",
+      "docstring": "修复标题解析:支持中文冒号",
+      "description": "修复标题解析:支持中文冒号",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "re"
+      ]
+    },
+    "fix_command_line_args.py": {
+      "file": "fix_command_line_args.py",
+      "relative_path": "article\\fix_command_line_args.py",
+      "docstring": "修改toutiao_article_generator.py支持命令行参数",
+      "description": "修改toutiao_article_generator.py支持命令行参数",
+      "features": [
+        "主要函数: main, main"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "main",
+        "main"
+      ],
+      "classes": [],
+      "imports": [
+        "sys",
+        "argparse",
+        "os"
+      ]
+    },
+    "fix_get_user_theme.py": {
+      "file": "fix_get_user_theme.py",
+      "relative_path": "article\\fix_get_user_theme.py",
+      "docstring": "修复get_user_theme函数",
+      "description": "修复get_user_theme函数",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "sys"
+      ]
+    },
+    "fix_parsing.py": {
+      "file": "fix_parsing.py",
+      "relative_path": "article\\fix_parsing.py",
+      "docstring": "修复文章解析逻辑的补丁脚本",
+      "description": "修复文章解析逻辑的补丁脚本",
+      "features": [
+        "主要函数: fix_improve_article_draft, fix_generate_article_with_ai"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "fix_improve_article_draft",
+        "fix_generate_article_with_ai"
+      ],
+      "classes": [],
+      "imports": []
+    },
+    "fix_print_style.py": {
+      "file": "fix_print_style.py",
+      "relative_path": "article\\fix_print_style.py",
+      "docstring": "print(f\"[AI生成] 风格: {'汪曾祺' if style == 'wangzengqi' else '标准'}\\\\n\")",
+      "description": "print(f\"[AI生成] 风格: {'汪曾祺' if style == 'wangzengqi' else '标准'}\\\\n\")",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": []
+    },
+    "fix_wangzengqi_article.py": {
+      "file": "fix_wangzengqi_article.py",
+      "relative_path": "article\\fix_wangzengqi_article.py",
+      "docstring": "修复汪曾祺风格文章 - 从之前生成的HTML中提取内容",
+      "description": "修复汪曾祺风格文章 - 从之前生成的HTML中提取内容",
+      "features": [
+        "主要函数: handle_data, get_data"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "handle_data",
+        "get_data"
+      ],
+      "classes": [
+        "MLStripper"
+      ],
+      "imports": [
+        "ToutiaoArticleGenerator",
+        "html.parser",
+        "datetime",
+        "webbrowser",
+        "Path",
+        "re",
+        "pathlib",
+        "toutiao_article_generator",
+        "HTMLParser",
+        "html",
+        "os"
       ]
     },
     "generate_article_images.py": {
@@ -594,28 +1057,28 @@
       "description": "为今日头条文章生成配图",
       "features": [
         "使用Gemini API生成3张插图",
-        "使用的模型/API: gemini, get_antigravity_client",
+        "使用的模型/API: get_antigravity_client, gemini",
         "主要函数: generate_article_images"
       ],
       "models_used": [
-        "gemini",
-        "get_antigravity_client"
+        "get_antigravity_client",
+        "gemini"
       ],
       "main_functions": [
         "generate_article_images"
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "Image",
-        "io",
-        "get_antigravity_client",
+        "os",
         "config",
-        "pathlib",
+        "get_antigravity_client",
+        "Path",
         "PIL",
-        "sys",
+        "pathlib",
+        "io",
         "base64",
-        "os"
+        "sys",
+        "Image"
       ]
     },
     "generate_food_article_images.py": {
@@ -625,28 +1088,28 @@
       "description": "为今日头条美食文章生成配图",
       "features": [
         "使用Gemini API生成3张插图",
-        "使用的模型/API: gemini, get_antigravity_client",
+        "使用的模型/API: get_antigravity_client, gemini",
         "主要函数: generate_article_images"
       ],
       "models_used": [
-        "gemini",
-        "get_antigravity_client"
+        "get_antigravity_client",
+        "gemini"
       ],
       "main_functions": [
         "generate_article_images"
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "Image",
-        "io",
-        "get_antigravity_client",
+        "os",
         "config",
-        "pathlib",
+        "get_antigravity_client",
+        "Path",
         "PIL",
-        "sys",
+        "pathlib",
+        "io",
         "base64",
-        "os"
+        "sys",
+        "Image"
       ]
     },
     "generate_food_article_pollinations.py": {
@@ -668,10 +1131,10 @@
       ],
       "classes": [],
       "imports": [
-        "Path",
         "requests",
         "time",
-        "pathlib"
+        "pathlib",
+        "Path"
       ]
     },
     "generate_food_article_seedream.py": {
@@ -681,24 +1144,43 @@
       "description": "为今日头条美食文章生成配图",
       "features": [
         "使用Volcano Seedream模型生成3张插图(无AI水印)",
-        "使用的模型/API: get_volcano_client, seedream",
+        "使用的模型/API: seedream, get_volcano_client",
         "主要函数: generate_article_images"
       ],
       "models_used": [
-        "get_volcano_client",
-        "seedream"
+        "seedream",
+        "get_volcano_client"
       ],
       "main_functions": [
         "generate_article_images"
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "requests",
-        "config",
+        "os",
         "get_volcano_client",
+        "config",
+        "Path",
         "pathlib",
-        "sys",
+        "requests",
+        "sys"
+      ]
+    },
+    "generate_quality_article.py": {
+      "file": "generate_quality_article.py",
+      "relative_path": "article\\generate_quality_article.py",
+      "docstring": "生成高质量今日头条文章 - 资深写手风格 + 配图",
+      "description": "生成高质量今日头条文章 - 资深写手风格 + 配图",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "ToutiaoArticleGenerator",
+        "datetime",
+        "webbrowser",
+        "Path",
+        "pathlib",
+        "toutiao_article_generator",
         "os"
       ]
     },
@@ -709,14 +1191,14 @@
       "description": "为冬日饮茶养生文章生成配图",
       "features": [
         "优先使用Gemini,不可用时使用Seedream",
-        "使用的模型/API: get_volcano_client, gemini, get_antigravity_client, seedream",
+        "使用的模型/API: seedream, get_antigravity_client, gemini, get_volcano_client",
         "主要函数: generate_with_gemini, generate_with_seedream, generate_tea_images"
       ],
       "models_used": [
-        "get_volcano_client",
-        "gemini",
+        "seedream",
         "get_antigravity_client",
-        "seedream"
+        "gemini",
+        "get_volcano_client"
       ],
       "main_functions": [
         "generate_with_gemini",
@@ -725,377 +1207,1270 @@
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "get_antigravity_client,",
-        "requests",
-        "Image",
-        "io",
+        "os",
         "config",
+        "Path",
         "pathlib",
         "PIL",
-        "sys",
+        "requests",
+        "get_antigravity_client,",
+        "io",
         "base64",
+        "sys",
+        "Image"
+      ]
+    },
+    "generate_wangzengqi_style.py": {
+      "file": "generate_wangzengqi_style.py",
+      "relative_path": "article\\generate_wangzengqi_style.py",
+      "docstring": "生成汪曾祺风格文章 + 真实照片配图",
+      "description": "生成汪曾祺风格文章 + 真实照片配图",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "ToutiaoArticleGenerator",
+        "datetime",
+        "webbrowser",
+        "Path",
+        "pathlib",
+        "toutiao_article_generator",
+        "os"
+      ]
+    },
+    "generate_wangzengqi_with_quotes.py": {
+      "file": "generate_wangzengqi_with_quotes.py",
+      "relative_path": "article\\generate_wangzengqi_with_quotes.py",
+      "docstring": "生成更充分引用原草稿的汪曾祺风格文章",
+      "description": "生成更充分引用原草稿的汪曾祺风格文章",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "ToutiaoArticleGenerator",
+        "datetime",
+        "webbrowser",
+        "Path",
+        "pathlib",
+        "toutiao_article_generator",
+        "os",
+        "ZhipuAI",
+        "zhipuai"
+      ]
+    },
+    "one_click_generate.py": {
+      "file": "one_click_generate.py",
+      "relative_path": "article\\one_click_generate.py",
+      "docstring": "一键生成高质量文章\n整合所有高级功能：原草稿引用、专业排版、真实照片配图",
+      "description": "一键生成高质量文章",
+      "features": [
+        "整合所有高级功能：原草稿引用、专业排版、真实照片配图",
+        "主要函数: extract_key_sentences, create_professional_html, generate_high_quality_article"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "extract_key_sentences",
+        "create_professional_html",
+        "generate_high_quality_article"
+      ],
+      "classes": [],
+      "imports": [
+        "ToutiaoArticleGenerator",
+        "os",
+        "datetime",
+        "webbrowser",
+        "Path",
+        "pathlib",
+        "toutiao_article_generator",
+        "sys"
+      ]
+    },
+    "quick_fix_json.py": {
+      "file": "quick_fix_json.py",
+      "relative_path": "article\\quick_fix_json.py",
+      "docstring": "快速修复:在脚本开头插入JSON参数检测",
+      "description": "快速修复:在脚本开头插入JSON参数检测",
+      "features": [
+        "主要函数: main"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "main"
+      ],
+      "classes": [],
+      "imports": [
+        "datetime",
+        "webbrowser",
+        "json",
+        "traceback",
+        "os"
+      ]
+    },
+    "run_draft_to_article.py": {
+      "file": "run_draft_to_article.py",
+      "relative_path": "article\\run_draft_to_article.py",
+      "docstring": "从草稿文件生成头条文章的包装脚本",
+      "description": "从草稿文件生成头条文章的包装脚本",
+      "features": [
+        "主要函数: main"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "main"
+      ],
+      "classes": [],
+      "imports": [
+        "ToutiaoArticleGenerator",
+        "os",
+        "datetime",
+        "webbrowser",
+        "Path",
+        "pathlib",
+        "toutiao_article_generator",
+        "traceback",
+        "sys"
+      ]
+    },
+    "save_raw_ai_response.py": {
+      "file": "save_raw_ai_response.py",
+      "relative_path": "article\\save_raw_ai_response.py",
+      "docstring": "保存AI原始响应到文件，然后手动处理",
+      "description": "保存AI原始响应到文件，然后手动处理",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "json",
+        "os",
+        "ZhipuAI",
+        "zhipuai"
+      ]
+    },
+    "simple_fix.py": {
+      "file": "simple_fix.py",
+      "relative_path": "article\\simple_fix.py",
+      "docstring": "简单修复:只在main()开始处添加命令行参数解析,然后return",
+      "description": "简单修复:只在main()开始处添加命令行参数解析,然后return",
+      "features": [
+        "主要函数: main"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "main"
+      ],
+      "classes": [],
+      "imports": [
+        "datetime",
+        "webbrowser",
+        "sys",
+        "argparse",
+        "os"
+      ]
+    },
+    "test_ai_response.py": {
+      "file": "test_ai_response.py",
+      "relative_path": "article\\test_ai_response.py",
+      "docstring": "测试AI返回的原始内容",
+      "description": "测试AI返回的原始内容",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "os",
+        "ZhipuAI",
+        "zhipuai"
+      ]
+    },
+    "test_draft_mode.py": {
+      "file": "test_draft_mode.py",
+      "relative_path": "article\\test_draft_mode.py",
+      "docstring": "测试草稿完善功能 - 生成完整文章",
+      "description": "测试草稿完善功能 - 生成完整文章",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "ToutiaoArticleGenerator",
+        "datetime",
+        "webbrowser",
+        "Path",
+        "pathlib",
+        "toutiao_article_generator",
+        "os"
+      ]
+    },
+    "test_fixed_generation.py": {
+      "file": "test_fixed_generation.py",
+      "relative_path": "article\\test_fixed_generation.py",
+      "docstring": "测试修复后的文章生成功能",
+      "description": "测试修复后的文章生成功能",
+      "features": [
+        "主要函数: test_draft_improvement"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "test_draft_improvement"
+      ],
+      "classes": [],
+      "imports": [
+        "ToutiaoArticleGenerator",
+        "datetime",
+        "webbrowser",
+        "codecs",
+        "Path",
+        "pathlib",
+        "article.toutiao_article_generator",
+        "sys"
+      ]
+    },
+    "test_isatty.py": {
+      "file": "test_isatty.py",
+      "relative_path": "article\\test_isatty.py",
+      "docstring": "测试stdin.isatty()",
+      "description": "测试stdin.isatty()",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "sys"
+      ]
+    },
+    "test_stdin_encoding.py": {
+      "file": "test_stdin_encoding.py",
+      "relative_path": "article\\test_stdin_encoding.py",
+      "docstring": "测试stdin读取的编码问题",
+      "description": "测试stdin读取的编码问题",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "os",
+        "sys",
+        "tempfile",
+        "subprocess"
+      ]
+    },
+    "test_stdin_reader.py": {
+      "file": "test_stdin_reader.py",
+      "relative_path": "article\\test_stdin_reader.py",
+      "docstring": "",
+      "description": "article 工具 - test_stdin_reader",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "sys"
+      ]
+    },
+    "test_temp_file.py": {
+      "file": "test_temp_file.py",
+      "relative_path": "article\\test_temp_file.py",
+      "docstring": "测试临时文件编码",
+      "description": "测试临时文件编码",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "os",
+        "sys",
+        "tempfile"
+      ]
+    },
+    "test_theme_reading.py": {
+      "file": "test_theme_reading.py",
+      "relative_path": "article\\test_theme_reading.py",
+      "docstring": "简化测试主题读取",
+      "description": "简化测试主题读取",
+      "features": [
+        "主要函数: get_mode, get_theme, get_length"
+      ],
+      "models_used": [],
+      "main_functions": [
+        "get_mode",
+        "get_theme",
+        "get_length"
+      ],
+      "classes": [],
+      "imports": [
+        "sys"
+      ]
+    },
+    "test_web_theme.py": {
+      "file": "test_web_theme.py",
+      "relative_path": "article\\test_web_theme.py",
+      "docstring": "测试Web模式逻辑",
+      "description": "测试Web模式逻辑",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": [
+        "argparse",
         "os"
       ]
     },
     "toutiao_article_generator.py": {
       "file": "toutiao_article_generator.py",
       "relative_path": "article\\toutiao_article_generator.py",
-      "docstring": "今日头条高赞文章写作助手\n基于大数据分析的文章生成器",
-      "description": "今日头条高赞文章写作助手",
+      "docstring": "今日头条文章生成器 v3.1 - 增强版\n\n支持功能:\n- 主题生成: AI从零开始创作文章\n- 草稿完善: AI优化和完善您的草稿\n- 智能配图: 自动为文章生成相关配图(5个备用API)\n- 一键发布: 生成可直接发表的HTML文件\n\n图片生成API:\n免费API(默认,无需配置):\n1. Pollinations.ai - AI智能生成 (最推荐)\n2. Unsplash - 专业高质量照片\n3. Pexels - 免费图库\n4. LoremFlickr - 关键词图片\n5. Picsum - 随机图片(保底)\n\n付费API(可选,需配置.env):\n1. DALL-E 3 (OpenAI) - 质量最高\n2. DALL-E 2 (OpenAI)\n3. Flux 1.1 Pro (Black Forest Labs)\n4. Stable Diffusion 3 (Stability AI)\n5. Seedream (Volcano/豆包) - 中国风格\n\n详细文档: 见 README.md",
+      "description": "今日头条文章生成器 v3.1 - 增强版",
       "features": [
-        "基于大数据分析的文章生成器",
-        "主要函数: generate_title, generate_article, create_sample_article, main"
+        "",
+        "支持功能:",
+        "- 主题生成: AI从零开始创作文章",
+        "- 草稿完善: AI优化和完善您的草稿",
+        "- 智能配图: 自动为文章生成相关配图(5个备用API)",
+        "- 一键发布: 生成可直接发表的HTML文件",
+        "",
+        "图片生成API:",
+        "免费API(默认,无需配置):",
+        "1. Pollinations.ai - AI智能生成 (最推荐)",
+        "2. Unsplash - 专业高质量照片",
+        "3. Pexels - 免费图库",
+        "4. LoremFlickr - 关键词图片",
+        "5. Picsum - 随机图片(保底)",
+        "",
+        "付费API(可选,需配置.env):",
+        "1. DALL-E 3 (OpenAI) - 质量最高",
+        "2. DALL-E 2 (OpenAI)",
+        "3. Flux 1.1 Pro (Black Forest Labs)",
+        "4. Stable Diffusion 3 (Stability AI)",
+        "5. Seedream (Volcano/豆包) - 中国风格",
+        "",
+        "详细文档: 见 README.md",
+        "使用的模型/API: openai, seedream, flux, pollinations, dall-e, get_antigravity_client",
+        "主要函数: improve_article_draft, generate_article_with_ai, generate_article_images, create_article_html, get_user_input_mode"
+      ],
+      "models_used": [
+        "openai",
+        "seedream",
+        "flux",
+        "pollinations",
+        "dall-e",
+        "get_antigravity_client"
+      ],
+      "main_functions": [
+        "improve_article_draft",
+        "generate_article_with_ai",
+        "generate_article_images",
+        "create_article_html",
+        "get_user_input_mode",
+        "get_user_draft",
+        "get_user_theme",
+        "get_target_length",
+        "get_generate_images",
+        "get_image_style"
+      ],
+      "classes": [
+        "ToutiaoArticleGenerator"
+      ],
+      "imports": [
+        "codecs",
+        "sys",
+        "pathlib",
+        "traceback",
+        "io",
+        "urllib.parse",
+        "datetime",
+        "re",
+        "json",
+        "webbrowser",
+        "config",
+        "ssl",
+        "urllib.request",
+        "base64",
+        "get_zhipuai_client,",
+        "Image",
+        "Path",
+        "PIL",
+        "os"
+      ]
+    },
+    "toutiao_article_generator_v2_backup.py": {
+      "file": "toutiao_article_generator_v2_backup.py",
+      "relative_path": "article\\toutiao_article_generator_v2_backup.py",
+      "docstring": "今日头条高赞文章生成器 - 改进版\n支持用户输入自定义主题,使用AI生成高质量文章",
+      "description": "今日头条高赞文章生成器 - 改进版",
+      "features": [
+        "支持用户输入自定义主题,使用AI生成高质量文章",
+        "主要函数: generate_article_with_ai, create_article_html, get_user_theme, get_target_length, main"
       ],
       "models_used": [],
       "main_functions": [
-        "generate_title",
-        "generate_article",
-        "create_sample_article",
+        "generate_article_with_ai",
+        "create_article_html",
+        "get_user_theme",
+        "get_target_length",
         "main"
       ],
       "classes": [
         "ToutiaoArticleGenerator"
       ],
       "imports": [
-        "random",
-        "datetime"
+        "os",
+        "datetime",
+        "webbrowser",
+        "config",
+        "Path",
+        "json",
+        "pathlib",
+        "traceback",
+        "sys",
+        "get_zhipuai_client"
       ]
+    },
+    "update_style_logic.py": {
+      "file": "update_style_logic.py",
+      "relative_path": "article\\update_style_logic.py",
+      "docstring": "更新文风逻辑，支持用户自定义文风描述",
+      "description": "更新文风逻辑，支持用户自定义文风描述",
+      "features": [],
+      "models_used": [],
+      "main_functions": [],
+      "classes": [],
+      "imports": []
     }
   },
   "hotspot": {
-    "ai_trends_2026_comparison.py": {
-      "file": "ai_trends_2026_comparison.py",
-      "relative_path": "hotspot\\ai_trends_2026_comparison.py",
-      "docstring": "2026年AI五大热点 - 多模型对比研究\n使用不同的大模型搜索并总结2026年AI热点",
-      "description": "2026年AI五大热点 - 多模型对比研究",
+    "ai_trends_100hots.py": {
+      "file": "ai_trends_100hots.py",
+      "relative_path": "hotspot\\ai_trends_100hots.py",
+      "docstring": "2026年AI五大热点 - 增强版\n集成实时网络搜索功能",
+      "description": "2026年AI五大热点 - 增强版",
       "features": [
-        "使用不同的大模型搜索并总结2026年AI热点",
-        "使用的模型/API: pollinations, gemini, get_antigravity_client, openai, anthropic",
-        "主要函数: search_with_websearch, generate_summary_with_model, generate_pollinations_summary, generate_claude_summary, generate_gpt_summary"
+        "集成实时网络搜索功能",
+        "使用的模型/API: anthropic, openai, gemini",
+        "主要函数: get_zhipu_api_key, perform_web_search, search_international_ai_sources, format_sources_context, call_glm_api_with_sources"
       ],
       "models_used": [
-        "pollinations",
-        "gemini",
-        "get_antigravity_client",
+        "anthropic",
         "openai",
-        "anthropic"
+        "gemini"
       ],
       "main_functions": [
-        "search_with_websearch",
-        "generate_summary_with_model",
-        "generate_pollinations_summary",
-        "generate_claude_summary",
-        "generate_gpt_summary",
-        "create_comparison_html",
-        "main",
-        "generate_gemini_summary"
+        "get_zhipu_api_key",
+        "perform_web_search",
+        "search_international_ai_sources",
+        "format_sources_context",
+        "call_glm_api_with_sources",
+        "simulate_glm_response",
+        "generate_search_prompt",
+        "adapt_prompt_for_model",
+        "search_with_model",
+        "format_sources_html"
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "get_antigravity_client",
-        "subprocess",
         "datetime",
-        "config",
-        "pathlib",
+        "quote",
         "sys",
-        "json",
-        "os"
-      ]
-    },
-    "complete_multi_model_realtime_search.py": {
-      "file": "complete_multi_model_realtime_search.py",
-      "relative_path": "hotspot\\complete_multi_model_realtime_search.py",
-      "docstring": "生成完整的5模型AI趋势报告 - 真正的实时网络搜索版\n每个模型都独立使用WebSearch工具进行实时搜索",
-      "description": "生成完整的5模型AI趋势报告 - 真正的实时网络搜索版",
-      "features": [
-        "每个模型都独立使用WebSearch工具进行实时搜索",
-        "使用的模型/API: pollinations, anthropic, gemini, openai",
-        "主要函数: perform_realtime_searches, analyze_with_model, generate_html_report, main"
-      ],
-      "models_used": [
-        "pollinations",
-        "anthropic",
-        "gemini",
-        "openai"
-      ],
-      "main_functions": [
-        "perform_realtime_searches",
-        "analyze_with_model",
-        "generate_html_report",
-        "main"
-      ],
-      "classes": [],
-      "imports": [
         "Path",
-        "get_zhipu_anthropic_client",
-        "datetime",
-        "config",
-        "pathlib",
-        "sys",
+        "re",
         "json",
-        "webbrowser"
-      ]
-    },
-    "complete_multi_model_report.py": {
-      "file": "complete_multi_model_report.py",
-      "relative_path": "hotspot\\complete_multi_model_report.py",
-      "docstring": "生成完整的5模型AI趋势报告\n使用实时搜索数据和ZhipuAI Anthropic兼容API",
-      "description": "生成完整的5模型AI趋势报告",
-      "features": [
-        "使用实时搜索数据和ZhipuAI Anthropic兼容API",
-        "使用的模型/API: pollinations, anthropic, gemini, openai",
-        "主要函数: generate_model_hotspots, generate_complete_html_report, main"
-      ],
-      "models_used": [
-        "pollinations",
-        "anthropic",
-        "gemini",
-        "openai"
-      ],
-      "main_functions": [
-        "generate_model_hotspots",
-        "generate_complete_html_report",
-        "main"
-      ],
-      "classes": [],
-      "imports": [
-        "Path",
-        "get_zhipu_anthropic_client",
-        "datetime",
-        "config",
         "pathlib",
-        "sys",
-        "json",
-        "webbrowser"
-      ]
-    },
-    "create_ai_trends_final.py": {
-      "file": "create_ai_trends_final.py",
-      "relative_path": "hotspot\\create_ai_trends_final.py",
-      "docstring": "创建2026年AI五大热点多模型对比网页(带序号和真实出处)",
-      "description": "创建2026年AI五大热点多模型对比网页(带序号和真实出处)",
-      "features": [
-        "使用的模型/API: pollinations, anthropic, gemini, openai"
-      ],
-      "models_used": [
-        "pollinations",
-        "anthropic",
-        "gemini",
-        "openai"
-      ],
-      "main_functions": [],
-      "classes": [],
-      "imports": [
+        "requests",
+        "urllib.parse",
+        "os",
+        "ZhipuAI",
+        "zhipuai",
         "subprocess"
       ]
     },
-    "deep_research_ai_trends_2026.py": {
-      "file": "deep_research_ai_trends_2026.py",
-      "relative_path": "hotspot\\deep_research_ai_trends_2026.py",
-      "docstring": "2026年AI五大热点 - 多模型深度研究\n每个模型深度搜索100+热点,经过多方比较后筛选出最有价值的5个",
-      "description": "2026年AI五大热点 - 多模型深度研究",
+    "ai_trends_antigravity.py": {
+      "file": "ai_trends_antigravity.py",
+      "relative_path": "hotspot\\ai_trends_antigravity.py",
+      "docstring": "2026年AI五大热点 - AntiGravity多模型版\n功能:\n1. GLM-4.6, Claude, ChatGPT, Gemini全部通过AntiGravity真实调用\n2. 使用预定义的真实技术来源链接\n3. 自动将内容中的URL转换为超链接\n4. 数据来源板块可折叠,默认折叠\n5. 排版紧凑",
+      "description": "2026年AI五大热点 - AntiGravity多模型版",
       "features": [
-        "每个模型深度搜索100+热点,经过多方比较后筛选出最有价值的5个",
-        "使用的模型/API: pollinations, gemini, get_antigravity_client, flux, openai, dall-e, anthropic",
-        "主要函数: deep_search_with_model, create_manual_deep_research, create_comprehensive_html, main"
+        "功能:",
+        "1. GLM-4.6, Claude, ChatGPT, Gemini全部通过AntiGravity真实调用",
+        "2. 使用预定义的真实技术来源链接",
+        "3. 自动将内容中的URL转换为超链接",
+        "4. 数据来源板块可折叠,默认折叠",
+        "5. 排版紧凑",
+        "使用的模型/API: openai, anthropic, dall-e, gemini, get_antigravity_client",
+        "主要函数: get_zhipu_api_key, convert_urls_to_links, replace_url, get_real_ai_sources, call_model_via_antigravity"
       ],
       "models_used": [
-        "pollinations",
-        "gemini",
-        "get_antigravity_client",
-        "flux",
         "openai",
+        "anthropic",
         "dall-e",
-        "anthropic"
-      ],
-      "main_functions": [
-        "deep_search_with_model",
-        "create_manual_deep_research",
-        "create_comprehensive_html",
-        "main"
-      ],
-      "classes": [],
-      "imports": [
-        "Path",
-        "get_antigravity_client",
-        "subprocess",
-        "datetime",
-        "config",
-        "time",
-        "pathlib",
-        "sys",
-        "json"
-      ]
-    },
-    "deep_research_ai_trends_2026_realtime.py": {
-      "file": "deep_research_ai_trends_2026_realtime.py",
-      "relative_path": "hotspot\\deep_research_ai_trends_2026_realtime.py",
-      "docstring": "2026年AI五大热点 - 多模型深度研究(实时网络搜索版)\n使用WebSearch工具进行真正的实时网络搜索",
-      "description": "2026年AI五大热点 - 多模型深度研究(实时网络搜索版)",
-      "features": [
-        "使用WebSearch工具进行真正的实时网络搜索",
-        "使用的模型/API: get_antigravity_client",
-        "主要函数: perform_web_searches, analyze_search_results_with_ai, generate_html_report, main"
-      ],
-      "models_used": [
+        "gemini",
         "get_antigravity_client"
       ],
       "main_functions": [
-        "perform_web_searches",
-        "analyze_search_results_with_ai",
-        "generate_html_report",
-        "main"
-      ],
-      "classes": [],
-      "imports": [
-        "Path",
-        "get_antigravity_client",
-        "datetime",
-        "config",
-        "pathlib",
-        "sys",
-        "json",
-        "webbrowser"
-      ]
-    },
-    "multi_model_ai_trends_2026.py": {
-      "file": "multi_model_ai_trends_2026.py",
-      "relative_path": "hotspot\\multi_model_ai_trends_2026.py",
-      "docstring": "2026年AI五大热点 - 多模型独立研究\n每个模型独立进行网络搜索,筛选出自己认为最有价值的5个热点",
-      "description": "2026年AI五大热点 - 多模型独立研究",
-      "features": [
-        "每个模型独立进行网络搜索,筛选出自己认为最有价值的5个热点",
-        "使用的模型/API: pollinations, gemini, get_antigravity_client, flux, openai, anthropic",
-        "主要函数: search_with_model, create_manual_model_summaries, create_html, main"
-      ],
-      "models_used": [
-        "pollinations",
-        "gemini",
-        "get_antigravity_client",
-        "flux",
-        "openai",
-        "anthropic"
-      ],
-      "main_functions": [
+        "get_zhipu_api_key",
+        "convert_urls_to_links",
+        "replace_url",
+        "get_real_ai_sources",
+        "call_model_via_antigravity",
+        "simulate_glm_response",
+        "generate_search_prompt",
+        "adapt_prompt_for_model",
         "search_with_model",
-        "create_manual_model_summaries",
-        "create_html",
-        "main"
+        "format_sources_html"
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "get_antigravity_client",
-        "subprocess",
+        "os",
         "datetime",
         "config",
+        "Path",
+        "re",
         "pathlib",
+        "get_antigravity_client,",
         "sys",
-        "json"
+        "zhipuai",
+        "subprocess"
       ]
     },
-    "multi_model_api_call.py": {
-      "file": "multi_model_api_call.py",
-      "relative_path": "hotspot\\multi_model_api_call.py",
-      "docstring": "2026年AI五大热点 - 多模型API调用程序\n每个模型通过自己的API进行分析，不依赖手动搜索",
-      "description": "2026年AI五大热点 - 多模型API调用程序",
+    "ai_trends_design_pro.py": {
+      "file": "ai_trends_design_pro.py",
+      "relative_path": "hotspot\\ai_trends_design_pro.py",
+      "docstring": "2026年AI五大热点 - 最终改进版\n功能:\n1. GLM-4.6生成分析内容\n2. 使用预定义的真实技术来源链接\n3. 自动将内容中的URL转换为超链接\n4. 数据来源板块可折叠,默认折叠",
+      "description": "2026年AI五大热点 - 最终改进版",
       "features": [
-        "每个模型通过自己的API进行分析，不依赖手动搜索",
-        "使用的模型/API: pollinations, gemini, get_antigravity_client, openai, anthropic",
-        "主要函数: search_with_antigravity, call_model_api, generate_html_report, main"
+        "功能:",
+        "1. GLM-4.6生成分析内容",
+        "2. 使用预定义的真实技术来源链接",
+        "3. 自动将内容中的URL转换为超链接",
+        "4. 数据来源板块可折叠,默认折叠",
+        "使用的模型/API: anthropic, openai, dall-e, gemini",
+        "主要函数: get_zhipu_api_key, convert_urls_to_links, replace_url, get_real_ai_sources, call_glm_api"
       ],
       "models_used": [
-        "pollinations",
-        "gemini",
-        "get_antigravity_client",
+        "anthropic",
         "openai",
-        "anthropic"
+        "dall-e",
+        "gemini"
       ],
       "main_functions": [
-        "search_with_antigravity",
-        "call_model_api",
+        "get_zhipu_api_key",
+        "convert_urls_to_links",
+        "replace_url",
+        "get_real_ai_sources",
+        "call_glm_api",
+        "simulate_glm_response",
+        "generate_search_prompt",
+        "adapt_prompt_for_model",
+        "search_with_model",
+        "format_sources_html"
+      ],
+      "classes": [],
+      "imports": [
+        "os",
+        "datetime",
+        "Path",
+        "re",
+        "pathlib",
+        "sys",
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "ai_trends_final_titlebold.py": {
+      "file": "ai_trends_final_titlebold.py",
+      "relative_path": "hotspot\\ai_trends_final_titlebold.py",
+      "docstring": "2026年AI五大热点 - 最终完整版\n功能:\n1. 实时网络搜索 (DuckDuckGo)\n2. 模型优先搜索策略\n3. 100+热点收集筛选\n4. 搜索方式显示",
+      "description": "2026年AI五大热点 - 最终完整版",
+      "features": [
+        "功能:",
+        "1. 实时网络搜索 (DuckDuckGo)",
+        "2. 模型优先搜索策略",
+        "3. 100+热点收集筛选",
+        "4. 搜索方式显示",
+        "使用的模型/API: anthropic, openai, gemini",
+        "主要函数: get_zhipu_api_key, perform_web_search, search_international_ai_sources, call_glm_api_with_sources, simulate_glm_response"
+      ],
+      "models_used": [
+        "anthropic",
+        "openai",
+        "gemini"
+      ],
+      "main_functions": [
+        "get_zhipu_api_key",
+        "perform_web_search",
+        "search_international_ai_sources",
+        "call_glm_api_with_sources",
+        "simulate_glm_response",
+        "generate_search_prompt",
+        "adapt_prompt_for_model",
+        "search_with_model",
+        "format_sources_html",
+        "generate_html_report"
+      ],
+      "classes": [],
+      "imports": [
+        "datetime",
+        "quote",
+        "sys",
+        "Path",
+        "re",
+        "json",
+        "pathlib",
+        "requests",
+        "urllib.parse",
+        "os",
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "ai_trends_final_v3.py": {
+      "file": "ai_trends_final_v3.py",
+      "relative_path": "hotspot\\ai_trends_final_v3.py",
+      "docstring": "2026年AI五大热点 - 最终改进版 V3\n功能:\n1. GLM-4.6生成分析内容\n2. 使用预定义的真实技术来源链接\n3. 自动将内容中的URL转换为超链接\n4. 数据来源板块可折叠,默认折叠\n5. 改进:增强提示词,要求搜索2026年1月最新热点(如ClawdBot、DeepSeek等)",
+      "description": "2026年AI五大热点 - 最终改进版 V3",
+      "features": [
+        "功能:",
+        "1. GLM-4.6生成分析内容",
+        "2. 使用预定义的真实技术来源链接",
+        "3. 自动将内容中的URL转换为超链接",
+        "4. 数据来源板块可折叠,默认折叠",
+        "5. 改进:增强提示词,要求搜索2026年1月最新热点(如ClawdBot、DeepSeek等)",
+        "使用的模型/API: anthropic, openai, dall-e, gemini",
+        "主要函数: get_zhipu_api_key, convert_urls_to_links, replace_url, format_hotspot_content, get_real_ai_sources"
+      ],
+      "models_used": [
+        "anthropic",
+        "openai",
+        "dall-e",
+        "gemini"
+      ],
+      "main_functions": [
+        "get_zhipu_api_key",
+        "convert_urls_to_links",
+        "replace_url",
+        "format_hotspot_content",
+        "get_real_ai_sources",
+        "call_glm_api",
+        "simulate_glm_response",
+        "generate_search_prompt",
+        "adapt_prompt_for_model",
+        "search_with_model"
+      ],
+      "classes": [],
+      "imports": [
+        "os",
+        "datetime",
+        "Path",
+        "re",
+        "pathlib",
+        "sys",
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "ai_trends_final_v4.py": {
+      "file": "ai_trends_final_v4.py",
+      "relative_path": "hotspot\\ai_trends_final_v4.py",
+      "docstring": "2026年AI五大热点 - 最终改进版\n功能:\n1. GLM-4.6生成分析内容\n2. 使用预定义的真实技术来源链接\n3. 自动将内容中的URL转换为超链接\n4. 数据来源板块可折叠,默认折叠",
+      "description": "2026年AI五大热点 - 最终改进版",
+      "features": [
+        "功能:",
+        "1. GLM-4.6生成分析内容",
+        "2. 使用预定义的真实技术来源链接",
+        "3. 自动将内容中的URL转换为超链接",
+        "4. 数据来源板块可折叠,默认折叠",
+        "使用的模型/API: anthropic, openai, dall-e, gemini",
+        "主要函数: get_zhipu_api_key, convert_urls_to_links, replace_url, get_real_ai_sources, call_glm_api"
+      ],
+      "models_used": [
+        "anthropic",
+        "openai",
+        "dall-e",
+        "gemini"
+      ],
+      "main_functions": [
+        "get_zhipu_api_key",
+        "convert_urls_to_links",
+        "replace_url",
+        "get_real_ai_sources",
+        "call_glm_api",
+        "simulate_glm_response",
+        "generate_search_prompt",
+        "adapt_prompt_for_model",
+        "search_with_model",
+        "format_sources_html"
+      ],
+      "classes": [],
+      "imports": [
+        "os",
+        "datetime",
+        "Path",
+        "re",
+        "pathlib",
+        "sys",
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "ai_trends_independent_search.py": {
+      "file": "ai_trends_independent_search.py",
+      "relative_path": "hotspot\\ai_trends_independent_search.py",
+      "docstring": "2026年AI五大热点 - 多模型对比研究工具(增强版)\n每个模型报告结尾都包含真实信息来源和超链接",
+      "description": "2026年AI五大热点 - 多模型对比研究工具(增强版)",
+      "features": [
+        "每个模型报告结尾都包含真实信息来源和超链接",
+        "使用的模型/API: anthropic, openai, gemini",
+        "主要函数: simulate_independent_search, generate_glm_perspective, generate_claude_perspective, generate_chatgpt_perspective, generate_gemini_perspective"
+      ],
+      "models_used": [
+        "anthropic",
+        "openai",
+        "gemini"
+      ],
+      "main_functions": [
+        "simulate_independent_search",
+        "generate_glm_perspective",
+        "generate_claude_perspective",
+        "generate_chatgpt_perspective",
+        "generate_gemini_perspective",
+        "generate_model_independent_perspective",
         "generate_html_report",
         "main"
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "get_zhipu_anthropic_client,",
-        "re",
+        "os",
         "datetime",
-        "config",
-        "time",
-        "pathlib",
-        "sys",
+        "Path",
         "json",
-        "webbrowser"
-      ]
-    },
-    "real_time_search_clawdbot.py": {
-      "file": "real_time_search_clawdbot.py",
-      "relative_path": "hotspot\\real_time_search_clawdbot.py",
-      "docstring": "实时网络搜索 - 验证ClawdBot和2026年AI趋势\n使用WebSearch工具进行真正的实时网络搜索",
-      "description": "实时网络搜索 - 验证ClawdBot和2026年AI趋势",
-      "features": [
-        "使用WebSearch工具进行真正的实时网络搜索",
-        "主要函数: search_web_for_topic, verify_clawdbot_with_real_search, search_2026_ai_trends_real, analyze_search_results, generate_verification_report"
-      ],
-      "models_used": [],
-      "main_functions": [
-        "search_web_for_topic",
-        "verify_clawdbot_with_real_search",
-        "search_2026_ai_trends_real",
-        "analyze_search_results",
-        "generate_verification_report",
-        "web_search",
-        "main"
-      ],
-      "classes": [],
-      "imports": [
-        "Path",
-        "datetime",
         "pathlib",
         "sys",
-        "json"
+        "subprocess"
       ]
     },
-    "realtime_search_with_collected_data.py": {
-      "file": "realtime_search_with_collected_data.py",
-      "relative_path": "hotspot\\realtime_search_with_collected_data.py",
-      "docstring": "2026年AI五大热点 - 真正的实时网络搜索版本\n先使用WebSearch工具获取实时数据，然后让模型分析",
-      "description": "2026年AI五大热点 - 真正的实时网络搜索版本",
+    "ai_trends_multimodel.py": {
+      "file": "ai_trends_multimodel.py",
+      "relative_path": "hotspot\\ai_trends_multimodel.py",
+      "docstring": "2026年AI五大热点 - 多模型真实调用版\n功能:\n1. 通过AntiGravity调用GLM-4.6、Claude、ChatGPT、Gemini真实API\n2. 保留URL自动转超链接功能\n3. 保留数据来源可折叠功能\n4. 每个模型独立分析2026年AI热点",
+      "description": "2026年AI五大热点 - 多模型真实调用版",
       "features": [
-        "先使用WebSearch工具获取实时数据，然后让模型分析",
-        "使用的模型/API: anthropic",
-        "主要函数: analyze_with_model, main"
+        "功能:",
+        "1. 通过AntiGravity调用GLM-4.6、Claude、ChatGPT、Gemini真实API",
+        "2. 保留URL自动转超链接功能",
+        "3. 保留数据来源可折叠功能",
+        "4. 每个模型独立分析2026年AI热点",
+        "使用的模型/API: openai, anthropic, dall-e, gemini, get_antigravity_client",
+        "主要函数: convert_urls_to_links, replace_url, get_real_ai_sources, call_glm_official_api, call_model_via_antigravity"
       ],
       "models_used": [
-        "anthropic"
+        "openai",
+        "anthropic",
+        "dall-e",
+        "gemini",
+        "get_antigravity_client"
       ],
       "main_functions": [
-        "analyze_with_model",
+        "convert_urls_to_links",
+        "replace_url",
+        "get_real_ai_sources",
+        "call_glm_official_api",
+        "call_model_via_antigravity",
+        "generate_search_prompt",
+        "format_sources_html",
+        "generate_html_report",
         "main"
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "get_zhipu_anthropic_client",
         "datetime",
         "config",
+        "sys",
+        "get_antigravity_client",
+        "Path",
+        "re",
+        "pathlib",
+        "os",
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "ai_trends_real_api.py": {
+      "file": "ai_trends_real_api.py",
+      "relative_path": "hotspot\\ai_trends_real_api.py",
+      "docstring": "2026年AI五大热点 - 真实API调用版本\n使用大模型API进行实时搜索和分析",
+      "description": "2026年AI五大热点 - 真实API调用版本",
+      "features": [
+        "使用大模型API进行实时搜索和分析",
+        "使用的模型/API: anthropic, openai, gemini",
+        "主要函数: get_zhipu_api_key, call_glm_api, simulate_glm_response, search_with_model, generate_search_prompt"
+      ],
+      "models_used": [
+        "anthropic",
+        "openai",
+        "gemini"
+      ],
+      "main_functions": [
+        "get_zhipu_api_key",
+        "call_glm_api",
+        "simulate_glm_response",
+        "search_with_model",
+        "generate_search_prompt",
+        "adapt_prompt_for_model",
+        "format_sources_html",
+        "generate_html_report",
+        "main"
+      ],
+      "classes": [],
+      "imports": [
+        "os",
+        "datetime",
+        "Path",
+        "json",
         "pathlib",
         "sys",
-        "json"
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "ai_trends_ultimate.py": {
+      "file": "ai_trends_ultimate.py",
+      "relative_path": "hotspot\\ai_trends_ultimate.py",
+      "docstring": "2026年AI五大热点 - 最终完整版\n功能:\n1. 实时网络搜索 (DuckDuckGo)\n2. 模型优先搜索策略\n3. 100+热点收集筛选\n4. 搜索方式显示",
+      "description": "2026年AI五大热点 - 最终完整版",
+      "features": [
+        "功能:",
+        "1. 实时网络搜索 (DuckDuckGo)",
+        "2. 模型优先搜索策略",
+        "3. 100+热点收集筛选",
+        "4. 搜索方式显示",
+        "使用的模型/API: anthropic, openai, gemini",
+        "主要函数: get_zhipu_api_key, perform_web_search, search_international_ai_sources, call_glm_api_with_sources, simulate_glm_response"
+      ],
+      "models_used": [
+        "anthropic",
+        "openai",
+        "gemini"
+      ],
+      "main_functions": [
+        "get_zhipu_api_key",
+        "perform_web_search",
+        "search_international_ai_sources",
+        "call_glm_api_with_sources",
+        "simulate_glm_response",
+        "generate_search_prompt",
+        "adapt_prompt_for_model",
+        "search_with_model",
+        "format_sources_html",
+        "generate_html_report"
+      ],
+      "classes": [],
+      "imports": [
+        "datetime",
+        "quote",
+        "sys",
+        "Path",
+        "re",
+        "json",
+        "pathlib",
+        "requests",
+        "urllib.parse",
+        "os",
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "ai_trends_ultimate_v2.py": {
+      "file": "ai_trends_ultimate_v2.py",
+      "relative_path": "hotspot\\ai_trends_ultimate_v2.py",
+      "docstring": "2026年AI五大热点 - 统一格式版\n功能:\n1. GLM-4.6生成分析内容\n2. 统一格式化 - 标题加粗、减少空行\n3. 确保所有模型输出格式一致\n4. 数据来源板块可折叠",
+      "description": "2026年AI五大热点 - 统一格式版",
+      "features": [
+        "功能:",
+        "1. GLM-4.6生成分析内容",
+        "2. 统一格式化 - 标题加粗、减少空行",
+        "3. 确保所有模型输出格式一致",
+        "4. 数据来源板块可折叠",
+        "使用的模型/API: anthropic, openai, dall-e, gemini",
+        "主要函数: get_zhipu_api_key, convert_urls_to_links, replace_url, format_content_unified, get_real_ai_sources"
+      ],
+      "models_used": [
+        "anthropic",
+        "openai",
+        "dall-e",
+        "gemini"
+      ],
+      "main_functions": [
+        "get_zhipu_api_key",
+        "convert_urls_to_links",
+        "replace_url",
+        "format_content_unified",
+        "get_real_ai_sources",
+        "call_glm_api",
+        "simulate_glm_response",
+        "generate_search_prompt",
+        "adapt_prompt_for_model",
+        "search_with_model"
+      ],
+      "classes": [],
+      "imports": [
+        "os",
+        "datetime",
+        "Path",
+        "re",
+        "pathlib",
+        "sys",
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "ai_trends_unified.py": {
+      "file": "ai_trends_unified.py",
+      "relative_path": "hotspot\\ai_trends_unified.py",
+      "docstring": "2026年AI五大热点 - 最终完整版\n功能:\n1. 实时网络搜索 (DuckDuckGo)\n2. 模型优先搜索策略\n3. 100+热点收集筛选\n4. 搜索方式显示",
+      "description": "2026年AI五大热点 - 最终完整版",
+      "features": [
+        "功能:",
+        "1. 实时网络搜索 (DuckDuckGo)",
+        "2. 模型优先搜索策略",
+        "3. 100+热点收集筛选",
+        "4. 搜索方式显示",
+        "使用的模型/API: anthropic, openai, gemini",
+        "主要函数: get_zhipu_api_key, perform_web_search, search_international_ai_sources, call_glm_api_with_sources, simulate_glm_response"
+      ],
+      "models_used": [
+        "anthropic",
+        "openai",
+        "gemini"
+      ],
+      "main_functions": [
+        "get_zhipu_api_key",
+        "perform_web_search",
+        "search_international_ai_sources",
+        "call_glm_api_with_sources",
+        "simulate_glm_response",
+        "generate_search_prompt",
+        "adapt_prompt_for_model",
+        "search_with_model",
+        "format_sources_html",
+        "generate_html_report"
+      ],
+      "classes": [],
+      "imports": [
+        "datetime",
+        "quote",
+        "sys",
+        "Path",
+        "re",
+        "json",
+        "pathlib",
+        "requests",
+        "urllib.parse",
+        "os",
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "ai_trends_v2.py": {
+      "file": "ai_trends_v2.py",
+      "relative_path": "hotspot\\ai_trends_v2.py",
+      "docstring": "2026年AI五大热点 - 多模型真实调用版 V2\n功能:\n1. 通过AntiGravity调用GLM-4.6、Claude、ChatGPT、Gemini真实API\n2. 保留URL自动转超链接功能\n3. 保留数据来源可折叠功能\n4. 每个模型独立分析2026年AI热点\n5. 改进:使用最新的Gemini模型名称\n6. 改进:更好的错误处理,不在遇到429时立即降级",
+      "description": "2026年AI五大热点 - 多模型真实调用版 V2",
+      "features": [
+        "功能:",
+        "1. 通过AntiGravity调用GLM-4.6、Claude、ChatGPT、Gemini真实API",
+        "2. 保留URL自动转超链接功能",
+        "3. 保留数据来源可折叠功能",
+        "4. 每个模型独立分析2026年AI热点",
+        "5. 改进:使用最新的Gemini模型名称",
+        "6. 改进:更好的错误处理,不在遇到429时立即降级",
+        "使用的模型/API: openai, anthropic, dall-e, gemini, get_antigravity_client",
+        "主要函数: convert_urls_to_links, replace_url, get_real_ai_sources, call_glm_official_api, call_model_via_antigravity"
+      ],
+      "models_used": [
+        "openai",
+        "anthropic",
+        "dall-e",
+        "gemini",
+        "get_antigravity_client"
+      ],
+      "main_functions": [
+        "convert_urls_to_links",
+        "replace_url",
+        "get_real_ai_sources",
+        "call_glm_official_api",
+        "call_model_via_antigravity",
+        "generate_search_prompt",
+        "format_sources_html",
+        "generate_html_report",
+        "main"
+      ],
+      "classes": [],
+      "imports": [
+        "datetime",
+        "config",
+        "sys",
+        "get_antigravity_client",
+        "Path",
+        "re",
+        "pathlib",
+        "os",
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "ai_trends_with_manual_sources.py": {
+      "file": "ai_trends_with_manual_sources.py",
+      "relative_path": "hotspot\\ai_trends_with_manual_sources.py",
+      "docstring": "2026年AI五大热点 - 手动来源版\n使用GLM-4.6生成分析,使用预定义的真实技术来源链接",
+      "description": "2026年AI五大热点 - 手动来源版",
+      "features": [
+        "使用GLM-4.6生成分析,使用预定义的真实技术来源链接",
+        "使用的模型/API: anthropic, openai, dall-e, gemini",
+        "主要函数: get_zhipu_api_key, get_real_ai_sources, call_glm_api, simulate_glm_response, generate_search_prompt"
+      ],
+      "models_used": [
+        "anthropic",
+        "openai",
+        "dall-e",
+        "gemini"
+      ],
+      "main_functions": [
+        "get_zhipu_api_key",
+        "get_real_ai_sources",
+        "call_glm_api",
+        "simulate_glm_response",
+        "generate_search_prompt",
+        "adapt_prompt_for_model",
+        "search_with_model",
+        "format_sources_html",
+        "generate_html_report",
+        "main"
+      ],
+      "classes": [],
+      "imports": [
+        "os",
+        "datetime",
+        "Path",
+        "pathlib",
+        "sys",
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "ai_trends_with_real_sources.py": {
+      "file": "ai_trends_with_real_sources.py",
+      "relative_path": "hotspot\\ai_trends_with_real_sources.py",
+      "docstring": "2026年AI五大热点 - 真实来源版\n功能:\n1. 扩展实时网络搜索 (DuckDuckGo)\n2. 收集真实的技术来源链接\n3. GLM-4.6生成内容,外部搜索提供来源",
+      "description": "2026年AI五大热点 - 真实来源版",
+      "features": [
+        "功能:",
+        "1. 扩展实时网络搜索 (DuckDuckGo)",
+        "2. 收集真实的技术来源链接",
+        "3. GLM-4.6生成内容,外部搜索提供来源",
+        "使用的模型/API: anthropic, openai, gemini",
+        "主要函数: get_zhipu_api_key, perform_web_search, search_international_ai_sources, call_glm_api_with_sources, simulate_glm_response"
+      ],
+      "models_used": [
+        "anthropic",
+        "openai",
+        "gemini"
+      ],
+      "main_functions": [
+        "get_zhipu_api_key",
+        "perform_web_search",
+        "search_international_ai_sources",
+        "call_glm_api_with_sources",
+        "simulate_glm_response",
+        "generate_search_prompt",
+        "adapt_prompt_for_model",
+        "search_with_model",
+        "format_sources_html",
+        "generate_html_report"
+      ],
+      "classes": [],
+      "imports": [
+        "datetime",
+        "quote",
+        "sys",
+        "Path",
+        "re",
+        "json",
+        "pathlib",
+        "requests",
+        "urllib.parse",
+        "os",
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "ai_trends_with_web_search.py": {
+      "file": "ai_trends_with_web_search.py",
+      "relative_path": "hotspot\\ai_trends_with_web_search.py",
+      "docstring": "2026年AI五大热点 - 增强版\n集成实时网络搜索功能",
+      "description": "2026年AI五大热点 - 增强版",
+      "features": [
+        "集成实时网络搜索功能",
+        "使用的模型/API: anthropic, openai, gemini",
+        "主要函数: get_zhipu_api_key, perform_web_search, search_international_ai_sources, format_sources_context, call_glm_api_with_sources"
+      ],
+      "models_used": [
+        "anthropic",
+        "openai",
+        "gemini"
+      ],
+      "main_functions": [
+        "get_zhipu_api_key",
+        "perform_web_search",
+        "search_international_ai_sources",
+        "format_sources_context",
+        "call_glm_api_with_sources",
+        "simulate_glm_response",
+        "generate_search_prompt",
+        "adapt_prompt_for_model",
+        "search_with_model",
+        "format_sources_html"
+      ],
+      "classes": [],
+      "imports": [
+        "datetime",
+        "quote",
+        "sys",
+        "Path",
+        "re",
+        "json",
+        "pathlib",
+        "requests",
+        "urllib.parse",
+        "os",
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "ai_trends_with_websearch.py": {
+      "file": "ai_trends_with_websearch.py",
+      "relative_path": "hotspot\\ai_trends_with_websearch.py",
+      "docstring": "2026年AI五大热点 - 实时网络搜索版\n功能:\n1. 真实网络搜索(GitHub Trending、Hacker News、AI新闻)\n2. GLM-4.6生成分析内容\n3. 统一格式化 - 标题加粗、减少空行\n4. 确保所有模型输出格式一致\n5. 数据来源板块可折叠",
+      "description": "2026年AI五大热点 - 实时网络搜索版",
+      "features": [
+        "功能:",
+        "1. 真实网络搜索(GitHub Trending、Hacker News、AI新闻)",
+        "2. GLM-4.6生成分析内容",
+        "3. 统一格式化 - 标题加粗、减少空行",
+        "4. 确保所有模型输出格式一致",
+        "5. 数据来源板块可折叠",
+        "使用的模型/API: anthropic, openai, dall-e, gemini",
+        "主要函数: get_zhipu_api_key, get_antigravity_config, call_antigravity_api, perform_web_search, fetch_github_trending"
+      ],
+      "models_used": [
+        "anthropic",
+        "openai",
+        "dall-e",
+        "gemini"
+      ],
+      "main_functions": [
+        "get_zhipu_api_key",
+        "get_antigravity_config",
+        "call_antigravity_api",
+        "perform_web_search",
+        "fetch_github_trending",
+        "convert_urls_to_links",
+        "replace_url",
+        "format_content_unified",
+        "get_real_ai_sources",
+        "generate_search_prompt_with_real_data"
+      ],
+      "classes": [],
+      "imports": [
+        "openai",
+        "datetime",
+        "timedelta",
+        "quote",
+        "sys",
+        "pytz",
+        "Path",
+        "re",
+        "json",
+        "pathlib",
+        "requests",
+        "time",
+        "OpenAI",
+        "urllib.parse",
+        "os",
+        "ZhipuAI",
+        "zhipuai",
+        "subprocess"
+      ]
+    },
+    "temp_add_function.py": {
+      "file": "temp_add_function.py",
+      "relative_path": "hotspot\\temp_add_function.py",
+      "docstring": "创建评估提示词 - 让GLM-4.6模拟其他模型视角评估实时搜索数据",
+      "description": "创建评估提示词 - 让GLM-4.6模拟其他模型视角评估实时搜索数据",
+      "features": [
+        "使用的模型/API: anthropic, openai, gemini",
+        "主要函数: create_evaluation_prompt"
+      ],
+      "models_used": [
+        "anthropic",
+        "openai",
+        "gemini"
+      ],
+      "main_functions": [
+        "create_evaluation_prompt"
+      ],
+      "classes": [],
+      "imports": []
+    },
+    "test_antigravity.py": {
+      "file": "test_antigravity.py",
+      "relative_path": "hotspot\\test_antigravity.py",
+      "docstring": "测试Antigravity API连接\n验证Claude、Gemini、ChatGPT模型是否可用",
+      "description": "测试Antigravity API连接",
+      "features": [
+        "验证Claude、Gemini、ChatGPT模型是否可用",
+        "使用的模型/API: openai, gemini",
+        "主要函数: get_antigravity_config, test_antigravity_model, main"
+      ],
+      "models_used": [
+        "openai",
+        "gemini"
+      ],
+      "main_functions": [
+        "get_antigravity_config",
+        "test_antigravity_model",
+        "main"
+      ],
+      "classes": [],
+      "imports": [
+        "os",
+        "openai",
+        "Path",
+        "pathlib",
+        "OpenAI",
+        "sys"
       ]
     },
     "tool_manager.py": {
       "file": "tool_manager.py",
       "relative_path": "hotspot\\tool_manager.py",
-      "docstring": "Draw工具管理器 - Web应用\n提供可视化界面管理和运行draw目录下的所有Python工具",
-      "description": "Draw工具管理器 - Web应用",
+      "docstring": "Post工具管理器 - Web应用\n提供可视化界面管理和运行post目录下的所有Python工具",
+      "description": "Post工具管理器 - Web应用",
       "features": [
-        "提供可视化界面管理和运行draw目录下的所有Python工具",
+        "提供可视化界面管理和运行post目录下的所有Python工具",
         "使用的模型/API: seedream, pollinations",
         "主要函数: get_tool_description, get_all_tools, run_tool, index, api_tools"
       ],
@@ -1116,17 +2491,17 @@
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "Flask,",
-        "subprocess",
-        "threading",
-        "tempfile",
         "datetime",
+        "Path",
         "flask",
-        "pathlib",
-        "time",
         "json",
-        "os"
+        "pathlib",
+        "threading",
+        "time",
+        "tempfile",
+        "Flask,",
+        "os",
+        "subprocess"
       ]
     }
   },
@@ -1137,23 +2512,23 @@
       "docstring": "快速检查anti-gravity配额状态",
       "description": "快速检查anti-gravity配额状态",
       "features": [
-        "使用的模型/API: gemini, get_antigravity_client",
+        "使用的模型/API: get_antigravity_client, gemini",
         "主要函数: check_quota"
       ],
       "models_used": [
-        "gemini",
-        "get_antigravity_client"
+        "get_antigravity_client",
+        "gemini"
       ],
       "main_functions": [
         "check_quota"
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "get_antigravity_client",
-        "re",
         "datetime",
         "config",
+        "get_antigravity_client",
+        "Path",
+        "re",
         "pathlib",
         "sys"
       ]
@@ -1164,12 +2539,12 @@
       "docstring": "等待服务器可用并自动开始生成",
       "description": "等待服务器可用并自动开始生成",
       "features": [
-        "使用的模型/API: gemini, get_antigravity_client",
+        "使用的模型/API: get_antigravity_client, gemini",
         "主要函数: check_server_status, main"
       ],
       "models_used": [
-        "gemini",
-        "get_antigravity_client"
+        "get_antigravity_client",
+        "gemini"
       ],
       "main_functions": [
         "check_server_status",
@@ -1177,90 +2552,151 @@
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "Image",
-        "get_antigravity_client",
-        "io",
-        "subprocess",
         "config",
-        "time",
+        "get_antigravity_client",
+        "Path",
         "pathlib",
         "PIL",
+        "io",
+        "base64",
+        "time",
         "sys",
-        "base64"
+        "Image",
+        "subprocess"
       ]
     },
-    "test_antigravity_models.py": {
-      "file": "test_antigravity_models.py",
-      "relative_path": "test\\test_antigravity_models.py",
-      "docstring": "测试anti-gravity支持的模型列表",
-      "description": "测试anti-gravity支持的模型列表",
+    "test_antigravity_models_complete.py": {
+      "file": "test_antigravity_models_complete.py",
+      "relative_path": "test\\test_antigravity_models_complete.py",
+      "docstring": "测试anti-gravity支持的所有模型（文本+图像）\n完整版 - 包含所有26个模型\n生成HTML报告并自动打开",
+      "description": "测试anti-gravity支持的所有模型（文本+图像）",
       "features": [
-        "使用的模型/API: gemini, get_antigravity_client",
-        "主要函数: test_available_models"
+        "完整版 - 包含所有26个模型",
+        "生成HTML报告并自动打开",
+        "使用的模型/API: openai, flux, dall-e, gemini, get_antigravity_client",
+        "主要函数: get_quota_recovery_info, test_text_models, test_image_models, generate_html_report, main"
       ],
       "models_used": [
+        "openai",
+        "flux",
+        "dall-e",
         "gemini",
         "get_antigravity_client"
       ],
       "main_functions": [
-        "test_available_models"
+        "get_quota_recovery_info",
+        "test_text_models",
+        "test_image_models",
+        "generate_html_report",
+        "main"
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "get_antigravity_client",
+        "os",
+        "datetime",
         "config",
+        "get_antigravity_client",
+        "Path",
+        "json",
         "pathlib",
+        "datetime,",
         "sys"
       ]
     },
-    "test_antigravity_simple.py": {
-      "file": "test_antigravity_simple.py",
-      "relative_path": "test\\test_antigravity_simple.py",
-      "docstring": "快速测试anti-gravity服务连接",
-      "description": "快速测试anti-gravity服务连接",
+    "test_chinese_landscape.py": {
+      "file": "test_chinese_landscape.py",
+      "relative_path": "test\\test_chinese_landscape.py",
+      "docstring": "中国山水画生成测试 - 使用Volcano/Seedream模型\n生成一张中国传统山水画",
+      "description": "中国山水画生成测试 - 使用Volcano/Seedream模型",
       "features": [
-        "使用的模型/API: get_antigravity_client"
+        "生成一张中国传统山水画",
+        "使用的模型/API: seedream, get_volcano_client",
+        "主要函数: generate_chinese_landscape, generate_html_display"
       ],
       "models_used": [
-        "get_antigravity_client"
+        "seedream",
+        "get_volcano_client"
       ],
-      "main_functions": [],
+      "main_functions": [
+        "generate_chinese_landscape",
+        "generate_html_display"
+      ],
       "classes": [],
       "imports": [
-        "Path",
-        "Config,",
+        "os",
+        "datetime",
+        "webbrowser",
+        "get_volcano_client",
         "config",
+        "Path",
+        "json",
         "pathlib",
+        "requests",
+        "traceback",
         "sys"
       ]
     },
     "test_gemini_pro_image.py": {
       "file": "test_gemini_pro_image.py",
       "relative_path": "test\\test_gemini_pro_image.py",
-      "docstring": "Gemini Pro Image 3 测试工具\n测试Gemini 3 Pro Image 2K模型生成图像的能力",
-      "description": "Gemini Pro Image 3 测试工具",
+      "docstring": "Gemini全模型对比测试工具\n测试所有可用的Gemini图像生成模型,生成HTML对比展示",
+      "description": "Gemini全模型对比测试工具",
       "features": [
-        "测试Gemini 3 Pro Image 2K模型生成图像的能力",
-        "使用的模型/API: gemini, get_antigravity_client",
-        "主要函数: test_gemini_pro_image"
+        "测试所有可用的Gemini图像生成模型,生成HTML对比展示",
+        "使用的模型/API: get_antigravity_client, gemini",
+        "主要函数: generate_image, load_progress, save_progress, test_all_gemini_models, generate_html_comparison"
       ],
       "models_used": [
-        "gemini",
-        "get_antigravity_client"
+        "get_antigravity_client",
+        "gemini"
       ],
       "main_functions": [
-        "test_gemini_pro_image"
+        "generate_image",
+        "load_progress",
+        "save_progress",
+        "test_all_gemini_models",
+        "generate_html_comparison"
       ],
       "classes": [],
       "imports": [
-        "get_antigravity_client",
         "datetime",
+        "webbrowser",
         "config",
-        "traceback",
         "sys",
+        "get_antigravity_client",
         "json",
+        "traceback",
+        "base64",
+        "os"
+      ]
+    },
+    "test_gemini_simple.py": {
+      "file": "test_gemini_simple.py",
+      "relative_path": "test\\test_gemini_simple.py",
+      "docstring": "Gemini模型简单测试 - 中国山水画\n测试单个Gemini模型生成一张中国山水画",
+      "description": "Gemini模型简单测试 - 中国山水画",
+      "features": [
+        "测试单个Gemini模型生成一张中国山水画",
+        "使用的模型/API: get_antigravity_client, gemini",
+        "主要函数: generate_chinese_landscape, generate_html_display"
+      ],
+      "models_used": [
+        "get_antigravity_client",
+        "gemini"
+      ],
+      "main_functions": [
+        "generate_chinese_landscape",
+        "generate_html_display"
+      ],
+      "classes": [],
+      "imports": [
+        "datetime",
+        "webbrowser",
+        "config",
+        "sys",
+        "get_antigravity_client",
+        "json",
+        "traceback",
         "base64",
         "os"
       ]
@@ -1282,15 +2718,54 @@
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "Image",
-        "io",
-        "Config,",
         "config",
-        "pathlib",
+        "Path",
         "PIL",
+        "pathlib",
+        "Config,",
+        "io",
+        "base64",
         "sys",
-        "base64"
+        "Image"
+      ]
+    },
+    "test_non_gemini_models.py": {
+      "file": "test_non_gemini_models.py",
+      "relative_path": "test\\test_non_gemini_models.py",
+      "docstring": "非Gemini图像模型对比测试工具\n测试anti-gravity支持的所有非Gemini图像生成模型(DALL-E、Flux、Stable Diffusion等)\n注意: 不包含SeeDream,因为SeeDream是Volcano引擎管理的,不是antigravity管理",
+      "description": "非Gemini图像模型对比测试工具",
+      "features": [
+        "测试anti-gravity支持的所有非Gemini图像生成模型(DALL-E、Flux、Stable Diffusion等)",
+        "注意: 不包含SeeDream,因为SeeDream是Volcano引擎管理的,不是antigravity管理",
+        "使用的模型/API: openai, seedream, flux, dall-e, gemini, get_antigravity_client",
+        "主要函数: generate_image, load_progress, save_progress, generate_html_comparison, test_all_non_gemini_models"
+      ],
+      "models_used": [
+        "openai",
+        "seedream",
+        "flux",
+        "dall-e",
+        "gemini",
+        "get_antigravity_client"
+      ],
+      "main_functions": [
+        "generate_image",
+        "load_progress",
+        "save_progress",
+        "generate_html_comparison",
+        "test_all_non_gemini_models",
+        "main"
+      ],
+      "classes": [],
+      "imports": [
+        "datetime",
+        "config",
+        "sys",
+        "get_antigravity_client",
+        "json",
+        "traceback",
+        "base64",
+        "os"
       ]
     },
     "test_volcano_seedream.py": {
@@ -1300,12 +2775,12 @@
       "description": "测试Volcano/Seedream豆包图灵图像生成模型",
       "features": [
         "为中国小年画一张中国风的水粉画",
-        "使用的模型/API: get_volcano_client, seedream",
+        "使用的模型/API: seedream, get_volcano_client",
         "主要函数: test_seedream_generation, main"
       ],
       "models_used": [
-        "get_volcano_client",
-        "seedream"
+        "seedream",
+        "get_volcano_client"
       ],
       "main_functions": [
         "test_seedream_generation",
@@ -1313,14 +2788,14 @@
       ],
       "classes": [],
       "imports": [
-        "Path",
-        "requests",
+        "os",
         "datetime",
-        "config",
         "get_volcano_client",
+        "config",
+        "Path",
         "pathlib",
-        "sys",
-        "os"
+        "requests",
+        "sys"
       ]
     },
     "test_zhipu_anthropic.py": {
@@ -1340,11 +2815,39 @@
       ],
       "classes": [],
       "imports": [
-        "Path",
         "get_zhipu_anthropic_client,",
         "config",
+        "Path",
         "pathlib",
         "sys"
+      ]
+    },
+    "update_progress.py": {
+      "file": "update_progress.py",
+      "relative_path": "test\\update_progress.py",
+      "docstring": "更新测试进度 - 根据实际生成的图片文件",
+      "description": "更新测试进度 - 根据实际生成的图片文件",
+      "features": [
+        "使用的模型/API: gemini",
+        "主要函数: scan_generated_images, generate_progress_file, main"
+      ],
+      "models_used": [
+        "gemini"
+      ],
+      "main_functions": [
+        "scan_generated_images",
+        "generate_progress_file",
+        "main"
+      ],
+      "classes": [],
+      "imports": [
+        "datetime",
+        "collections",
+        "Path",
+        "json",
+        "pathlib",
+        "defaultdict",
+        "os"
       ]
     }
   }

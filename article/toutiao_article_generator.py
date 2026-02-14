@@ -11,21 +11,23 @@ from pathlib import Path
 from datetime import datetime
 import json
 import base64
+import re
 from PIL import Image
 import io
 
 # 添加父目录到路径以导入config
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from config import get_zhipuai_client, get_antigravity_client
+from config import get_zhipu_anthropic_client, get_antigravity_client, get_volcano_client
 
 
 class ToutiaoArticleGenerator:
     """今日头条文章生成器 - AI增强版 v3.1"""
 
     def __init__(self):
-        self.text_client = get_zhipuai_client()
-        self.image_client = get_antigravity_client()
+        self.text_client = get_zhipu_anthropic_client()  # 使用Anthropic兼容接口
+        self.image_client = get_antigravity_client()  # 使用anti-gravity代理生成配图
+        self.volcano_client = get_volcano_client()  # 火山引擎Seedream客户端
 
     def improve_article_draft(self, draft_content, target_length=2000, style='standard'):
         """根据用户草稿完善文章
@@ -36,9 +38,9 @@ class ToutiaoArticleGenerator:
             style: 写作风格 ('standard' 标准风格, 'professional' 资深写手风格)
         """
 
-        print(f"\n[AI完善] 正在完善您的文章草稿...")
-        print(f"[AI完善] 目标字数: {target_length}字")
-        print(f"[AI完善] 写作风格: {'资深写手' if style == 'professional' else '标准'}\n")
+        print(f"\n[AI] Improving your draft...")
+        print(f"[AI] Target length: {target_length} chars")
+        print(f"[AI] Style: {'Professional' if style == 'professional' else 'Standard'}\n")
 
         # 清理草稿内容中的代理字符(surrogate characters)
         # 这些字符可能导致UTF-8编码错误
@@ -48,7 +50,7 @@ class ToutiaoArticleGenerator:
         except UnicodeEncodeError:
             # 移除代理字符
             draft_content = draft_content.encode('utf-8', errors='ignore').decode('utf-8')
-            print("[提示] 草稿包含特殊字符，已自动清理")
+            print("[INFO] Special characters cleaned from draft")
 
         # 根据风格选择不同的prompt
         if style == 'professional':
@@ -131,21 +133,20 @@ class ToutiaoArticleGenerator:
 """
 
         try:
-            response = self.text_client.chat.completions.create(
+            # 使用Anthropic兼容接口
+            response = self.text_client.messages.create(
                 model="glm-4-flash",  # 使用快速模型
+                max_tokens=4000,
                 messages=[
                     {
                         "role": "user",
                         "content": prompt
                     }
-                ],
-                temperature=0.8,
-                max_tokens=4000,
-                top_p=0.9
+                ]
             )
 
-            # 提取生成的内容
-            content = response.choices[0].message.content
+            # 提取生成的内容 (Anthropic格式)
+            content = response.content[0].text
 
             # 解析标题和正文
             lines = content.split('\n')
@@ -187,9 +188,9 @@ class ToutiaoArticleGenerator:
             style: 写作风格 ('standard' 标准风格, 'wangzengqi' 汪曾祺风格)
         """
 
-        print(f"\n[AI生成] 正在为主题'{theme}'生成文章...")
-        print(f"[AI生成] 目标字数: {target_length}字")
-        print(f"[AI生成] 风格: {'汪曾祺' if style == 'wangzengqi' else '标准'}\n")
+        print(f"\n[AI] Generating article for theme: {theme}")
+        print(f"[AI] Target length: {target_length} chars")
+        print(f"[AI] Style: {'Wang Zengqi' if style == 'wangzengqi' else 'Standard'}\n")
 
         # 根据风格选择不同的prompt
         if style == 'wangzengqi':
@@ -275,21 +276,20 @@ class ToutiaoArticleGenerator:
 """
 
         try:
-            response = self.text_client.chat.completions.create(
+            # 使用Anthropic兼容接口
+            response = self.text_client.messages.create(
                 model="glm-4-flash",  # 使用快速模型
+                max_tokens=4000,
                 messages=[
                     {
                         "role": "user",
                         "content": prompt
                     }
-                ],
-                temperature=0.8,
-                max_tokens=4000,
-                top_p=0.9
+                ]
             )
 
-            # 提取生成的内容
-            content = response.choices[0].message.content
+            # 提取生成的内容 (Anthropic格式)
+            content = response.content[0].text
 
             # 解析标题和正文
             lines = content.split('\n')
@@ -321,81 +321,308 @@ class ToutiaoArticleGenerator:
             print(f"[ERROR] AI生成失败: {e}")
             return None
 
-    def generate_article_images(self, theme, image_style="realistic"):
-        """根据文章主题生成3张配图"""
+    def generate_article_images(self, theme, article_content, image_style="realistic"):
+        """根据文章主题和内容生成3张配图，支持多模型降级"""
 
-        print(f"\n[配图生成] 正在为主题'{theme}'生成配图...")
-        print(f"[配图生成] 配图风格: {image_style}\n")
+        import urllib.parse
+        import requests
+        from io import BytesIO
 
-        # 根据主题生成3张不同场景的配图
-        image_prompts = self._generate_image_prompts(theme, image_style)
+        # 清理主题中的 emoji 和特殊字符
+        clean_theme = re.sub(r'[^\u4e00-\u9fff\w\s\-.,]', '', theme)
+        clean_theme = clean_theme.strip()[:30]  # 限制长度
+
+        print(f"\n[INFO] Generating images for theme: {clean_theme}")
+        print(f"[INFO] Image style: {image_style}")
+
+        # 根据文章内容提取关键词生成配图提示词
+        image_prompts = self._generate_contextual_prompts(clean_theme, article_content, image_style)
         generated_images = []
 
-        for i, (img_prompt, img_desc) in enumerate(image_prompts, 1):
-            print(f"[配图{i}] {img_desc}...")
+        # 定义图片生成模型优先级（按顺序尝试）
+        image_models = [
+            # Gemini 系列（高质量）
+            {"model": "gemini-3-pro-image-2k", "name": "Gemini 3 Pro 2K", "type": "antigravity"},
+            {"model": "gemini-2-flash-image", "name": "Gemini 2 Flash", "type": "antigravity"},
+            # Flux 系列（高质量）
+            {"model": "flux-1.1-pro", "name": "Flux 1.1 Pro", "type": "antigravity"},
+            {"model": "flux-schnell", "name": "Flux Schnell", "type": "antigravity"},
+            # Stable Diffusion 系列
+            {"model": "sd-3", "name": "SD 3", "type": "antigravity"},
+            {"model": "sdxl-turbo", "name": "SDXL Turbo", "type": "antigravity"},
+            # DALL-E 系列
+            {"model": "dall-e-3", "name": "DALL-E 3", "type": "antigravity"},
+        ]
 
+        # 找一个可用的模型
+        available_model = None
+        print(f"[INFO] Checking available image models...")
+
+        for model_info in image_models:
             try:
-                response = self.image_client.images.generate(
-                    model="gemini-3-pro-image-4k",
-                    prompt=img_prompt.strip(),
+                # 快速测试模型是否可用
+                test_response = self.image_client.images.generate(
+                    model=model_info["model"],
+                    prompt="test",
                     size="1024x1024",
                     n=1,
                 )
+                available_model = model_info
+                print(f"[INFO] Using model: {model_info['name']} ({model_info['model']})")
+                break
+            except Exception as e:
+                error_str = str(e)
+                if "404" in error_str or "NOT_FOUND" in error_str:
+                    print(f"[DEBUG] {model_info['name']}: not available (404)")
+                elif "429" in error_str or "quota" in error_str.lower():
+                    print(f"[DEBUG] {model_info['name']}: quota exceeded")
+                else:
+                    print(f"[DEBUG] {model_info['name']}: {str(e)[:60]}")
 
-                if hasattr(response, 'data') and len(response.data) > 0:
-                    img_data = response.data[0]
-                    if hasattr(img_data, 'b64_json') and img_data.b64_json:
-                        img_bytes = base64.b64decode(img_data.b64_json)
-                        img = Image.open(io.BytesIO(img_bytes))
+        for i, (img_prompt, img_desc) in enumerate(image_prompts, 1):
+            print(f"[IMAGE {i}] {img_desc}...")
 
-                        # 保存图片到工具所在目录
+            image_generated = False
+
+            # 优先使用 anti-gravity 的可用模型
+            if available_model:
+                try:
+                    response = self.image_client.images.generate(
+                        model=available_model["model"],
+                        prompt=img_prompt,
+                        size="1024x1024",
+                        n=1,
+                    )
+
+                    if hasattr(response, 'data') and len(response.data) > 0:
+                        image_data = response.data[0]
+                        b64_json = getattr(image_data, 'b64_json', None)
+
+                        if b64_json:
+                            image_bytes = base64.b64decode(b64_json)
+                            img = Image.open(io.BytesIO(image_bytes))
+
+                            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                            safe_desc = "".join(c for c in img_desc if c.isalnum() or c in ('_', '-'))[:20]
+                            filename = f"article_img{i}_{safe_desc}_{timestamp}.jpg"
+
+                            tool_dir = Path(__file__).parent
+                            img_path = str(tool_dir / filename)
+
+                            img.save(img_path, 'JPEG', quality=95)
+                            generated_images.append(img_path)
+                            print(f"    [OK] {filename} ({available_model['name']})")
+                            image_generated = True
+
+                except Exception as e:
+                    print(f"    [WARN] {available_model['name']} failed: {str(e)[:60]}")
+
+            # 如果 anti-gravity 模型失败，尝试 Seedream (火山引擎)
+            if not image_generated and self.volcano_client:
+                try:
+                    print(f"    [FALLBACK] Trying Seedream (Volcano)...")
+                    response = self.volcano_client.images.generate(
+                        model="doubao-seedream-4-5-251128",
+                        prompt=img_prompt,
+                        size="2K",  # Seedream使用2K分辨率
+                        response_format="url",  # 必须指定返回URL格式
+                        extra_body={
+                            "watermark": False,  # 不启用水印
+                        },
+                    )
+
+                    if hasattr(response, 'data') and len(response.data) > 0:
+                        image_url = response.data[0].url
+
+                        # 从URL下载图片
+                        img_response = requests.get(image_url, timeout=60)
+                        if img_response.status_code == 200:
+                            img = Image.open(BytesIO(img_response.content))
+
+                            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                            safe_desc = "".join(c for c in img_desc if c.isalnum() or c in ('_', '-'))[:20]
+                            filename = f"article_img{i}_{safe_desc}_{timestamp}.jpg"
+
+                            tool_dir = Path(__file__).parent
+                            img_path = str(tool_dir / filename)
+
+                            img.save(img_path, 'JPEG', quality=95)
+                            generated_images.append(img_path)
+                            print(f"    [OK] {filename} (Seedream)")
+                            image_generated = True
+                        else:
+                            print(f"    [WARN] Seedream download failed: HTTP {img_response.status_code}")
+
+                except Exception as e:
+                    print(f"    [WARN] Seedream failed: {str(e)[:60]}")
+
+            # 如果 Seedream 也失败，使用 Pollinations.ai
+            if not image_generated:
+                print(f"    [FALLBACK] Trying Pollinations.ai...")
+                try:
+                    # 从内容中提取简单主题
+                    content_lower = article_content.lower() if article_content else ""
+                    if any(kw in content_lower for kw in ['ai', 'glm', 'artificial', 'model', 'code']):
+                        simple_topic = "robot"
+                    elif any(kw in content_lower for kw in ['food', 'cook', 'recipe', '美食']):
+                        simple_topic = "food"
+                    elif any(kw in content_lower for kw in ['travel', 'landscape', '风景']):
+                        simple_topic = "landscape"
+                    else:
+                        simple_topic = "technology"
+
+                    encoded_prompt = urllib.parse.quote(simple_topic)
+                    pollinations_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}"
+
+                    response = requests.get(pollinations_url, timeout=90)
+                    if response.status_code == 200:
+                        img = Image.open(BytesIO(response.content))
                         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                        filename = f"文章配图{i}_{img_desc}_{timestamp}.jpg"
-
-                        # 获取工具所在目录
-                        from pathlib import Path
+                        filename = f"article_img{i}_{img_desc}_{timestamp}.jpg"
                         tool_dir = Path(__file__).parent
                         img_path = str(tool_dir / filename)
-
                         img.save(img_path, 'JPEG', quality=95)
                         generated_images.append(img_path)
-                        print(f"    [成功] {img_path}")
+                        print(f"    [OK] {filename} (Pollinations)")
+                        image_generated = True
                     else:
-                        print(f"    [失败] 未找到图片数据")
-                else:
-                    print(f"    [失败] API响应无数据")
+                        print(f"    [FAIL] Pollinations HTTP {response.status_code}")
 
-            except Exception as e:
-                print(f"    [失败] {str(e)[:100]}")
+                except Exception as e2:
+                    print(f"    [FAIL] Pollinations error: {str(e2)[:80]}")
+
+            if not image_generated:
+                print(f"    [FAIL] Could not generate image {i}")
 
         return generated_images
+
+    def _generate_contextual_prompts(self, theme, content, style):
+        """使用AI大模型根据文章内容智能生成上下文相关的图片提示词"""
+
+        # 风格映射
+        style_desc = {
+            "realistic": "realistic photography, high quality, professional lighting",
+            "artistic": "artistic style, creative, elegant composition",
+            "cartoon": "cartoon illustration, colorful, friendly style",
+            "technical": "technical diagram, flowchart, architecture diagram, clean infographic style",
+            "auto": "professional quality visualization"
+        }.get(style, "realistic photography, high quality")
+
+        # 使用AI生成与内容相关的配图提示词
+        ai_prompt = f"""请根据以下文章内容，为3张配图生成英文提示词(prompt)。
+
+文章主题: {theme}
+
+文章内容摘要（前1500字）:
+{content[:1500]}
+
+配图风格要求: {style_desc}
+
+请生成3个配图的英文提示词，要求：
+1. 第1张图：概括文章核心概念或主题的场景图
+2. 第2张图：展示文章中提到的关键流程、架构或细节
+3. 第3张图：展示实际应用场景或用户体验
+
+每个提示词要求：
+- 使用英文，简洁明了（50词以内）
+- 包含具体的视觉元素描述
+- 符合指定的配图风格
+- 与文章段落内容紧密相关
+
+请直接输出3行，每行一个提示词，格式如下：
+1. [第1张图的英文提示词]
+2. [第2张图的英文提示词]
+3. [第3张图的英文提示词]
+"""
+
+        try:
+            print("[AI] Generating contextual image prompts...")
+
+            # 使用ZhipuAI生成提示词
+            response = self.text_client.messages.create(
+                model="glm-4.6",
+                max_tokens=500,
+                messages=[{"role": "user", "content": ai_prompt}]
+            )
+
+            ai_response = response.content[0].text.strip()
+            print(f"[AI] Response received: {ai_response[:100]}...")
+
+            # 解析AI返回的3个提示词
+            lines = ai_response.strip().split('\n')
+            prompts = []
+
+            for line in lines:
+                # 移除行号前缀（如 "1. ", "2. ", "3. "）
+                cleaned = re.sub(r'^\d+\.\s*', '', line).strip()
+                if cleaned and len(cleaned) > 10:
+                    # 添加风格后缀
+                    prompt_with_style = f"{cleaned}, {style_desc}"
+                    prompts.append((prompt_with_style, f"context_img{len(prompts)+1}"))
+
+            # 确保有3个提示词
+            if len(prompts) < 3:
+                # 补充默认提示词
+                default_prompts = [
+                    (f"{theme} main concept visualization, {style_desc}", "scene_main"),
+                    (f"{theme} detailed process flow, {style_desc}", "scene_detail"),
+                    (f"{theme} application scenario, {style_desc}", "scene_lifestyle"),
+                ]
+                while len(prompts) < 3:
+                    prompts.append(default_prompts[len(prompts)])
+
+            return prompts[:3]
+
+        except Exception as e:
+            print(f"[WARN] AI prompt generation failed: {e}, using fallback")
+            # 降级方案：基于关键词的简单提示词
+            return [
+                (f"{theme} concept overview, {style_desc}", "scene_main"),
+                (f"{theme} detailed view, {style_desc}", "scene_detail"),
+                (f"{theme} application scene, {style_desc}", "scene_lifestyle"),
+            ]
 
     def _generate_image_prompts(self, theme, style):
         """根据主题生成配图提示词"""
 
-        # 基于主题生成3个不同场景的配图提示
+        # 使用更简洁的英文提示词，避免 Pollinations 530 错误
+        # 只保留核心主题，限制长度
+        short_theme = theme[:30] if len(theme) > 30 else theme
+
         base_prompts = {
             "realistic": [
-                f"Professional {theme} scene, realistic photography style, high quality, 1024x1024",
-                f"{theme} detail shot, close-up view, professional lighting, realistic style, 1024x1024",
-                f"{theme} lifestyle scene, people interacting, natural lighting, realistic photography, 1024x1024"
+                f"{short_theme}, professional photo",
+                f"{short_theme}, close up shot",
+                f"{short_theme}, lifestyle scene"
             ],
             "artistic": [
-                f"{theme} artistic interpretation, oil painting style, vibrant colors, creative composition, 1024x1024",
-                f"{theme} watercolor illustration, soft colors, artistic style, detailed brushwork, 1024x1024",
-                f"{theme} digital art, modern artistic style, creative design, colorful, 1024x1024"
+                f"{short_theme}, oil painting art",
+                f"{short_theme}, watercolor illustration",
+                f"{short_theme}, digital art"
             ],
             "cartoon": [
-                f"{theme} cartoon style, cute characters, bright colors, friendly atmosphere, 1024x1024",
-                f"{theme} manga style, expressive characters, clean lines, vibrant colors, 1024x1024",
-                f"{theme} illustration style, fun and playful, colorful, engaging visual, 1024x1024"
+                f"{short_theme}, cartoon style",
+                f"{short_theme}, manga style",
+                f"{short_theme}, cute illustration"
+            ],
+            "technical": [
+                f"{short_theme}, technical architecture diagram, flowchart, clean design",
+                f"{short_theme}, process flow diagram, infographic style",
+                f"{short_theme}, system structure diagram, professional blueprint"
+            ],
+            "auto": [
+                f"{short_theme}, professional visualization",
+                f"{short_theme}, detailed illustration",
+                f"{short_theme}, creative concept art"
             ]
         }
 
         descriptions = {
-            "realistic": ["主场景", "细节特写", "生活场景"],
-            "artistic": ["艺术创作", "水彩插画", "数字艺术"],
-            "cartoon": ["卡通场景", "漫画风格", "插画风格"]
+            "realistic": ["main_scene", "detail_shot", "lifestyle"],
+            "artistic": ["art_creation", "watercolor", "digital_art"],
+            "cartoon": ["cartoon", "manga", "illustration"],
+            "technical": ["architecture_diagram", "flowchart", "system_structure"],
+            "auto": ["main_view", "detail_view", "concept_view"]
         }
 
         prompts = base_prompts.get(style, base_prompts["realistic"])
@@ -404,22 +631,10 @@ class ToutiaoArticleGenerator:
         return list(zip(prompts, descs))
 
     def create_article_html(self, title, content, theme, images=None):
-        """创建HTML格式的文章(包含配图)"""
+        """创建HTML格式的文章(配图插入到段落之间)"""
 
-        # 生成配图HTML
-        images_html = ""
-        if images:
-            images_html = "<div class='images-gallery'>\n"
-            images_html += "<h3 style='color: #5a67d8; margin: 30px 0 20px 0; text-align: center;'>文章配图</h3>\n"
-            images_html += "<div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;'>\n"
-
-            for img in images:
-                images_html += f"<div style='text-align: center;'>\n"
-                images_html += f"<img src='{img}' alt='{img}' style='width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>\n"
-                images_html += f"<p style='color: #999; font-size: 0.9em; margin-top: 8px;'>{img}</p>\n"
-                images_html += f"</div>\n"
-
-            images_html += "</div>\n</div>\n"
+        # 将内容分割成段落
+        formatted_content = self._format_content_with_images(content, images)
 
         html_content = f"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -478,7 +693,6 @@ class ToutiaoArticleGenerator:
 
         .content p {{
             margin-bottom: 20px;
-            text-indent: 2em;
         }}
 
         .content h2 {{
@@ -496,8 +710,28 @@ class ToutiaoArticleGenerator:
         }}
 
         .content strong {{
-            color: #e53e3e;
-            font-weight: bold;
+            color: #c53030;
+            font-weight: 600;
+            background: linear-gradient(transparent 60%, #fed7d7 60%);
+            padding: 0 2px;
+        }}
+
+        .article-image {{
+            margin: 30px 0;
+            text-align: center;
+        }}
+
+        .article-image img {{
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }}
+
+        .article-image .caption {{
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #666;
+            font-style: italic;
         }}
 
         .footer {{
@@ -523,21 +757,19 @@ class ToutiaoArticleGenerator:
         <div class="header">
             <div class="title">{title}</div>
             <div class="meta">
-                主题: {theme} |
-                字数: {len(content)}字 |
-                生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M')}
+                Theme: {theme} |
+                Words: {len(content)} |
+                Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}
             </div>
         </div>
 
         <div class="content">
-            {self._format_content_to_html(content)}
+            {formatted_content}
         </div>
 
-        {images_html}
-
         <div class="footer">
-            <p>本文由AI发文工具管理器生成</p>
-            <p>生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            <p>Generated by AI Article Tool</p>
+            <p>Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
         </div>
     </div>
 </body>
@@ -546,14 +778,34 @@ class ToutiaoArticleGenerator:
 
         return html_content
 
-    def _format_content_to_html(self, content):
-        """将Markdown格式内容转换为HTML"""
+    def _format_content_with_images(self, content, images=None):
+        """将内容格式化为HTML，并将图片插入到段落之间"""
+
+        import re
+        import os
 
         html = content
+
+        # 先修复AI可能生成的错误HTML标签
+        html = re.sub(r'<strong>([^<]*)<strong>', r'<strong>\1</strong>', html)
 
         # 转换段落
         paragraphs = html.split('\n\n')
         html_paragraphs = []
+
+        # 计算图片插入位置（均匀分布）
+        num_paragraphs = len([p for p in paragraphs if p.strip() and not p.startswith('#')])
+        num_images = len(images) if images else 0
+
+        # 确定图片插入点
+        image_insert_points = []
+        if num_images > 0 and num_paragraphs > 0:
+            # 在文章的 1/4, 1/2, 3/4 位置插入图片
+            insert_ratios = [0.25, 0.5, 0.75][:num_images]
+            image_insert_points = [int(num_paragraphs * r) for r in insert_ratios]
+
+        current_paragraph = 0
+        image_index = 0
 
         for para in paragraphs:
             para = para.strip()
@@ -561,22 +813,49 @@ class ToutiaoArticleGenerator:
                 continue
 
             # 处理标题
-            if para.startswith('### '):
+            if para.startswith('#### '):
+                html_paragraphs.append(f'<h4 style="color: #718096; font-size: 1.1em; margin: 20px 0 10px 0;">{para[5:]}</h4>')
+            elif para.startswith('### '):
                 html_paragraphs.append(f'<h3>{para[4:]}</h3>')
             elif para.startswith('## '):
                 html_paragraphs.append(f'<h2>{para[3:]}</h2>')
             elif para.startswith('# '):
                 html_paragraphs.append(f'<h2>{para[2:]}</h2>')
-            # 处理高亮块
             elif para.startswith('>'):
                 html_paragraphs.append(f'<div class="highlight">{para[1:].strip()}</div>')
-            # 普通段落
             else:
-                # 处理加粗
-                para = para.replace('**', '<strong>').replace('**', '</strong>')
-                # 处理换行
+                # 普通段落
+                para = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', para)
                 para = para.replace('\n', '<br>')
                 html_paragraphs.append(f'<p>{para}</p>')
+
+                # 检查是否需要插入图片
+                if image_index < num_images and current_paragraph in image_insert_points:
+                    img = images[image_index]
+
+                    # 将图片转为Base64嵌入HTML，这样HTML单独打开时也能显示图片
+                    img_url = img  # 默认使用路径
+                    try:
+                        with open(img, 'rb') as f:
+                            img_data = f.read()
+                        img_base64 = base64.b64encode(img_data).decode('utf-8')
+                        img_url = f"data:image/jpeg;base64,{img_base64}"
+                    except Exception as e:
+                        # 如果读取失败，使用相对路径
+                        img_url = os.path.basename(img)
+
+                    # 图片描述
+                    captions = ["Main scene", "Detail view", "Context view"]
+                    caption = captions[image_index] if image_index < len(captions) else f"Image {image_index + 1}"
+
+                    html_paragraphs.append(f'''
+<div class="article-image">
+    <img src="{img_url}" alt="Article image">
+    <div class="caption">{caption}</div>
+</div>''')
+                    image_index += 1
+
+                current_paragraph += 1
 
         return '\n'.join(html_paragraphs)
 
@@ -988,7 +1267,7 @@ def main():
         print()
         print("[配图] 开始生成配图...")
         print()
-        generated_images = generator.generate_article_images(theme, image_style)
+        generated_images = generator.generate_article_images(theme, article['content'], image_style)
 
         if generated_images:
             print(f"\n[成功] 成功生成 {len(generated_images)} 张配图")
@@ -1057,12 +1336,223 @@ def main():
     print()
 
 
-if __name__ == "__main__":
+
+
+
+def main_web():
+    """Web模式主函数 - 从tool_manager.py调用"""
+    print("\n" + "="*60)
+    print("[INFO] Web Mode - main_web() started")
+    print("="*60 + "\n")
+
     try:
-        main()
-    except KeyboardInterrupt:
-        print("\n\n[提示] 程序被用户中断")
+        # 读取JSON参数文件
+        params_json_path = os.environ.get('ARTICLE_PARAMS_JSON', 'article_params.json')
+        print(f"[INFO] Params file: {params_json_path}")
+
+        with open(params_json_path, 'r', encoding='utf-8') as f:
+            params = json.load(f)
+        print(f"[INFO] Params loaded successfully\n")
+
+        # 解析参数
+        mode = params.get('mode', '1')
+        theme = params.get('theme', '')
+        draft = params.get('draft', '')
+        length = params.get('length', 2000)
+        generate_images = params.get('generate_images', 'y')
+        image_style = params.get('image_style', 'realistic')
+        style = params.get('style', 'standard')
+
+        print(f"[PARAM] mode: {mode}")
+        print(f"[PARAM] theme: {theme}")
+        print(f"[PARAM] draft: {draft}")
+        print(f"[PARAM] length: {length}")
+        print(f"[PARAM] generate_images: {generate_images}")
+        print(f"[PARAM] image_style: {image_style}")
+        print(f"[PARAM] style: {style}\n")
+
+        # 模式1: 主题生成
+        if mode == '1':
+            print("[STEP 1/3] Theme generation mode")
+            if not theme:
+                return {"error": "Theme cannot be empty"}
+
+            # 创建生成器实例
+            print("[STEP 2/3] Initializing AI client...")
+            generator = ToutiaoArticleGenerator()
+            if not generator.text_client:
+                return {"error": "Failed to initialize AI client"}
+
+            # 调用生成方法
+            print("[STEP 3/3] Generating article with AI...")
+            article = generator.generate_article_with_ai(theme, length)
+            if not article:
+                return {"error": "Article generation failed"}
+
+            result = {
+                "success": True,
+                "title": article['title'],
+                "content": article['content'],
+                "word_count": article['word_count'],
+                "target_length": article['target_length']
+            }
+
+        # 模式2: 草稿完善
+        elif mode == '2':
+            print("[STEP 1/4] Draft improvement mode")
+            print(f"[INFO] draft param: [{draft}]")
+            print(f"[INFO] working dir: {os.getcwd()}")
+            print(f"[INFO] script file: {__file__}")
+
+            # 转换为绝对路径(解决相对路径问题)
+            if os.path.isabs(draft):
+                draft_path = draft
+            else:
+                # 相对路径: 基于项目根目录(post/)解析，而不是脚本目录
+                # 统一处理路径分隔符
+                draft_normalized = draft.replace('/', os.sep).replace('\\', os.sep)
+                project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                draft_path = os.path.join(project_root, draft_normalized)
+
+            print(f"[STEP 2/4] Draft path resolved: {draft_path}")
+            print(f"[INFO] File exists: {os.path.exists(draft_path)}")
+
+            # 检查draft是否是文件路径,如果是则读取文件内容
+            if os.path.exists(draft_path):
+                print(f"[INFO] Reading draft file...")
+                try:
+                    with open(draft_path, 'r', encoding='utf-8') as f:
+                        draft_content = f.read()
+                    draft = draft_content
+                    print(f"[INFO] Draft loaded: {len(draft)} chars\n")
+                except Exception as e:
+                    return {"error": f"Failed to read draft file: {str(e)}"}
+            else:
+                print(f"[INFO] Using draft text content directly")
+
+            if not draft:
+                return {"error": "Draft content cannot be empty"}
+
+            # 创建生成器实例
+            print("[STEP 3/4] Initializing AI client...")
+            generator = ToutiaoArticleGenerator()
+            if not generator.text_client:
+                return {"error": "Failed to initialize AI client"}
+
+            # 调用草稿完善方法
+            print("[STEP 4/4] Improving draft with AI...")
+            article = generator.improve_article_draft(draft, length)
+            if not article:
+                return {"error": "Draft improvement failed"}
+
+            result = {
+                "success": True,
+                "title": article['title'],
+                "content": article['content'],
+                "word_count": article['word_count'],
+                "target_length": article['target_length']
+            }
+
+        else:
+            return {"error": f"Invalid mode: {mode}"}
+
+        # 生成配图（如果启用）
+        generated_images = None
+        if generate_images == 'y':
+            print(f"[INFO] Generating images for article...")
+            try:
+                generated_images = generator.generate_article_images(
+                    theme if theme else article['title'],
+                    article['content'],
+                    image_style
+                )
+                if generated_images:
+                    print(f"[INFO] Generated {len(generated_images)} images")
+                else:
+                    print(f"[WARN] Image generation returned no results")
+            except Exception as e:
+                print(f"[WARN] Image generation failed: {e}")
+                generated_images = None
+
+        # 保存文章到文件
+        print("[INFO] Saving article to files...")
+        tool_dir = Path(__file__).parent
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        file_theme = theme if mode == '1' else 'draft_improved'
+        file_prefix = "Article" if mode == '1' else "DraftImproved"
+
+        # 保存 Markdown 文件
+        md_filename = f"{file_prefix}_{file_theme}_{timestamp}.md"
+        md_path = str(tool_dir / md_filename)
+        source_note = " (Improved from draft)" if mode == '2' else ""
+        md_content = f"""# {article['title']}
+
+**Theme**: {theme if mode == '1' else 'Draft Improvement'}
+**Words**: {article['word_count']} chars
+**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}{source_note}
+
+---
+
+{article['content']}
+
+---
+
+*Generated by AI Article Tool{source_note}*
+"""
+        with open(md_path, 'w', encoding='utf-8') as f:
+            f.write(md_content)
+        print(f"[INFO] Markdown saved: {md_filename}")
+
+        # 保存 HTML 文件（包含配图）
+        html_filename = f"{file_prefix}_{file_theme}_{timestamp}.html"
+        html_path = str(tool_dir / html_filename)
+        html_content = generator.create_article_html(
+            article['title'],
+            article['content'],
+            theme if theme else 'Draft',
+            generated_images  # 传入配图
+        )
+        with open(html_path, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        print(f"[INFO] HTML saved: {html_filename}")
+
+        # 添加文件路径到结果
+        result['md_file'] = md_filename
+        result['html_file'] = html_filename
+        result['html_path'] = html_path
+
+        # 清理临时参数文件
+        try:
+            os.remove(params_json_path)
+            print(f"[CLEANUP] Temp file removed: {params_json_path}\n")
+        except:
+            pass
+
+        print("[SUCCESS] Article generation completed!")
+        print(f"[OUTPUT] MD: {md_filename}")
+        print(f"[OUTPUT] HTML: {html_filename}")
+        return result
+
     except Exception as e:
-        print(f"\n\n[ERROR] 发生错误: {e}")
+        print(f"[ERROR] main_web failed: {e}")
         import traceback
         traceback.print_exc()
+        return {"error": str(e)}
+
+
+if __name__ == "__main__":
+    # 添加入口点调试 - 使用简单的ASCII字符避免编码问题
+    print("\n" + "="*60)
+    print("[INFO] Toutiao Article Generator v3.1")
+    print(f"[INFO] Working Dir: {os.getcwd()}")
+    print(f"[INFO] Params File: {os.environ.get('ARTICLE_PARAMS_JSON', 'NOT SET')}")
+
+    # 检测是否在Web模式下运行
+    if os.environ.get("ARTICLE_PARAMS_JSON"):
+        print("[INFO] Mode: WEB - Starting article generation...")
+        print("="*60 + "\n")
+        main_web()
+    else:
+        print("[INFO] Mode: CLI - Starting interactive mode...")
+        print("="*60 + "\n")
+        main()
