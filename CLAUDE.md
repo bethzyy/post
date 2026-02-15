@@ -134,12 +134,41 @@ All API keys and settings are managed through `config.py` which reads from `.env
 
 ```python
 from config import (
-    get_antigravity_client,  # For Gemini/DALL-E/Flux via proxy
-    get_volcano_client,      # For Volcano/Seedream
-    get_zhipuai_client,      # For ZhipuAI GLM models
-    Config                   # Access configuration values
+    get_antigravity_client,     # For Gemini/DALL-E/Flux via proxy
+    get_volcano_client,         # For Volcano/Seedream
+    get_zhipuai_client,         # For ZhipuAI GLM models (native SDK)
+    get_zhipu_anthropic_client, # For ZhipuAI via Anthropic-compatible API (PREFERRED)
+    Config                      # Access configuration values
 )
 ```
+
+**IMPORTANT: ZhipuAI API Selection**
+
+When using ZhipuAI GLM models for text generation, **ALWAYS use the Anthropic-compatible interface**:
+
+```python
+# CORRECT - Use Anthropic-compatible client
+from config import get_zhipu_anthropic_client
+
+client = get_zhipu_anthropic_client()  # Returns Anthropic client
+response = client.messages.create(
+    model="glm-4-flash",  # or glm-4.6
+    max_tokens=4000,
+    messages=[{"role": "user", "content": prompt}]
+)
+content = response.content[0].text
+```
+
+```python
+# AVOID - Native ZhipuAI SDK (different response format)
+from config import get_zhipuai_client
+client = get_zhipuai_client()  # Different API structure
+```
+
+**Why Anthropic-compatible?**:
+- Consistent API format with other tools
+- Standard `response.content[0].text` pattern
+- Better error handling compatibility
 
 ### Required Environment Variables (`.env` file)
 ```bash

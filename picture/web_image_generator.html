@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -45,7 +45,7 @@
 
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 350px 1fr;
             gap: 30px;
             margin-bottom: 30px;
         }
@@ -93,22 +93,23 @@
         }
 
         .input-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .input-group label {
             display: block;
             color: #333;
-            font-size: 1.1em;
-            margin-bottom: 10px;
+            font-size: 1em;
+            margin-bottom: 8px;
             font-weight: bold;
         }
 
         .input-group textarea,
         .input-group input[type="text"],
+        .input-group input[type="number"],
         .input-group select {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             border: 2px solid #ddd;
             border-radius: 10px;
             font-size: 1em;
@@ -117,14 +118,14 @@
         }
 
         .input-group textarea:focus,
-        .input-group input[type="text"]:focus,
+        .input-group input:focus,
         .input-group select:focus {
             outline: none;
             border-color: #667eea;
         }
 
         .input-group textarea {
-            min-height: 120px;
+            min-height: 100px;
             resize: vertical;
         }
 
@@ -169,10 +170,44 @@
 
         .image-preview {
             max-width: 100%;
-            max-height: 300px;
+            max-height: 200px;
             border-radius: 10px;
             display: none;
             margin: 0 auto;
+        }
+
+        .path-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .path-selector input {
+            flex: 1;
+        }
+
+        .path-selector button {
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .path-selector button:hover {
+            background: #5568d3;
+        }
+
+        .batch-settings {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .batch-settings input[type="number"] {
+            width: 80px;
         }
 
         .generate-btn {
@@ -186,6 +221,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
+            margin-top: 20px;
         }
 
         .generate-btn:hover {
@@ -199,24 +235,141 @@
             transform: none;
         }
 
-        .result-image-container {
-            text-align: center;
-            min-height: 400px;
+        .result-panel {
             display: flex;
-            align-items: center;
-            justify-content: center;
             flex-direction: column;
+        }
+
+        .batch-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            overflow-y: auto;
+            max-height: 70vh;
+            padding: 10px;
+        }
+
+        .result-item {
+            background: #f9f9f9;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .result-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .result-item img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .result-item .item-info {
+            padding: 15px;
+        }
+
+        .result-item .item-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            word-break: break-all;
+        }
+
+        .result-item .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .result-item .item-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .result-item .download-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .result-item .download-btn:hover {
+            background: #5568d3;
+        }
+
+        .result-item .save-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .result-item .save-btn:hover {
+            background: #218838;
+        }
+
+        .result-item .save-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .result-item .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-bottom: 8px;
+        }
+
+        .result-item .status-badge.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .result-item .status-badge.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .result-item .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar .progress {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 10px;
+            display: none;
         }
 
         .placeholder-text {
             color: #999;
             font-size: 1.2em;
-        }
-
-        .generated-image {
-            max-width: 100%;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            text-align: center;
+            padding: 50px;
         }
 
         .loading-spinner {
@@ -226,6 +379,7 @@
             width: 60px;
             height: 60px;
             animation: spin 1s linear infinite;
+            margin: 0 auto;
         }
 
         @keyframes spin {
@@ -233,47 +387,50 @@
             100% { transform: rotate(360deg); }
         }
 
-        .result-info {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f5f5f5;
-            border-radius: 10px;
-            display: none;
-        }
-
-        .result-info h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .result-info p {
-            color: #666;
-            margin: 5px 0;
-        }
-
-        .download-btn {
-            margin-top: 15px;
-            padding: 12px 30px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .download-btn:hover {
-            background: #5568d3;
-        }
-
         .hidden {
             display: none;
         }
 
-        @media (max-width: 768px) {
+        /* Modal for full-size image */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 900px) {
             .main-content {
                 grid-template-columns: 1fr;
+            }
+
+            .batch-results {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             }
         }
     </style>
@@ -281,8 +438,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎨 AI图像生成器</h1>
-            <p>基于即梦AI(Seedream)的智能图像生成工具</p>
+            <h1>AI图像生成器</h1>
+            <p>基于即梦AI(Seedream)的智能图像生成工具 - 支持批量生成和自定义保存路径</p>
         </div>
 
         <div class="main-content">
@@ -295,8 +452,15 @@
                 </div>
 
                 <div id="theme-input-group" class="input-group">
-                    <label for="theme">主题描述</label>
-                    <textarea id="theme" placeholder="例如:东北粘火烧外皮金黄酥脆,内里软糯拉丝。黄米面做皮,红豆做馅,香甜不腻,也是寓意生活'粘'粘乎乎,甜甜蜜蜜 ✨"></textarea>
+                    <label for="theme">主题描述 (每两行一组:第1行=文件名,第2行=图片描述)</label>
+                    <textarea id="theme" placeholder="东北粘火烧
+外皮金黄酥脆,内里软糯拉丝,黄米面做皮,红豆做馅
+
+黄米年糕
+软糯香甜,传统美食
+
+红豆糯米糍
+晶莹剔透,甜而不腻"></textarea>
                 </div>
 
                 <div id="reference-input-group" class="input-group hidden">
@@ -322,27 +486,47 @@
                     </select>
                 </div>
 
+                <div class="input-group">
+                    <label>保存路径</label>
+                    <div class="path-selector">
+                        <input type="text" id="savePath" placeholder="留空则使用默认路径">
+                        <button type="button" id="selectPathBtn">选择文件夹</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>批量设置</label>
+                    <div class="batch-settings">
+                        <span>每个主题生成:</span>
+                        <input type="number" id="batchCount" value="1" min="1" max="10">
+                        <span>张图片</span>
+                    </div>
+                </div>
+
                 <button class="generate-btn" id="generateBtn">开始生成</button>
+
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText"></div>
             </div>
 
             <div class="result-panel">
                 <h2 class="panel-title">生成结果</h2>
-                <div class="result-image-container" id="resultContainer">
+                <div class="batch-results" id="batchResults">
                     <div class="placeholder-text">
-                        <p>👈 请在左侧输入主题或上传参考图片</p>
-                        <p>然后点击"开始生成"按钮</p>
+                        <p>请在左侧输入主题或上传参考图片</p>
+                        <p>支持每行一个主题进行批量生成</p>
                     </div>
-                </div>
-                <div class="result-info" id="resultInfo">
-                    <h3>生成信息</h3>
-                    <p><strong>风格:</strong> <span id="resultStyle"></span></p>
-                    <p><strong>模型:</strong> <span id="resultModel"></span></p>
-                    <p><strong>时间:</strong> <span id="resultTime"></span></p>
-                    <p><strong>提示词:</strong> <span id="resultPrompt"></span></p>
-                    <button class="download-btn" id="downloadBtn">下载图片</button>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Full-size image modal -->
+    <div class="modal" id="imageModal">
+        <span class="modal-close" id="modalClose">&times;</span>
+        <img id="modalImage" src="" alt="Full size image">
     </div>
 
     <script>
@@ -355,12 +539,27 @@
         const imageUpload = document.getElementById('imageUpload');
         const imagePreview = document.getElementById('imagePreview');
         const styleSelect = document.getElementById('style');
+        const savePathInput = document.getElementById('savePath');
+        const selectPathBtn = document.getElementById('selectPathBtn');
+        const batchCountInput = document.getElementById('batchCount');
         const generateBtn = document.getElementById('generateBtn');
-        const resultContainer = document.getElementById('resultContainer');
-        const resultInfo = document.getElementById('resultInfo');
+        const batchResults = document.getElementById('batchResults');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const imageModal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalClose = document.getElementById('modalClose');
 
         let currentMode = 'theme';
         let referenceImageBase64 = null;
+        let generatedImages = [];  // Store generated images data
+
+        // Load saved path from localStorage
+        const savedPath = localStorage.getItem('imageGenerator_savePath');
+        if (savedPath) {
+            savePathInput.value = savedPath;
+        }
 
         // 模式切换
         modeBtns.forEach(btn => {
@@ -380,9 +579,6 @@
         });
 
         // 图片上传处理
-        // 移除imageUpload的click事件监听,避免文件对话框弹出两次
-        // 因为file input已经覆盖了整个imageUpload区域,点击它会自动触发
-
         referenceImageInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -397,6 +593,136 @@
             }
         });
 
+        // 选择保存路径
+        selectPathBtn.addEventListener('click', async () => {
+            // 由于浏览器安全限制,无法直接选择文件夹
+            // 提示用户手动输入路径
+            const path = prompt('请输入保存图片的文件夹路径:\n例如: C:\\Users\\用户名\\Pictures\\AI生成');
+            if (path) {
+                savePathInput.value = path;
+                localStorage.setItem('imageGenerator_savePath', path);
+            }
+        });
+
+        // Save path on change
+        savePathInput.addEventListener('change', () => {
+            localStorage.setItem('imageGenerator_savePath', savePathInput.value);
+        });
+
+        // Modal close
+        modalClose.addEventListener('click', () => {
+            imageModal.classList.remove('show');
+        });
+
+        imageModal.addEventListener('click', (e) => {
+            if (e.target === imageModal) {
+                imageModal.classList.remove('show');
+            }
+        });
+
+        // Parse themes: every 2 lines = one group (line 1 = filename, line 2 = description)
+        function parseThemeGroups(text) {
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+            const groups = [];
+
+            for (let i = 0; i < lines.length; i += 2) {
+                const filename = lines[i] || 'image';
+                const description = lines[i + 1] || lines[i]; // If no second line, use filename as description
+                groups.push({ filename, description });
+            }
+
+            return groups;
+        }
+
+        // Generate filename from first line of description
+        function generateFilename(text) {
+            // Remove special characters, limit length
+            let filename = text.replace(/[\\/:*?"<>|]/g, '_').substring(0, 50);
+            if (!filename) filename = 'image';
+            return filename;
+        }
+
+        // Create result item
+        function createResultItem(imageData, index) {
+            const item = document.createElement('div');
+            item.className = 'result-item';
+
+            const filename = imageData.filename;
+
+            item.innerHTML = `
+                <img src="data:image/png;base64,${imageData.base64}" alt="${filename}" onclick="showFullImage('${imageData.base64}')">
+                <div class="item-info">
+                    <span class="status-badge success">生成成功</span>
+                    <div class="item-name">${filename}</div>
+                    <div class="item-actions">
+                        <button class="item-btn download-btn" onclick="downloadImage('${imageData.base64}', '${filename}.png')">下载</button>
+                        <button class="item-btn save-btn" id="saveBtn${index}" onclick="saveToPath(${index})">保存到路径</button>
+                    </div>
+                </div>
+            `;
+
+            return item;
+        }
+
+        // Show full image
+        window.showFullImage = function(base64) {
+            modalImage.src = 'data:image/png;base64,' + base64;
+            imageModal.classList.add('show');
+        };
+
+        // Download image
+        window.downloadImage = function(base64, filename) {
+            const link = document.createElement('a');
+            link.href = 'data:image/png;base64,' + base64;
+            link.download = filename;
+            link.click();
+        };
+
+        // Save to specified path (via API)
+        window.saveToPath = async function(index) {
+            const imageData = generatedImages[index];
+            if (!imageData) return;
+
+            const savePath = savePathInput.value.trim();
+            if (!savePath) {
+                alert('请先设置保存路径');
+                return;
+            }
+
+            const btn = document.getElementById(`saveBtn${index}`);
+            btn.disabled = true;
+            btn.textContent = '保存中...';
+
+            try {
+                const filename = imageData.filename + '.png';
+
+                const response = await fetch('/api/save-image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image_base64: imageData.base64,
+                        filename: filename,
+                        save_path: savePath
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    btn.textContent = '已保存';
+                    btn.style.background = '#6c757d';
+                } else {
+                    alert('保存失败: ' + result.error);
+                    btn.disabled = false;
+                    btn.textContent = '保存到路径';
+                }
+            } catch (error) {
+                alert('保存失败: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = '保存到路径';
+            }
+        };
+
         // 生成按钮点击
         generateBtn.addEventListener('click', async () => {
             // 验证输入
@@ -410,59 +736,108 @@
                 return;
             }
 
-            // 禁用按钮,显示加载状态
+            // 解析主题(每两行一组:第1行=文件名,第2行=描述)
+            let themeGroups;
+            if (currentMode === 'theme') {
+                themeGroups = parseThemeGroups(theme);
+            } else {
+                themeGroups = [{ filename: '参考图片', description: '参考图片' }];
+            }
+
+            const batchCount = parseInt(batchCountInput.value) || 1;
+            const totalTasks = themeGroups.length * batchCount;
+
+            if (totalTasks === 0) {
+                alert('请输入有效的主题描述');
+                return;
+            }
+
+            // 重置结果区域
+            generatedImages = [];
+            batchResults.innerHTML = '';
+
+            // 禁用按钮,显示进度
             generateBtn.disabled = true;
             generateBtn.textContent = '生成中...';
-            resultContainer.innerHTML = '<div class="loading-spinner"></div><p style="margin-top: 20px; color: #666;">AI正在创作中,请稍候...</p>';
-            resultInfo.style.display = 'none';
+            progressBar.style.display = 'block';
+            progressText.style.display = 'block';
 
-            try {
-                // 准备参数
-                const params = {
-                    mode: currentMode,
-                    theme: theme,
-                    reference_image: referenceImageBase64 || '',
-                    style: styleSelect.value
-                };
+            let completedTasks = 0;
 
-                // 调用Python后端
-                const response = await fetch('/api/generate-image', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(params)
-                });
+            // 批量生成
+            for (let i = 0; i < themeGroups.length; i++) {
+                const group = themeGroups[i];
+                for (let j = 0; j < batchCount; j++) {
+                    const taskNum = i * batchCount + j + 1;
+                    progressText.textContent = `正在生成 ${taskNum}/${totalTasks}: ${group.filename}...`;
+                    progressFill.style.width = (completedTasks / totalTasks * 100) + '%';
 
-                const result = await response.json();
+                    try {
+                        const params = {
+                            mode: currentMode,
+                            theme: group.description,  // 使用第2行作为图片描述
+                            reference_image: referenceImageBase64 || '',
+                            style: styleSelect.value
+                        };
 
-                if (result.success) {
-                    // 显示生成的图片
-                    const imgSrc = 'data:image/png;base64,' + result.image_base64;
-                    resultContainer.innerHTML = `<img src="${imgSrc}" class="generated-image" alt="生成的图片">`;
+                        const response = await fetch('/api/generate-image', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(params)
+                        });
 
-                    // 显示生成信息
-                    document.getElementById('resultStyle').textContent = result.style;
-                    document.getElementById('resultModel').textContent = result.model.toUpperCase();
-                    document.getElementById('resultTime').textContent = result.timestamp;
-                    document.getElementById('resultPrompt').textContent = result.prompt;
-                    resultInfo.style.display = 'block';
+                        const result = await response.json();
 
-                    // 下载按钮
-                    document.getElementById('downloadBtn').onclick = () => {
-                        const link = document.createElement('a');
-                        link.href = imgSrc;
-                        link.download = result.image_filename;
-                        link.click();
-                    };
-                } else {
-                    resultContainer.innerHTML = `<p style="color: #721c24; font-size: 1.2em;">❌ 生成失败</p><p style="color: #666; margin-top: 10px;">${result.error}</p>`;
+                        if (result.success) {
+                            const imageData = {
+                                base64: result.image_base64,
+                                filename: generateFilename(group.filename),  // 使用第1行作为文件名
+                                description: group.description,
+                                style: result.style,
+                                timestamp: result.timestamp
+                            };
+                            generatedImages.push(imageData);
+                            batchResults.appendChild(createResultItem(imageData, generatedImages.length - 1));
+                        } else {
+                            // Show error item
+                            const errorItem = document.createElement('div');
+                            errorItem.className = 'result-item';
+                            errorItem.innerHTML = `
+                                <div style="aspect-ratio: 1; background: #f8d7da; display: flex; align-items: center; justify-content: center; color: #721c24;">
+                                    生成失败
+                                </div>
+                                <div class="item-info">
+                                    <span class="status-badge error">失败</span>
+                                    <div class="item-name">${group.filename}</div>
+                                    <div style="color: #721c24; font-size: 0.85em;">${result.error}</div>
+                                </div>
+                            `;
+                            batchResults.appendChild(errorItem);
+                        }
+                    } catch (error) {
+                        console.error('生成失败:', error);
+                    }
+
+                    completedTasks++;
+                    progressFill.style.width = (completedTasks / totalTasks * 100) + '%';
                 }
-            } catch (error) {
-                resultContainer.innerHTML = `<p style="color: #721c24; font-size: 1.2em;">❌ 请求失败</p><p style="color: #666; margin-top: 10px;">${error.message}</p>`;
-            } finally {
-                generateBtn.disabled = false;
-                generateBtn.textContent = '开始生成';
+            }
+
+            // 完成
+            progressFill.style.width = '100%';
+            progressText.textContent = `完成! 共生成 ${generatedImages.length}/${totalTasks} 张图片`;
+            generateBtn.disabled = false;
+            generateBtn.textContent = '开始生成';
+
+            // Auto-save if path is set
+            if (savePathInput.value.trim() && generatedImages.length > 0) {
+                progressText.textContent += ' - 正在自动保存...';
+
+                for (let i = 0; i < generatedImages.length; i++) {
+                    await window.saveToPath(i);
+                }
+
+                progressText.textContent = `完成! 共生成并保存 ${generatedImages.length} 张图片到 ${savePathInput.value}`;
             }
         });
     </script>

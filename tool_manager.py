@@ -52,6 +52,12 @@ TOOL_DESCRIPTIONS = {
         "generate_pencil_sketch.py": "工具 - 生成铅笔素描效果",
     },
     "picture/": {
+        "standalone_image_generator_v9.py": {
+            "description": "🎨 AI图像生成器 V9.1 (主题/参考图片+7种画图风格)⭐⭐⭐",
+            "is_web_service": True,
+            "port": 5009,
+            "url": "http://localhost:5009"
+        },
         "generate_festival_images.py": "生成器 - 节日主题图像生成器 (支持自定义主题,使用DALL-E3+Flux+Seedream对比)",
         "advanced_watermark_remover.py": "工具 - 高级去水印 (NS高质量算法,油猴脚本智能检测,推荐使用)⭐⭐",
     },
@@ -280,6 +286,59 @@ def api_run():
             # 设置UTF-8编码，避免中文乱码
             env['PYTHONIOENCODING'] = 'utf-8'
             env['PYTHONUTF8'] = '1'
+
+            # Web服务类型工具 - 后台启动并自动打开浏览器
+            tool_config = TOOL_DESCRIPTIONS.get(filename.replace('picture/', 'picture/').replace('article/', 'article/').replace('video/', 'video/').replace('bird/', 'bird/').replace('hotspot/', 'hotspot/').replace('test/', 'test/'), None)
+
+            # 查找工具配置（需要遍历所有分类）
+            tool_info = None
+            for cat, tools in TOOL_DESCRIPTIONS.items():
+                if filename.startswith(cat):
+                    tool_name = filename.replace(cat, '')
+                    if tool_name in tools:
+                        tool_info = tools[tool_name]
+                        break
+
+            if tool_info and isinstance(tool_info, dict) and tool_info.get('is_web_service'):
+                # Web服务类型工具
+                port = tool_info.get('port', 5000)
+                url = tool_info.get('url', f'http://localhost:{port}')
+
+                # 后台启动服务
+                process = subprocess.Popen(
+                    ['python', str(tool_path)],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    cwd=BASE_DIR,
+                    env=env
+                )
+
+                # 延迟打开浏览器（等待服务启动）
+                import threading
+                import webbrowser
+
+                def open_browser():
+                    time.sleep(2)  # 等待2秒让服务启动
+                    webbrowser.open(url)
+
+                threading.Thread(target=open_browser, daemon=True).start()
+
+                running_processes[process_id] = {
+                    'process': process,
+                    'filename': filename,
+                    'start_time': time.time(),
+                    'output': f'Web服务已启动: {url}\n请在浏览器中使用...',
+                    'status': 'running',
+                    'tool_path': tool_path
+                }
+
+                return jsonify({
+                    'success': True,
+                    'message': f'Web服务已启动，正在打开浏览器: {url}',
+                    'process_id': process_id,
+                    'filename': filename,
+                    'url': url
+                })
 
             # 今日头条文章生成器 - 支持模式选择、主题/草稿、字数、配图参数
             if filename == 'article/toutiao_article_generator.py':

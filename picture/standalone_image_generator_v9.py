@@ -56,37 +56,37 @@ IMAGE_STYLES = {
     "guofeng_gongbi": {
         "name": "国风工笔",
         "description": "中国传统工笔画风格,线条精细,色彩淡雅",
-        "prompt_template": "{theme},中国传统工笔画风格,精细线条,淡雅色彩,高质量,杰作"
+        "prompt_template": "{theme},中国传统工笔画风格,精细线条,淡雅色彩,高质量杰作,no text,no words,no letters,no watermark,纯画面"
     },
     "guofeng_shuimo": {
         "name": "国风水墨",
         "description": "中国水墨画风格,传统笔墨,意境深远,水墨淋漓",
-        "prompt_template": "{theme},中国水墨画风格,传统笔墨,意境深远,留白艺术,高质量"
+        "prompt_template": "{theme},中国水墨画风格,传统笔墨,意境深远,留白艺术,高质量,no text,no words,no letters,纯画面"
     },
     "shuica": {
         "name": "水彩画",
         "description": "水彩画风格,色彩通透,水彩质感,艺术绘画,高质量",
-        "prompt_template": "{theme},水彩画风格,色彩通透,水彩质感,艺术绘画,高质量"
+        "prompt_template": "{theme},水彩画风格,色彩通透,水彩质感,艺术绘画,高质量,no text,no words,no letters,纯画面"
     },
     "youhua": {
         "name": "油画",
         "description": "油画风格,色彩丰富,笔触明显,古典油画质感",
-        "prompt_template": "{theme},油画风格,色彩丰富,笔触明显,古典油画质感,高质量"
+        "prompt_template": "{theme},油画风格,色彩丰富,笔触明显,古典油画质感,高质量,no text,no words,no letters,纯画面"
     },
     "manhua": {
         "name": "动漫插画",
         "description": "日式动漫插画风格,色彩鲜明,精美插画,高质量",
-        "prompt_template": "{theme},日式动漫插画风格,色彩鲜明,精美插画,高质量"
+        "prompt_template": "{theme},日式动漫插画风格,色彩鲜明,精美插画,高质量,no text,no words,no letters,纯画面"
     },
     "shisu": {
         "name": "写实摄影",
         "description": "真实照片风格,细节丰富,8K画质",
-        "prompt_template": "{theme},真实照片风格,细节丰富,8K画质,高质量"
+        "prompt_template": "{theme},真实照片风格,细节丰富,8K画质,高质量,no text,no words,no letters,no watermark,纯画面"
     },
     "cartoon": {
         "name": "卡通插画",
         "description": "可爱卡通风格,色彩明快,儿童绘本风格,高质量",
-        "prompt_template": "{theme},可爱卡通风格,色彩明快,儿童绘本风格,高质量"
+        "prompt_template": "{theme},可爱卡通风格,色彩明快,儿童绘本风格,高质量,no text,no words,no letters,纯画面"
     }
 }
 
@@ -125,7 +125,7 @@ def generate_with_seedream_v9(prompt, reference_image_path, output_path, style_n
         payload = {
             "model": "doubao-seedream-4-5-251128",
             "prompt": prompt,
-            "size": "2K",
+            "size": "2048x2048",  # 正方形图片(2K)
             "response_format": "url"
         }
 
@@ -376,6 +376,56 @@ def view_logs():
         return f"<pre>{logs}</pre>"
     except Exception as e:
         return f"读取日志失败: {str(e)}"
+
+
+@app.route('/api/save-image', methods=['POST'])
+def api_save_image():
+    """API: 保存图片到指定路径"""
+    try:
+        data = request.json
+        image_base64 = data.get('image_base64', '')
+        filename = data.get('filename', 'image.png')
+        save_path = data.get('save_path', '')
+
+        if not image_base64:
+            return jsonify({'success': False, 'error': '缺少图片数据'})
+
+        if not save_path:
+            return jsonify({'success': False, 'error': '缺少保存路径'})
+
+        # 创建目录(如果不存在)
+        save_dir = Path(save_path)
+        save_dir.mkdir(parents=True, exist_ok=True)
+
+        # 生成完整文件路径
+        full_path = save_dir / filename
+
+        # 如果文件已存在,添加序号
+        if full_path.exists():
+            base_name = full_path.stem
+            ext = full_path.suffix
+            counter = 1
+            while full_path.exists():
+                full_path = save_dir / f"{base_name}_{counter}{ext}"
+                counter += 1
+
+        # 解码并保存图片
+        image_data = base64.b64decode(image_base64)
+        with open(full_path, 'wb') as f:
+            f.write(image_data)
+
+        logging.info(f"[保存成功] {full_path}")
+        return jsonify({
+            'success': True,
+            'message': f'图片已保存到: {full_path}',
+            'path': str(full_path)
+        })
+
+    except Exception as e:
+        logging.error(f"[保存失败] {str(e)}")
+        import traceback
+        logging.debug(traceback.format_exc())
+        return jsonify({'success': False, 'error': str(e)})
 
 
 def main():
