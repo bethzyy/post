@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-今日头条高赞文章生成器 v3.0 - 增强版
+今日头条高赞文章生成器 v3.2 - 增强版
 支持用户输入自定义主题,使用AI生成高质量文章
 新增: 自动生成配图功能
+
+v3.2更新(2026-02-15):
+  ✅ 草稿完善模式: 强调最大程度保留原草稿内容，不大幅缩减
+  ✅ 图像生成: 优先使用Seedream 4.5/4.0 (正方形1:1)，然后降级到Antigravity
 """
 
 import sys
@@ -54,92 +58,109 @@ class ToutiaoArticleGenerator:
 
         # 根据风格选择不同的prompt
         if style == 'professional':
-            prompt = f"""你是一位资深的专栏作家，擅长用优美的文字和深刻的思考打动读者。请将以下用户草稿完善为一篇有深度、有温度、有新意的文章。
+            prompt = f"""你是一位资深编辑，请对以下用户草稿进行**润色完善**。
 
 ## 用户草稿:
 
 {draft_content}
 
-## 写作要求:
-1. **字数**: {target_length}字左右
-2. **文风**: 资深写手风格
-   - 语言优美流畅，避免机器感和套路化表达
-   - 用词精准，句式多变，长短句结合
-   - 适当运用修辞手法（比喻、排比、设问等）
-   - 文字要有温度，能引起读者共鸣
-3. **结构**:
-   - 引人入胜的开头（可以从个人经历或时代背景切入）
-   - 2-3个深度观点（不要简单罗列，要有逻辑递进）
-   - 意味深长的结尾（留有思考空间）
-4. **内容提升**:
-   - 保留草稿的核心思想和情感基调
-   - 补充2026年AI时代的最新视角和案例
-   - 融入"第三空间"、"知识体验中心"等前沿概念
-   - 加入对人文精神在算法时代的思考
-   - 避免陈词滥调和空话套话
-5. **标题**: 文学性+思想性，15-25字，避免标题党
-6. **禁忌**:
-   - 不得使用"首先、其次、最后"等公文式表达
-   - 不得过度使用emoji（最多2-3处，且要用得恰到好处）
-   - 不得使用"让我们一起"、"不容错过"等营销话术
-   - 不得生硬列举"5个XX"、"3大XX"
+## 核心原则（最重要！）:
+**最大限度保留原文内容**。你的工作不是重写，而是润色和完善。
+
+## 具体修改范围:
+1. **语法修正**: 修正错别字、病句、标点错误
+2. **用词优化**: 将口语化表达改为更书面化，但保留原意
+3. **逻辑梳理**: 调整段落顺序，使行文逻辑更清晰
+4. **句子润色**: 对表达不清的句子进行改写，但保留原意
+
+## 禁止做的事:
+- ❌ 不要删除或大幅缩减原文内容
+- ❌ 不要改变原文的核心观点和思想
+- ❌ 不要添加原文没有的新观点（除非原文逻辑明显缺失）
+- ❌ 不要改变原文的情感基调和写作风格
+- ❌ 不要使用"首先、其次、最后"等公文式表达
+- ❌ 不要过度使用emoji（最多2-3处）
+
+## 可以做的事:
+- ✅ 调整段落顺序，使逻辑更清晰
+- ✅ 修正明显的语法错误和错别字
+- ✅ 将重复啰嗦的句子精简（但不删减意思）
+- ✅ 为句子添加适当的过渡词，使行文流畅
+- ✅ 生成一个合适的标题（15-25字）
+
+## 字数要求:
+- 原文多少字，完善后也应该差不多多少字
+- 如果原文内容丰富，可以保持或略有增加
+- 绝对不能大幅缩减原文篇幅
 
 请直接输出完善后的文章内容,格式如下:
 
 ---
 标题: [文章标题]
 
-[完善后的正文内容]
-
+(这里输出润色后的正文内容，必须保留原文绝大部分内容)
 ---
 
-记住:你要写的是一篇能打动人心、引人深思的专栏文章，而不是一篇营销文案。
+记住:你的任务是**润色**，不是**重写**。原文的每一句话、每一个观点都要尽量保留。
 """
         else:
-            prompt = f"""请将以下用户草稿完善为一篇高质量的今日头条文章。
+            prompt = f"""你是一位资深编辑，请对以下用户草稿进行**润色完善**。
 
 ## 用户草稿:
 
 {draft_content}
 
-## 完善要求:
-1. 字数: {target_length}字左右
-2. 风格: 通俗易懂,接地气,有感染力
-3. 结构: 吸引人的标题 + 引人入胜的开头 + 3-5个要点 + 感人或启发的结尾 + 互动号召
-4. 内容优化:
-   - 保留草稿的核心观点和主要内容
-   - 补充具体的案例和数据
-   - 优化表达,使其更生动有趣
-   - 增加适当的emoji增强可读性
-5. 标题优化: 使用数字+疑问/对比/利益点,字数15-25字
-6. 情感增强: 能引起共鸣,激发情绪(感动/激励/共鸣)
+## 核心原则（最重要！）:
+**最大限度保留原文内容**。你的工作不是重写，而是润色和完善。
+
+## 具体修改范围:
+1. **语法修正**: 修正错别字、病句、标点错误
+2. **用词优化**: 将过于口语化的表达稍作规范，但保留原汁原味
+3. **逻辑梳理**: 调整段落顺序，使行文逻辑更清晰
+4. **句子润色**: 对表达不清的句子进行改写，但保留原意
+
+## 禁止做的事:
+- ❌ 不要删除或大幅缩减原文内容
+- ❌ 不要改变原文的核心观点和思想
+- ❌ 不要添加原文没有的新观点（除非原文逻辑明显缺失）
+- ❌ 不要改变原文的情感基调和写作风格
+- ❌ 不要将原文改得面目全非
+
+## 可以做的事:
+- ✅ 调整段落顺序，使逻辑更清晰
+- ✅ 修正明显的语法错误和错别字
+- ✅ 将重复啰嗦的句子精简（但不删减意思）
+- ✅ 为句子添加适当的过渡词，使行文流畅
+- ✅ 适当添加emoji增强可读性（不要过多）
+- ✅ 生成一个吸引人的标题（15-25字）
+
+## 字数要求:
+- 原文多少字，完善后也应该差不多多少字
+- 如果原文内容丰富，可以保持或略有增加
+- 绝对不能大幅缩减原文篇幅
 
 请直接输出完善后的文章内容,格式如下:
 
 ---
 标题: [文章标题]
 
-[完善后的正文内容]
-
+(这里输出润色后的正文内容，必须保留原文绝大部分内容)
 ---
 
-注意:
-- 保留草稿的核心思想,不要偏离原意
-- 标题要吸引点击,包含数字或疑问
-- 内容要有真实感,避免空话套话
-- 多用案例和数据说话
-- 适当使用emoji增加可读性
-- 结尾要有情感共鸣或行动号召
+记住:你的任务是**润色**，不是**重写**。原文的每一句话、每一个观点都要尽量保留。
 """
 
         try:
             # 使用Anthropic兼容接口
-            print(f"[DEBUG] Calling AI API with model=glm-4-flash, max_tokens=4000")
+            # 对于草稿模式，需要更大的 max_tokens 来保留原文内容
+            # 根据草稿长度动态计算 max_tokens
+            estimated_tokens = max(8000, len(draft_content) * 2)  # 至少8000，或草稿长度的2倍
+            print(f"[DEBUG] Calling AI API with model=glm-4-flash, max_tokens={estimated_tokens}")
             print(f"[DEBUG] Draft content length: {len(draft_content)} chars")
 
             response = self.text_client.messages.create(
                 model="glm-4-flash",  # 使用快速模型
-                max_tokens=4000,
+                max_tokens=estimated_tokens,
                 messages=[
                     {
                         "role": "user",
@@ -464,7 +485,10 @@ class ToutiaoArticleGenerator:
             return None
 
     def generate_article_images(self, theme, article_content, image_style="realistic"):
-        """根据文章主题和内容生成3张配图，支持多模型降级"""
+        """根据文章主题和内容生成3张配图，支持多模型降级
+
+        优先级: Seedream 4.5 -> Seedream 4.0 -> Antigravity -> Pollinations
+        """
 
         import urllib.parse
         import requests
@@ -481,128 +505,132 @@ class ToutiaoArticleGenerator:
         image_prompts = self._generate_contextual_prompts(clean_theme, article_content, image_style)
         generated_images = []
 
-        # 定义图片生成模型优先级（按顺序尝试）
-        image_models = [
-            # Gemini 系列（高质量）
-            {"model": "gemini-3-pro-image-2k", "name": "Gemini 3 Pro 2K", "type": "antigravity"},
-            {"model": "gemini-2-flash-image", "name": "Gemini 2 Flash", "type": "antigravity"},
-            # Flux 系列（高质量）
-            {"model": "flux-1.1-pro", "name": "Flux 1.1 Pro", "type": "antigravity"},
-            {"model": "flux-schnell", "name": "Flux Schnell", "type": "antigravity"},
-            # Stable Diffusion 系列
-            {"model": "sd-3", "name": "SD 3", "type": "antigravity"},
-            {"model": "sdxl-turbo", "name": "SDXL Turbo", "type": "antigravity"},
-            # DALL-E 系列
-            {"model": "dall-e-3", "name": "DALL-E 3", "type": "antigravity"},
-        ]
-
-        # 找一个可用的模型
-        available_model = None
-        print(f"[INFO] Checking available image models...")
-
-        for model_info in image_models:
-            try:
-                # 快速测试模型是否可用
-                test_response = self.image_client.images.generate(
-                    model=model_info["model"],
-                    prompt="test",
-                    size="1024x1024",
-                    n=1,
-                )
-                available_model = model_info
-                print(f"[INFO] Using model: {model_info['name']} ({model_info['model']})")
-                break
-            except Exception as e:
-                error_str = str(e)
-                if "404" in error_str or "NOT_FOUND" in error_str:
-                    print(f"[DEBUG] {model_info['name']}: not available (404)")
-                elif "429" in error_str or "quota" in error_str.lower():
-                    print(f"[DEBUG] {model_info['name']}: quota exceeded")
-                else:
-                    print(f"[DEBUG] {model_info['name']}: {str(e)[:60]}")
-
         for i, (img_prompt, img_desc) in enumerate(image_prompts, 1):
             print(f"[IMAGE {i}] {img_desc}...")
 
             image_generated = False
 
-            # 优先使用 anti-gravity 的可用模型
-            if available_model:
-                try:
-                    response = self.image_client.images.generate(
-                        model=available_model["model"],
-                        prompt=img_prompt,
-                        size="1024x1024",
-                        n=1,
-                    )
-
-                    if hasattr(response, 'data') and len(response.data) > 0:
-                        image_data = response.data[0]
-                        b64_json = getattr(image_data, 'b64_json', None)
-
-                        if b64_json:
-                            image_bytes = base64.b64decode(b64_json)
-                            img = Image.open(io.BytesIO(image_bytes))
-
-                            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                            safe_desc = "".join(c for c in img_desc if c.isalnum() or c in ('_', '-'))[:20]
-                            filename = f"article_img{i}_{safe_desc}_{timestamp}.jpg"
-
-                            tool_dir = Path(__file__).parent
-                            img_path = str(tool_dir / filename)
-
-                            img.save(img_path, 'JPEG', quality=95)
-                            generated_images.append(img_path)
-                            print(f"    [OK] {filename} ({available_model['name']})")
-                            image_generated = True
-
-                except Exception as e:
-                    print(f"    [WARN] {available_model['name']} failed: {str(e)[:60]}")
-
-            # 如果 anti-gravity 模型失败，尝试 Seedream (火山引擎)
+            # 1. 优先尝试 Seedream 4.5 (火山引擎)
             if not image_generated and self.volcano_client:
                 try:
-                    print(f"    [FALLBACK] Trying Seedream (Volcano)...")
+                    print(f"    [TRY] Seedream 4.5...")
                     response = self.volcano_client.images.generate(
                         model="doubao-seedream-4-5-251128",
                         prompt=img_prompt,
-                        size="2K",  # Seedream使用2K分辨率
-                        response_format="url",  # 必须指定返回URL格式
+                        size="2K",  # 高分辨率，不限制形状
+                        response_format="url",
                         extra_body={
-                            "watermark": False,  # 不启用水印
+                            "watermark": False,
                         },
                     )
 
                     if hasattr(response, 'data') and len(response.data) > 0:
                         image_url = response.data[0].url
-
-                        # 从URL下载图片
                         img_response = requests.get(image_url, timeout=60)
                         if img_response.status_code == 200:
                             img = Image.open(BytesIO(img_response.content))
-
                             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
                             safe_desc = "".join(c for c in img_desc if c.isalnum() or c in ('_', '-'))[:20]
                             filename = f"article_img{i}_{safe_desc}_{timestamp}.jpg"
-
                             tool_dir = Path(__file__).parent
                             img_path = str(tool_dir / filename)
-
                             img.save(img_path, 'JPEG', quality=95)
                             generated_images.append(img_path)
-                            print(f"    [OK] {filename} (Seedream)")
+                            print(f"    [OK] {filename} (Seedream 4.5)")
                             image_generated = True
                         else:
-                            print(f"    [WARN] Seedream download failed: HTTP {img_response.status_code}")
-
+                            print(f"    [WARN] Seedream 4.5 download failed: HTTP {img_response.status_code}")
                 except Exception as e:
-                    print(f"    [WARN] Seedream failed: {str(e)[:60]}")
+                    error_str = str(e)
+                    if "429" in error_str or "quota" in error_str.lower():
+                        print(f"    [WARN] Seedream 4.5 quota exceeded, trying 4.0...")
+                    else:
+                        print(f"    [WARN] Seedream 4.5 failed: {error_str[:60]}")
 
-            # 如果 Seedream 也失败，使用 Pollinations.ai
+            # 2. 如果 Seedream 4.5 失败(配额问题)，尝试 Seedream 4.0
+            if not image_generated and self.volcano_client:
+                try:
+                    print(f"    [TRY] Seedream 4.0...")
+                    response = self.volcano_client.images.generate(
+                        model="doubao-seedream-4-0-250828",
+                        prompt=img_prompt,
+                        size="2K",  # 高分辨率，不限制形状
+                        response_format="url",
+                        extra_body={
+                            "watermark": False,
+                        },
+                    )
+
+                    if hasattr(response, 'data') and len(response.data) > 0:
+                        image_url = response.data[0].url
+                        img_response = requests.get(image_url, timeout=60)
+                        if img_response.status_code == 200:
+                            img = Image.open(BytesIO(img_response.content))
+                            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                            safe_desc = "".join(c for c in img_desc if c.isalnum() or c in ('_', '-'))[:20]
+                            filename = f"article_img{i}_{safe_desc}_{timestamp}.jpg"
+                            tool_dir = Path(__file__).parent
+                            img_path = str(tool_dir / filename)
+                            img.save(img_path, 'JPEG', quality=95)
+                            generated_images.append(img_path)
+                            print(f"    [OK] {filename} (Seedream 4.0)")
+                            image_generated = True
+                        else:
+                            print(f"    [WARN] Seedream 4.0 download failed: HTTP {img_response.status_code}")
+                except Exception as e:
+                    print(f"    [WARN] Seedream 4.0 failed: {str(e)[:60]}")
+
+            # 3. 如果 Seedream 都失败，尝试 Antigravity 模型
+            if not image_generated and self.image_client:
+                # 定义 Antigravity 模型优先级
+                antigravity_models = [
+                    {"model": "gemini-3-flash-image", "name": "Gemini 3 Flash"},
+                    {"model": "flux-1.1-pro", "name": "Flux 1.1 Pro"},
+                    {"model": "flux-schnell", "name": "Flux Schnell"},
+                    {"model": "dall-e-3", "name": "DALL-E 3"},
+                ]
+
+                for model_info in antigravity_models:
+                    if image_generated:
+                        break
+                    try:
+                        print(f"    [TRY] {model_info['name']}...")
+                        response = self.image_client.images.generate(
+                            model=model_info["model"],
+                            prompt=img_prompt,
+                            size="1024x1024",
+                            n=1,
+                        )
+
+                        if hasattr(response, 'data') and len(response.data) > 0:
+                            image_data = response.data[0]
+                            b64_json = getattr(image_data, 'b64_json', None)
+
+                            if b64_json:
+                                image_bytes = base64.b64decode(b64_json)
+                                img = Image.open(io.BytesIO(image_bytes))
+                                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                                safe_desc = "".join(c for c in img_desc if c.isalnum() or c in ('_', '-'))[:20]
+                                filename = f"article_img{i}_{safe_desc}_{timestamp}.jpg"
+                                tool_dir = Path(__file__).parent
+                                img_path = str(tool_dir / filename)
+                                img.save(img_path, 'JPEG', quality=95)
+                                generated_images.append(img_path)
+                                print(f"    [OK] {filename} ({model_info['name']})")
+                                image_generated = True
+                    except Exception as e:
+                        error_str = str(e)
+                        if "404" in error_str or "NOT_FOUND" in error_str:
+                            print(f"    [SKIP] {model_info['name']}: not available")
+                        elif "429" in error_str or "quota" in error_str.lower():
+                            print(f"    [SKIP] {model_info['name']}: quota exceeded")
+                        else:
+                            print(f"    [WARN] {model_info['name']} failed: {error_str[:50]}")
+
+            # 4. 最后备选：Pollinations.ai
             if not image_generated:
                 print(f"    [FALLBACK] Trying Pollinations.ai...")
                 try:
-                    # 从内容中提取简单主题
                     content_lower = article_content.lower() if article_content else ""
                     if any(kw in content_lower for kw in ['ai', 'glm', 'artificial', 'model', 'code']):
                         simple_topic = "robot"

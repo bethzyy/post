@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI图像生成器 - 即梦AI</title>
+    <title>AI图像生成器 V9.4 - 多模型Fallback</title>
     <style>
         * {
             margin: 0;
@@ -439,7 +439,7 @@
     <div class="container">
         <div class="header">
             <h1>AI图像生成器</h1>
-            <p>基于即梦AI(Seedream)的智能图像生成工具 - 支持批量生成和自定义保存路径</p>
+            <p>智能图像生成工具 - 多模型Fallback (Seedream 4.5 → 4.0 → Antigravity) - 支持批量生成</p>
         </div>
 
         <div class="main-content">
@@ -478,7 +478,7 @@
                     <select id="style">
                         <option value="guofeng_gongbi">国风工笔 - 中国传统工笔画风格</option>
                         <option value="guofeng_shuimo">国风水墨 - 中国水墨画风格</option>
-                        <option value="shuica">水彩画 - 色彩通透,轻盈自然</option>
+                        <option value="shuica">中国风水彩画 - 色彩通透,轻盈自然</option>
                         <option value="youhua">油画 - 色彩丰富,笔触明显</option>
                         <option value="manhua">动漫插画 - 日式动漫风格</option>
                         <option value="shisu">写实摄影 - 真实照片风格</option>
@@ -636,8 +636,8 @@
 
         // Generate filename from first line of description
         function generateFilename(text) {
-            // Remove special characters, limit length
-            let filename = text.replace(/[\\/:*?"<>|]/g, '_').substring(0, 50);
+            // 只保留中文、英文字母、数字，去除所有符号
+            let filename = text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').substring(0, 50);
             if (!filename) filename = 'image';
             return filename;
         }
@@ -648,18 +648,29 @@
             item.className = 'result-item';
 
             const filename = imageData.filename;
+            const imgSrc = 'data:image/png;base64,' + imageData.base64;
 
             item.innerHTML = `
-                <img src="data:image/png;base64,${imageData.base64}" alt="${filename}" onclick="showFullImage('${imageData.base64}')">
+                <img src="${imgSrc}" alt="${filename}" data-index="${index}" class="clickable-image" style="cursor:pointer;">
                 <div class="item-info">
                     <span class="status-badge success">生成成功</span>
                     <div class="item-name">${filename}</div>
                     <div class="item-actions">
-                        <button class="item-btn download-btn" onclick="downloadImage('${imageData.base64}', '${filename}.png')">下载</button>
-                        <button class="item-btn save-btn" id="saveBtn${index}" onclick="saveToPath(${index})">保存到路径</button>
+                        <button class="item-btn download-btn" data-index="${index}">下载</button>
+                        <button class="item-btn save-btn" id="saveBtn${index}" data-index="${index}">保存到路径</button>
                     </div>
                 </div>
             `;
+
+            // Add event listeners
+            const img = item.querySelector('.clickable-image');
+            img.addEventListener('click', () => showFullImage(imageData.base64));
+
+            const downloadBtn = item.querySelector('.download-btn');
+            downloadBtn.addEventListener('click', () => downloadImage(imageData.base64, filename + '.png'));
+
+            const saveBtn = item.querySelector('.save-btn');
+            saveBtn.addEventListener('click', () => saveToPath(index));
 
             return item;
         }
