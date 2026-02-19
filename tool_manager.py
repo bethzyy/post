@@ -62,8 +62,14 @@ TOOL_DESCRIPTIONS = {
         "advanced_watermark_remover.py": "工具 - 高级去水印 (NS高质量算法,油猴脚本智能检测,推荐使用)⭐⭐",
     },
     "article/": {
+        "toutiao_web_app.py": {
+            "description": "📝 今日头条文章生成器 Web版 (独立Web应用，支持主题生成+草稿完善+智能配图)⭐⭐⭐",
+            "is_web_service": True,
+            "port": 5010,
+            "url": "http://localhost:5010"
+        },
         "toutiao_article_generator.py": {
-            "description": "生成器 - 今日头条文章生成器 v3.1 (支持主题生成+草稿完善+智能配图)",
+            "description": "生成器 - 今日头条文章生成器 v3.1 (命令行版)",
             "needs_input": True,
             "input_fields": [
                 {"name": "mode", "label": "生成模式", "type": "select", "options": [

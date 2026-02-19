@@ -844,24 +844,40 @@
 
                 if (data.success) {
                     currentProcessId = data.process_id;
-                    addLog('success', `工具已启动`);
 
-                    // 更新树节点状态
-                    element.classList.add('running');
-                    btn.textContent = '🔄';
+                    // 检查是否是Web服务类型
+                    if (data.url) {
+                        // Web服务类型 - 显示URL并打开
+                        addLog('success', `Web服务已启动: \${data.url}`);
+                        addLogWithLink('info', `🔗 点击打开: `, data.url, data.url);
 
-                    // 开始检查状态
-                    checkStatusDirect(tool, element, btn);
+                        // 更新按钮状态
+                        element.classList.add('running');
+                        btn.textContent = '🌐';
+                        btn.style.background = '#4299e1';
+
+                        // 不需要轮询状态，Web服务会持续运行
+                    } else {
+                        // 普通工具 - 开始检查状态
+                        addLog('success', `工具已启动`);
+
+                        // 更新树节点状态
+                        element.classList.add('running');
+                        btn.textContent = '🔄';
+
+                        // 开始检查状态
+                        checkStatusDirect(tool, element, btn);
+                    }
 
                 } else {
-                    addLog('error', `启动失败: ${data.error}`);
+                    addLog('error', `启动失败: \${data.error}`);
                     btn.disabled = false;
                     btn.textContent = '▶ 运行';
                     btn.classList.remove('running');
                 }
 
             } catch (error) {
-                addLog('error', `请求失败: ${error.message}`);
+                addLog('error', `请求失败: \${error.message}`);
                 btn.disabled = false;
                 btn.textContent = '▶ 运行';
                 btn.classList.remove('running');

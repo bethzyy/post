@@ -1,0 +1,359 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""重写 toutiao_web_app.py 的 HTML 模板 - 修复语法错误"""
+
+file_path = 'article/toutiao_web_app.py'
+
+with open(file_path, 'r', encoding='utf-8') as f:
+    content = f.read()
+
+# 找到 HTML_TEMPLATE 的开始和结束
+start_marker = "HTML_TEMPLATE = '''<!DOCTYPE html>"
+end_marker = "'''"
+
+start_idx = content.find(start_marker)
+if start_idx == -1:
+    print("ERROR: Cannot find HTML_TEMPLATE start")
+    exit(1)
+
+# 找到对应的结束标记
+search_start = start_idx + len(start_marker)
+end_idx = content.find(end_marker, search_start)
+if end_idx == -1:
+    print("ERROR: Cannot find HTML_TEMPLATE end")
+    exit(1)
+
+# 新的 HTML 模板
+new_html = '''<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今日头条文章生成器</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .container {
+            max-width: 900px; margin: 0 auto; background: white;
+            border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 30px; text-align: center;
+        }
+        .header h1 { font-size: 2em; margin-bottom: 10px; }
+        .header p { opacity: 0.9; }
+        .main-content { padding: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
+        .mode-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .mode-tab {
+            flex: 1; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px;
+            cursor: pointer; text-align: center; transition: all 0.3s; background: #f7fafc;
+        }
+        .mode-tab:hover { border-color: #667eea; }
+        .mode-tab.active {
+            border-color: #667eea; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;
+        }
+        .mode-tab h3 { margin-bottom: 5px; }
+        .mode-tab p { font-size: 0.85em; opacity: 0.8; }
+        input[type="text"], textarea, select {
+            width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0;
+            border-radius: 8px; font-size: 1em; transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, textarea:focus, select:focus { outline: none; border-color: #667eea; }
+        textarea { min-height: 100px; resize: vertical; font-family: inherit; }
+        .options-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+        .checkbox-group input[type="checkbox"] { width: 20px; height: 20px; }
+        .generate-btn {
+            width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 10px; font-size: 1.2em;
+            font-weight: 600; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); }
+        .generate-btn:disabled { background: #a0aec0; cursor: not-allowed; transform: none; }
+        .progress-section { margin-top: 20px; padding: 20px; background: #f7fafc; border-radius: 10px; display: none; }
+        .progress-section.active { display: block; }
+        .progress-log {
+            font-family: monospace; font-size: 0.9em; line-height: 1.6; max-height: 300px;
+            overflow-y: auto; padding: 15px; background: #1a202c; color: #a0aec0; border-radius: 8px;
+        }
+        .progress-log .success { color: #48bb78; }
+        .progress-log .error { color: #f56565; }
+        .progress-log .info { color: #4299e1; }
+        .result-section { margin-top: 20px; display: none; }
+        .result-section.active { display: block; }
+        .result-card { background: #f7fafc; border-radius: 10px; padding: 20px; margin-bottom: 15px; }
+        .result-card h3 { margin-bottom: 15px; color: #667eea; }
+        .article-preview { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; line-height: 1.8; }
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .action-btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: #e2e8f0; color: #4a5568; }
+        .action-btn:hover { transform: translateY(-2px); }
+        .hidden { display: none !important; }
+        @media (max-width: 600px) {
+            .container { border-radius: 0; }
+            .main-content { padding: 15px; }
+            .mode-tabs { flex-direction: column; }
+            .options-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>今日头条文章生成器</h1>
+            <p>AI智能写作 - 一键生成高质量文章</p>
+        </div>
+        <div class="main-content">
+            <div class="mode-tabs">
+                <div class="mode-tab active" data-mode="theme" onclick="selectMode('theme')">
+                    <h3>主题生成</h3>
+                    <p>输入主题，AI从零开始写作</p>
+                </div>
+                <div class="mode-tab" data-mode="draft" onclick="selectMode('draft')">
+                    <h3>草稿完善</h3>
+                    <p>选择草稿文件，AI润色优化</p>
+                </div>
+            </div>
+
+            <div id="theme-section" class="form-group">
+                <label>文章主题</label>
+                <input type="text" id="theme-input" placeholder="例如：春季养生指南、AI改变生活、职场沟通技巧...">
+            </div>
+
+            <div id="draft-section" class="form-group hidden">
+                <label>草稿文件路径</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="draft-input" placeholder="例如: article/draft.txt 或 C:\\path\\to\\draft.txt" style="flex: 1;">
+                    <button type="button" onclick="selectDraftFile()" style="padding: 12px 20px; background: #e2e8f0; border: none; border-radius: 8px; cursor: pointer;">浏览</button>
+                </div>
+                <small style="color: #718096; margin-top: 5px; display: block;">支持 .txt 和 .md 格式的草稿文件</small>
+            </div>
+
+            <div class="options-row">
+                <div class="form-group">
+                    <label>文章长度</label>
+                    <select id="length-select">
+                        <option value="1500">1500字 (快速阅读)</option>
+                        <option value="2000" selected>2000字 (标准长度)</option>
+                        <option value="2500">2500字 (深度文章)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>配图风格</label>
+                    <select id="image-style-select">
+                        <option value="auto">自动 (AI智能选择)</option>
+                        <option value="realistic" selected>真实照片</option>
+                        <option value="artistic">艺术创作</option>
+                        <option value="cartoon">卡通插画</option>
+                        <option value="technical">技术图表</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>文风描述 <small style="color: #a0aec0; font-weight: normal;">(可选，描述您期望的文章风格)</small></label>
+                <textarea id="style-input" placeholder="例如：汪曾祺风格、幽默风趣、严谨学术、温柔婉约、鲁迅杂文风等，也可以直接描述您想要的风格特点..." style="min-height: 100px;"></textarea>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="generate-images" checked>
+                    <label for="generate-images">生成配图 (3张)</label>
+                </div>
+            </div>
+
+            <button class="generate-btn" id="generate-btn" onclick="generateArticle()">开始生成</button>
+
+            <div class="progress-section" id="progress-section">
+                <h3>生成进度</h3>
+                <div class="progress-log" id="progress-log"></div>
+            </div>
+
+            <div class="result-section" id="result-section">
+                <div class="result-card">
+                    <h3>生成结果</h3>
+                    <div class="article-preview" id="article-preview"></div>
+                    <div class="btn-group">
+                        <button class="action-btn btn-primary" onclick="openHtmlFile()">打开HTML文件</button>
+                        <button class="action-btn btn-secondary" onclick="copyContent()">复制内容</button>
+                        <button class="action-btn btn-secondary" onclick="resetForm()">重新生成</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'theme';
+        let generatedFiles = {};
+
+        function selectDraftFile() {
+            var path = prompt('请输入草稿文件的完整路径:\\n\\n例如: C:\\\\Users\\\\xxx\\\\Documents\\\\draft.txt\\n或者: article/draft.txt (相对路径)');
+            if (path) {
+                document.getElementById('draft-input').value = path;
+            }
+        }
+
+        function selectMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-tab').forEach(function(tab) {
+                if (tab.dataset.mode === mode) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            document.getElementById('theme-section').classList.toggle('hidden', mode !== 'theme');
+            document.getElementById('draft-section').classList.toggle('hidden', mode !== 'draft');
+        }
+
+        function addLog(type, message) {
+            var logDiv = document.getElementById('progress-log');
+            var timestamp = new Date().toLocaleTimeString();
+            var span = document.createElement('span');
+            span.className = type;
+            span.textContent = '[' + timestamp + '] ' + message + '\\n';
+            logDiv.appendChild(span);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function generateArticle() {
+            var btn = document.getElementById('generate-btn');
+            var progressSection = document.getElementById('progress-section');
+            var resultSection = document.getElementById('result-section');
+            var progressLog = document.getElementById('progress-log');
+
+            var theme = document.getElementById('theme-input').value.trim();
+            var draft = document.getElementById('draft-input').value.trim();
+            var length = document.getElementById('length-select').value;
+            var style = document.getElementById('style-input').value.trim();
+            var imageStyle = document.getElementById('image-style-select').value;
+            var generateImages = document.getElementById('generate-images').checked ? 'y' : 'n';
+
+            if (currentMode === 'theme' && !theme) {
+                alert('请输入文章主题');
+                return;
+            }
+            if (currentMode === 'draft' && !draft) {
+                alert('请输入草稿文件路径');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '生成中...';
+            progressSection.classList.add('active');
+            resultSection.classList.remove('active');
+            progressLog.innerHTML = '';
+
+            addLog('info', '正在启动生成任务...');
+
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    mode: currentMode === 'theme' ? '1' : '2',
+                    theme: theme,
+                    draft_path: draft,
+                    length: parseInt(length),
+                    style: style || 'standard',
+                    generate_images: generateImages,
+                    image_style: imageStyle
+                })
+            }).then(function(response) {
+                var reader = response.body.getReader();
+                var decoder = new TextDecoder();
+
+                function read() {
+                    return reader.read().then(function(result) {
+                        if (result.done) {
+                            btn.disabled = false;
+                            btn.textContent = '开始生成';
+                            return;
+                        }
+                        var text = decoder.decode(result.value);
+                        var lines = text.split('\\n');
+                        lines.forEach(function(line) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    var data = JSON.parse(line.slice(6));
+                                    if (data.type === 'log') {
+                                        addLog(data.level || 'info', data.message);
+                                    } else if (data.type === 'complete') {
+                                        generatedFiles = data.files || {};
+                                        showResult(data);
+                                    } else if (data.type === 'error') {
+                                        addLog('error', data.message);
+                                    }
+                                } catch (e) {}
+                            }
+                        });
+                        return read();
+                    });
+                }
+                return read();
+            }).catch(function(error) {
+                addLog('error', '请求失败: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = '开始生成';
+            });
+        }
+
+        function showResult(data) {
+            var resultSection = document.getElementById('result-section');
+            var preview = document.getElementById('article-preview');
+            preview.innerHTML = '<h2>' + (data.title || '文章标题') + '</h2>' +
+                '<p><strong>字数:</strong> ' + (data.word_count || 0) + '字</p>' +
+                '<hr style="margin: 15px 0; border: none; border-top: 1px solid #e2e8f0;">' +
+                '<div style="white-space: pre-wrap;">' + (data.content || '').substring(0, 500) + '...</div>';
+            resultSection.classList.add('active');
+            addLog('success', '文章生成完成！');
+            if (data.html_file) {
+                addLog('success', 'HTML文件: ' + data.html_file);
+            }
+            if (data.images && data.images.length > 0) {
+                addLog('success', '生成配图: ' + data.images.length + '张');
+            }
+        }
+
+        function openHtmlFile() {
+            if (generatedFiles.html) {
+                window.open(generatedFiles.html, '_blank');
+            } else {
+                alert('HTML文件路径不可用');
+            }
+        }
+
+        function copyContent() {
+            var preview = document.getElementById('article-preview');
+            navigator.clipboard.writeText(preview.innerText).then(function() {
+                alert('内容已复制到剪贴板');
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('theme-input').value = '';
+            document.getElementById('draft-input').value = '';
+            document.getElementById('progress-log').innerHTML = '';
+            document.getElementById('result-section').classList.remove('active');
+            document.getElementById('progress-section').classList.remove('active');
+            generatedFiles = {};
+        }
+    </script>
+</body>
+</html>'''
+
+# 替换模板
+new_content = content[:start_idx] + "HTML_TEMPLATE = '''" + new_html + "'''" + content[end_idx + len(end_marker):]
+
+with open(file_path, 'w', encoding='utf-8', newline='') as f:
+    f.write(new_content)
+
+print("SUCCESS")
