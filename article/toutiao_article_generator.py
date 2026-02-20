@@ -1142,8 +1142,14 @@ class ToutiaoArticleGenerator:
             'word_count': len(body)
         }
 
-    def generate_article_images(self, theme, article_content, image_style="realistic"):
-        """根据文章主题和内容生成3张配图，支持多模型降级
+    def generate_article_images(self, theme, article_content, image_style="realistic", num_images=3):
+        """根据文章主题和内容生成配图，支持多模型降级
+
+        Args:
+            theme: 文章主题
+            article_content: 文章内容
+            image_style: 图片风格
+            num_images: 配图数量（默认3张）
 
         优先级: Seedream 4.5 -> Seedream 4.0 -> Antigravity -> Pollinations
         """
@@ -1156,11 +1162,11 @@ class ToutiaoArticleGenerator:
         clean_theme = re.sub(r'[^\u4e00-\u9fff\w\s\-.,]', '', theme)
         clean_theme = clean_theme.strip()[:30]  # 限制长度
 
-        print(f"\n[INFO] Generating images for theme: {clean_theme}")
+        print(f"\n[INFO] Generating {num_images} images for theme: {clean_theme}")
         print(f"[INFO] Image style: {image_style}")
 
         # 根据文章内容提取关键词生成配图提示词
-        image_prompts = self._generate_contextual_prompts(clean_theme, article_content, image_style)
+        image_prompts = self._generate_contextual_prompts(clean_theme, article_content, image_style, num_images)
         generated_images = []
 
         for i, (img_prompt, img_desc) in enumerate(image_prompts, 1):
@@ -1324,8 +1330,15 @@ class ToutiaoArticleGenerator:
 
         return generated_images
 
-    def _generate_contextual_prompts(self, theme, content, style):
-        """使用AI大模型根据文章内容智能生成上下文相关的图片提示词"""
+    def _generate_contextual_prompts(self, theme, content, style, num_images=3):
+        """使用AI大模型根据文章内容智能生成上下文相关的图片提示词
+
+        Args:
+            theme: 文章主题
+            content: 文章内容
+            style: 图片风格
+            num_images: 需要生成的图片数量
+        """
 
         # 风格映射
         style_desc = {
@@ -1337,7 +1350,7 @@ class ToutiaoArticleGenerator:
         }.get(style, "realistic photography, high quality")
 
         # 使用AI生成与内容相关的配图提示词
-        ai_prompt = f"""请根据以下文章内容，为3张配图生成英文提示词(prompt)。
+        ai_prompt = f"""请根据以下文章内容，为{num_images}张配图生成英文提示词(prompt)。
 
 文章主题: {theme}
 
@@ -1346,10 +1359,9 @@ class ToutiaoArticleGenerator:
 
 配图风格要求: {style_desc}
 
-请生成3个配图的英文提示词，要求：
-1. 第1张图：概括文章核心概念或主题的场景图
-2. 第2张图：展示文章中提到的关键流程、架构或细节
-3. 第3张图：展示实际应用场景或用户体验
+请生成{num_images}个配图的英文提示词，要求：
+- 第1张图：概括文章核心概念或主题的场景图
+- 后续图片：展示文章中提到的关键细节、场景或应用
 
 每个提示词要求：
 - 使用英文，简洁明了（50词以内）
@@ -1357,10 +1369,10 @@ class ToutiaoArticleGenerator:
 - 符合指定的配图风格
 - 与文章段落内容紧密相关
 
-请直接输出3行，每行一个提示词，格式如下：
+请直接输出{num_images}行，每行一个提示词，格式如下：
 1. [第1张图的英文提示词]
 2. [第2张图的英文提示词]
-3. [第3张图的英文提示词]
+...
 """
 
         try:
@@ -1388,27 +1400,42 @@ class ToutiaoArticleGenerator:
                     prompt_with_style = f"{cleaned}, {style_desc}"
                     prompts.append((prompt_with_style, f"context_img{len(prompts)+1}"))
 
-            # 确保有3个提示词
-            if len(prompts) < 3:
+            # 确保有num_images个提示词
+            if len(prompts) < num_images:
                 # 补充默认提示词
                 default_prompts = [
                     (f"{theme} main concept visualization, {style_desc}", "scene_main"),
                     (f"{theme} detailed process flow, {style_desc}", "scene_detail"),
                     (f"{theme} application scenario, {style_desc}", "scene_lifestyle"),
+                    (f"{theme} key elements close-up, {style_desc}", "scene_closeup"),
+                    (f"{theme} environment atmosphere, {style_desc}", "scene_atmosphere"),
+                    (f"{theme} cultural context, {style_desc}", "scene_culture"),
+                    (f"{theme} emotional expression, {style_desc}", "scene_emotion"),
+                    (f"{theme} artistic interpretation, {style_desc}", "scene_artistic"),
+                    (f"{theme} story moment, {style_desc}", "scene_story"),
+                    (f"{theme} final impression, {style_desc}", "scene_final"),
                 ]
-                while len(prompts) < 3:
+                while len(prompts) < num_images and len(prompts) < len(default_prompts):
                     prompts.append(default_prompts[len(prompts)])
 
-            return prompts[:3]
+            return prompts[:num_images]
 
         except Exception as e:
             print(f"[WARN] AI prompt generation failed: {e}, using fallback")
             # 降级方案：基于关键词的简单提示词
-            return [
+            fallback_prompts = [
                 (f"{theme} concept overview, {style_desc}", "scene_main"),
                 (f"{theme} detailed view, {style_desc}", "scene_detail"),
                 (f"{theme} application scene, {style_desc}", "scene_lifestyle"),
+                (f"{theme} close-up shot, {style_desc}", "scene_closeup"),
+                (f"{theme} atmosphere, {style_desc}", "scene_atmosphere"),
+                (f"{theme} cultural background, {style_desc}", "scene_culture"),
+                (f"{theme} emotional moment, {style_desc}", "scene_emotion"),
+                (f"{theme} artistic view, {style_desc}", "scene_artistic"),
+                (f"{theme} story scene, {style_desc}", "scene_story"),
+                (f"{theme} final view, {style_desc}", "scene_final"),
             ]
+            return fallback_prompts[:num_images]
 
     def _generate_image_prompts(self, theme, style):
         """根据主题生成配图提示词"""

@@ -17,7 +17,7 @@ from datetime import datetime
 import json
 import base64
 import re
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string, make_response
 from flask_cors import CORS
 
 # 添加父目录到路径
@@ -165,10 +165,12 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 <div class="form-group">
                     <label>文章长度</label>
                     <select id="length-select">
+                        <option value="0" selected>自动 (AI根据需要决定)</option>
                         <option value="1500">1500字 (快速阅读)</option>
-                        <option value="2000" selected>2000字 (标准长度)</option>
+                        <option value="2000">2000字 (标准长度)</option>
                         <option value="2500">2500字 (深度文章)</option>
                         <option value="3000">3000字 (长文深度)</option>
+                        <option value="4000">4000字 (专题长文)</option>
                     </select>
                 </div>
                 <div class="form-group" id="rounds-group">
@@ -195,10 +197,8 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                     </select>
                 </div>
                 <div class="form-group">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="generate-images" checked>
-                        <label for="generate-images">生成配图 (3张)</label>
-                    </div>
+                    <label>生成配图 <small style="color: #a0aec0; font-weight: normal;">(0=不生成)</small></label>
+                    <input type="number" id="image-count-input" value="3" min="0" max="10" step="1" placeholder="0-10">
                 </div>
             </div>
 
@@ -278,7 +278,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             var length = document.getElementById('length-select').value;
             var styleInput = document.getElementById('style-input').value.trim();
             var imageStyle = document.getElementById('image-style-select').value;
-            var generateImages = document.getElementById('generate-images').checked ? 'y' : 'n';
+            var imageCount = parseInt(document.getElementById('image-count-input').value) || 0;
             var rounds = document.getElementById('rounds-select').value;
 
             // 验证输入
@@ -288,6 +288,10 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             }
             if (currentMode === 'draft' && !draft) {
                 alert('请输入草稿文件路径');
+                return;
+            }
+            if (imageCount < 0 || imageCount > 10) {
+                alert('配图数量请在0-10之间');
                 return;
             }
 
@@ -306,7 +310,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 draft_path: draft,
                 length: parseInt(length),
                 style: styleInput || 'standard',
-                generate_images: generateImages,
+                image_count: imageCount,
                 image_style: imageStyle,
                 collaborative: currentMode === 'collaborative' ? 'y' : 'n',
                 max_rounds: parseInt(rounds)
@@ -405,7 +409,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 length: document.getElementById('length-select').value,
                 style: document.getElementById('style-input').value,
                 imageStyle: document.getElementById('image-style-select').value,
-                generateImages: document.getElementById('generate-images').checked
+                imageCount: document.getElementById('image-count-input').value
             };
             localStorage.setItem('toutiao_params', JSON.stringify(params));
         }
@@ -434,8 +438,8 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                     if (params.imageStyle) {
                         document.getElementById('image-style-select').value = params.imageStyle;
                     }
-                    if (params.generateImages !== undefined) {
-                        document.getElementById('generate-images').checked = params.generateImages;
+                    if (params.imageCount !== undefined) {
+                        document.getElementById('image-count-input').value = params.imageCount;
                     }
                 } catch (e) {}
             }
@@ -487,26 +491,31 @@ def stream_generator(gen, params):
 
             if params['mode'] == '1':
                 # 主题生成模式
+                target_length = params['length']
+                length_desc = "自动" if target_length == 0 else f"{target_length}字"
+
                 if use_collaborative:
                     # 协作模式 - 双作者协作
                     output_queue.put(('log', 'info', f"开始协作生成文章，主题: {params['theme']}"))
                     output_queue.put(('log', 'info', f"模式: 双作者协作 (最多{max_rounds}轮)"))
+                    output_queue.put(('log', 'info', f"目标长度: {length_desc}"))
                     if style != 'standard':
                         output_queue.put(('log', 'info', f"文风: {style[:50]}..."))
                     result = gen.generate_article_collaborative(
                         theme=params['theme'],
-                        target_length=params['length'],
+                        target_length=target_length,
                         style=style,
                         max_rounds=max_rounds
                     )
                 else:
                     # 快速模式 - 单次生成
                     output_queue.put(('log', 'info', f"开始生成文章，主题: {params['theme']}"))
+                    output_queue.put(('log', 'info', f"目标长度: {length_desc}"))
                     if style != 'standard':
                         output_queue.put(('log', 'info', f"文风: {style[:50]}..."))
                     result = gen.generate_article_with_ai(
                         theme=params['theme'],
-                        target_length=params['length'],
+                        target_length=target_length,
                         style=style
                     )
             else:
@@ -555,12 +564,14 @@ def stream_generator(gen, params):
 
             # 生成配图
             images = []
-            if params.get('generate_images') == 'y':
-                output_queue.put(('log', 'info', '开始生成配图...'))
+            image_count = params.get('image_count', 0)
+            if image_count > 0:
+                output_queue.put(('log', 'info', f'开始生成{image_count}张配图...'))
                 images = gen.generate_article_images(
                     theme=params.get('theme', result['title']),
                     article_content=result['content'],
-                    image_style=params.get('image_style', 'realistic')
+                    image_style=params.get('image_style', 'realistic'),
+                    num_images=image_count
                 )
                 if images:
                     output_queue.put(('log', 'success', f'配图生成完成，共{len(images)}张'))
@@ -633,7 +644,11 @@ def stream_generator(gen, params):
 @app.route('/')
 def index():
     """主页面"""
-    return render_template_string(HTML_TEMPLATE)
+    response = make_response(render_template_string(HTML_TEMPLATE))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 
 @app.route('/api/generate', methods=['POST'])
@@ -644,8 +659,8 @@ def api_generate():
     # 验证参数
     if params.get('mode') == '1' and not params.get('theme'):
         return jsonify({'error': '主题不能为空'}), 400
-    if params.get('mode') == '2' and not params.get('draft'):
-        return jsonify({'error': '草稿内容不能为空'}), 400
+    if params.get('mode') == '2' and not params.get('draft_path'):
+        return jsonify({'error': '草稿文件路径不能为空'}), 400
 
     gen = ToutiaoArticleGenerator()
 
