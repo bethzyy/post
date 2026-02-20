@@ -273,6 +273,31 @@
             transform: scale(1.05);
         }
 
+        /* 使用频率标签样式 */
+        .usage-badge {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: auto;
+            margin-right: 8px;
+            white-space: nowrap;
+        }
+
+        .usage-badge.hot {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .usage-badge.medium {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .usage-badge.low {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        }
+
         .tree-run-btn.running {
             background: #48bb78;
             display: block !important;
@@ -779,6 +804,26 @@
                     nameSpan.title = tool.description;
                     toolDiv.appendChild(nameSpan);
 
+                    // 使用频率标签
+                    if (tool.usage_count && tool.usage_count > 0) {
+                        const usageBadge = document.createElement('span');
+                        usageBadge.className = 'usage-badge';
+
+                        // 根据使用次数设置样式
+                        if (tool.usage_count >= 10) {
+                            usageBadge.classList.add('hot');
+                            usageBadge.textContent = `🔥${tool.usage_count}`;
+                        } else if (tool.usage_count >= 5) {
+                            usageBadge.classList.add('medium');
+                            usageBadge.textContent = `⭐${tool.usage_count}`;
+                        } else {
+                            usageBadge.classList.add('low');
+                            usageBadge.textContent = tool.usage_count;
+                        }
+
+                        toolDiv.appendChild(usageBadge);
+                    }
+
                     // 运行按钮
                     const runBtn = document.createElement('button');
                     runBtn.className = 'tree-run-btn';
@@ -789,17 +834,6 @@
                         runToolDirect(tool, toolDiv, runBtn);
                     };
                     toolDiv.appendChild(runBtn);
-
-                    // 删除按钮
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'tree-delete-btn';
-                    deleteBtn.textContent = '🗑';
-                    deleteBtn.title = '删除工具';
-                    deleteBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        deleteTool(tool, toolDiv);
-                    };
-                    toolDiv.appendChild(deleteBtn);
 
                     // 点击选择
                     toolDiv.onclick = () => {
@@ -1056,57 +1090,78 @@
                         <h4 style="color: #5a67d8; margin-bottom: 15px;">${title}</h4>
                 `;
 
-                // 为每个输入字段创建界面
-                tool.input_fields.forEach(field => {
-                    if (field.type === 'text') {
-                        html += `
-                            <div style="margin-bottom: 15px;">
-                                <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${field.label} ${field.required ? '<span style="color: #e53e3e;">*</span>' : ''}</label>
-                                <input
-                                    type="text"
-                                    class="param-input"
-                                    id="param-${field.name}"
-                                    placeholder="${field.placeholder}"
-                                    style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px;"
-                                    ${field.required ? 'required' : ''}
-                                >
-                            </div>
-                        `;
-                    } else if (field.type === 'textarea') {
-                        html += `
-                            <div style="margin-bottom: 15px;">
-                                <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${field.label} ${field.required ? '<span style="color: #e53e3e;">*</span>' : ''}</label>
-                                <textarea
-                                    class="param-input"
-                                    id="param-${field.name}"
-                                    placeholder="${field.placeholder}"
-                                    rows="8"
-                                    style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px; font-family: inherit; resize: vertical;"
-                                    ${field.required ? 'required' : ''}
-                                ></textarea>
-                            </div>
-                        `;
-                    } else if (field.type === 'select') {
-                        html += `
-                            <div style="margin-bottom: 15px;">
-                                <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${field.label}</label>
-                                <select
-                                    class="param-input"
-                                    id="param-${field.name}"
-                                    style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px;"
-                                    onchange="handleModeChange()"
-                                >
-                                    ${field.options.map(opt =>
-                                        `<option value="${opt.value}">${opt.label}</option>`
-                                    ).join('')}
+                // 为今日头条文章生成器创建特殊布局
+                if (tool.filename === 'article/toutiao_article_generator.py') {
+                    // 生成模式
+                    const modeField = tool.input_fields.find(f => f.name === 'mode');
+                    html += `
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${modeField.label}</label>
+                            <select class="param-input" id="param-mode" style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px;" onchange="handleModeChange()">
+                                ${modeField.options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
+
+                    // 文章主题（模式1）
+                    const themeField = tool.input_fields.find(f => f.name === 'theme');
+                    html += `
+                        <div style="margin-bottom: 15px;" id="theme-field">
+                            <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${themeField.label}</label>
+                            <input type="text" class="param-input" id="param-theme" placeholder="${themeField.placeholder}" style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px;">
+                        </div>
+                    `;
+
+                    // 草稿文件路径（模式2）
+                    const draftField = tool.input_fields.find(f => f.name === 'draft');
+                    html += `
+                        <div style="margin-bottom: 15px; display: none;" id="draft-field">
+                            <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${draftField.label}</label>
+                            <input type="text" class="param-input" id="param-draft" placeholder="${draftField.placeholder}" style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px;">
+                        </div>
+                    `;
+
+                    // 文章长度和生成配图放在同一行
+                    const lengthField = tool.input_fields.find(f => f.name === 'length');
+                    const imagesField = tool.input_fields.find(f => f.name === 'generate_images');
+                    html += `
+                        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                            <div style="flex: 1;">
+                                <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${lengthField.label}</label>
+                                <select class="param-input" id="param-length" style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px;">
+                                    ${lengthField.options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
                                 </select>
                             </div>
-                        `;
-                    }
-                });
+                            <div style="flex: 1;">
+                                <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${imagesField.label}</label>
+                                <select class="param-input" id="param-generate_images" style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px;" onchange="handleImageStyleChange()">
+                                    ${imagesField.options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
+                                </select>
+                            </div>
+                        </div>
+                    `;
 
-                // 根据工具类型添加示例提示
-                if (tool.filename === 'article/toutiao_article_generator.py') {
+                    // 文风描述和配图风格放在同一行
+                    const styleField = tool.input_fields.find(f => f.name === 'style');
+                    const imageStyleField = tool.input_fields.find(f => f.name === 'image_style');
+                    html += `
+                        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                            <div style="flex: 1;">
+                                <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${styleField.label}</label>
+                                <select class="param-input" id="param-style" style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px;">
+                                    ${styleField.options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div style="flex: 1;" id="image-style-field">
+                                <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${imageStyleField.label}</label>
+                                <select class="param-input" id="param-image_style" style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px;">
+                                    ${imageStyleField.options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
+                                </select>
+                            </div>
+                        </div>
+                    `;
+
+                    // 热门主题示例
                     html += `
                         <div style="margin-top: 15px; padding: 12px; background: #2d3748; border-radius: 5px; border-left: 3px solid #6b46c1;">
                             <strong style="color: #6b46c1;">💡 热门主题示例:</strong><br>
@@ -1118,23 +1173,55 @@
                             </span>
                         </div>
                     `;
-                } else if (tool.filename === 'video/baidu_video_downloader.py') {
-                    html += `
-                        <div style="margin-top: 15px; padding: 12px; background: #2d3748; border-radius: 5px; border-left: 3px solid #48bb78;">
-                            <strong style="color: #48bb78;">💡 支持的视频平台:</strong><br>
-                            <span style="color: #c5c5e0; font-size: 0.9em;">
-                            • 百度新闻 (mbd.baidu.com)<br>
-                            • 百家号 (baijiahao.baidu.com)<br>
-                            • 百度视频 (haokan.baidu.com)
-                            </span>
-                        </div>
-                    `;
+                } else {
+                    // 其他工具使用原有逻辑
+                    tool.input_fields.forEach(field => {
+                        if (field.type === 'text') {
+                            html += `
+                                <div style="margin-bottom: 15px;">
+                                    <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${field.label} ${field.required ? '<span style="color: #e53e3e;">*</span>' : ''}</label>
+                                    <input type="text" class="param-input" id="param-${field.name}" placeholder="${field.placeholder}" style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px;" ${field.required ? 'required' : ''}>
+                                </div>
+                            `;
+                        } else if (field.type === 'textarea') {
+                            html += `
+                                <div style="margin-bottom: 15px;">
+                                    <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${field.label} ${field.required ? '<span style="color: #e53e3e;">*</span>' : ''}</label>
+                                    <textarea class="param-input" id="param-${field.name}" placeholder="${field.placeholder}" rows="8" style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px; font-family: inherit; resize: vertical;" ${field.required ? 'required' : ''}></textarea>
+                                </div>
+                            `;
+                        } else if (field.type === 'select') {
+                            html += `
+                                <div style="margin-bottom: 15px;">
+                                    <label style="display: block; color: #c5c5e0; margin-bottom: 8px;">${field.label}</label>
+                                    <select class="param-input" id="param-${field.name}" style="width: 100%; padding: 10px; background: #2d3748; border: 1px solid #4a5568; border-radius: 5px; color: #e2e8f0; font-size: 14px;" onchange="handleModeChange()">
+                                        ${field.options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
+                                    </select>
+                                </div>
+                            `;
+                        }
+                    });
+
+                    // 根据工具类型添加示例提示
+                    if (tool.filename === 'video/baidu_video_downloader.py') {
+                        html += `
+                            <div style="margin-top: 15px; padding: 12px; background: #2d3748; border-radius: 5px; border-left: 3px solid #48bb78;">
+                                <strong style="color: #48bb78;">💡 支持的视频平台:</strong><br>
+                                <span style="color: #c5c5e0; font-size: 0.9em;">
+                                • 百度新闻 (mbd.baidu.com)<br>
+                                • 百家号 (baijiahao.baidu.com)<br>
+                                • 百度视频 (haokan.baidu.com)
+                                </span>
+                            </div>
+                        `;
+                    }
                 }
             }
 
+            // 运行工具按钮（所有工具都显示）
             html += `
-                    <button class="run-button" onclick="runTool()">▶ 运行工具</button>
-                </div>
+                <button class="run-button" onclick="runTool()">▶ 运行工具</button>
+            </div>
             `;
 
             // 添加技术栈卡片
@@ -1231,8 +1318,9 @@
             const mode = document.getElementById('param-mode')?.value;
             if (!mode) return;
 
-            const themeField = document.getElementById('param-theme')?.parentElement;
-            const draftField = document.getElementById('param-draft')?.parentElement;
+            // 支持两种ID格式：旧的parentElement方式和新的直接ID方式
+            const themeField = document.getElementById('theme-field') || document.getElementById('param-theme')?.parentElement;
+            const draftField = document.getElementById('draft-field') || document.getElementById('param-draft')?.parentElement;
 
             if (mode === '1') {
                 // 主题生成模式 - 显示主题输入,隐藏草稿输入
@@ -1242,6 +1330,22 @@
                 // 草稿完善模式 - 隐藏主题输入,显示草稿输入
                 if (themeField) themeField.style.display = 'none';
                 if (draftField) draftField.style.display = 'block';
+            }
+        }
+
+        // 处理配图选项变化
+        function handleImageStyleChange() {
+            const generateImages = document.getElementById('param-generate_images')?.value;
+            const imageStyleField = document.getElementById('image-style-field');
+
+            if (imageStyleField) {
+                if (generateImages === 'n') {
+                    // 不配图时隐藏配图风格选项
+                    imageStyleField.style.display = 'none';
+                } else {
+                    // 配图时显示配图风格选项
+                    imageStyleField.style.display = 'block';
+                }
             }
         }
 

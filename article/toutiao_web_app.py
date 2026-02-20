@@ -67,6 +67,11 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         }
         .mode-tab h3 { margin-bottom: 5px; }
         .mode-tab p { font-size: 0.85em; opacity: 0.8; }
+        .mode-tab .badge {
+            display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.7em;
+            background: rgba(255,255,255,0.2); margin-top: 5px;
+        }
+        .mode-tab:not(.active) .badge { background: #e2e8f0; color: #4a5568; }
         input[type="text"], textarea, select {
             width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0;
             border-radius: 8px; font-size: 1em; transition: border-color 0.3s;
@@ -121,12 +126,25 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             <div class="mode-tabs">
                 <div class="mode-tab active" data-mode="theme" onclick="selectMode('theme')">
                     <h3>主题生成</h3>
-                    <p>输入主题，AI从零开始写作</p>
+                    <p>输入主题，AI快速写作</p>
+                </div>
+                <div class="mode-tab" data-mode="collaborative" onclick="selectMode('collaborative')">
+                    <h3>协作模式</h3>
+                    <p>双作者审校，高质量文章</p>
+                    <span class="badge">推荐</span>
                 </div>
                 <div class="mode-tab" data-mode="draft" onclick="selectMode('draft')">
                     <h3>草稿完善</h3>
                     <p>选择草稿文件，AI润色优化</p>
                 </div>
+            </div>
+
+            <div id="collaborative-info" class="form-group hidden" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); padding: 15px; border-radius: 10px; border-left: 4px solid #667eea; margin-bottom: 20px;">
+                <strong style="color: #667eea;">双作者协作模式说明：</strong><br>
+                <span style="color: #4a5568; font-size: 0.9em;">
+                作者1负责原创初稿，作者2（主编角色）从专业和读者角度审校，检查内容准确性、可读性和争议点。<br>
+                如有问题，作者1根据意见修改，反复迭代直到双方满意。生成高质量文章。
+                </span>
             </div>
 
             <div id="theme-section" class="form-group">
@@ -150,8 +168,21 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                         <option value="1500">1500字 (快速阅读)</option>
                         <option value="2000" selected>2000字 (标准长度)</option>
                         <option value="2500">2500字 (深度文章)</option>
+                        <option value="3000">3000字 (长文深度)</option>
                     </select>
                 </div>
+                <div class="form-group" id="rounds-group">
+                    <label>协作轮数 <small style="color: #a0aec0; font-weight: normal;">(仅协作模式)</small></label>
+                    <select id="rounds-select">
+                        <option value="2">2轮 (快速)</option>
+                        <option value="3" selected>3轮 (标准)</option>
+                        <option value="4">4轮 (深度打磨)</option>
+                        <option value="5">5轮 (精雕细琢)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="options-row">
                 <div class="form-group">
                     <label>配图风格</label>
                     <select id="image-style-select">
@@ -159,21 +190,21 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                         <option value="realistic" selected>真实照片</option>
                         <option value="artistic">艺术创作</option>
                         <option value="cartoon">卡通插画</option>
-                        <option value="technical">技术图表</option>
+                        <option value="watercolor">水彩画风</option>
+                        <option value="ink">中国水墨画</option>
                     </select>
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label>文风描述 <small style="color: #a0aec0; font-weight: normal;">(可选，描述您期望的文章风格)</small></label>
-                <textarea id="style-input" placeholder="例如：汪曾祺风格、幽默风趣、严谨学术、温柔婉约、鲁迅杂文风等，也可以直接描述您想要的风格特点..." style="min-height: 100px;"></textarea>
-            </div>
-
-            <div class="form-group">
-                <div class="checkbox-group">
-                    <input type="checkbox" id="generate-images" checked>
-                    <label for="generate-images">生成配图 (3张)</label>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="generate-images" checked>
+                        <label for="generate-images">生成配图 (3张)</label>
+                    </div>
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label>文风描述 <small style="color: #a0aec0; font-weight: normal;">(可选，直接指导作者1和作者2的工作原则)</small></label>
+                <textarea id="style-input" placeholder="例如：汪曾祺风格、幽默风趣、严谨学术、温柔婉约、鲁迅杂文风等，也可以直接描述您想要的风格特点..." style="min-height: 80px;"></textarea>
             </div>
 
             <button class="generate-btn" id="generate-btn" onclick="generateArticle()">开始生成</button>
@@ -217,8 +248,13 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                     tab.classList.remove('active');
                 }
             });
-            document.getElementById('theme-section').classList.toggle('hidden', mode !== 'theme');
+
+            // 主题输入区域：主题生成和协作模式都需要
+            document.getElementById('theme-section').classList.toggle('hidden', mode === 'draft');
+            // 草稿区域：只有草稿模式显示
             document.getElementById('draft-section').classList.toggle('hidden', mode !== 'draft');
+            // 协作模式说明：只有协作模式显示
+            document.getElementById('collaborative-info').classList.toggle('hidden', mode !== 'collaborative');
         }
 
         function addLog(type, message) {
@@ -240,11 +276,13 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             var theme = document.getElementById('theme-input').value.trim();
             var draft = document.getElementById('draft-input').value.trim();
             var length = document.getElementById('length-select').value;
-            var style = document.getElementById('style-input').value.trim();
+            var styleInput = document.getElementById('style-input').value.trim();
             var imageStyle = document.getElementById('image-style-select').value;
             var generateImages = document.getElementById('generate-images').checked ? 'y' : 'n';
+            var rounds = document.getElementById('rounds-select').value;
 
-            if (currentMode === 'theme' && !theme) {
+            // 验证输入
+            if ((currentMode === 'theme' || currentMode === 'collaborative') && !theme) {
                 alert('请输入文章主题');
                 return;
             }
@@ -254,25 +292,30 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             }
 
             btn.disabled = true;
-            btn.textContent = '生成中...';
+            btn.textContent = currentMode === 'collaborative' ? '协作生成中...' : '生成中...';
             progressSection.classList.add('active');
             resultSection.classList.remove('active');
             progressLog.innerHTML = '';
 
             addLog('info', '正在启动生成任务...');
 
+            // 构建请求参数
+            var requestData = {
+                mode: currentMode === 'draft' ? '2' : '1',
+                theme: theme,
+                draft_path: draft,
+                length: parseInt(length),
+                style: styleInput || 'standard',
+                generate_images: generateImages,
+                image_style: imageStyle,
+                collaborative: currentMode === 'collaborative' ? 'y' : 'n',
+                max_rounds: parseInt(rounds)
+            };
+
             fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    mode: currentMode === 'theme' ? '1' : '2',
-                    theme: theme,
-                    draft_path: draft,
-                    length: parseInt(length),
-                    style: style || 'standard',
-                    generate_images: generateImages,
-                    image_style: imageStyle
-                })
+                body: JSON.stringify(requestData)
             }).then(function(response) {
                 var reader = response.body.getReader();
                 var decoder = new TextDecoder();
@@ -438,16 +481,34 @@ def stream_generator(gen, params):
             if not style:
                 style = 'standard'
 
+            # 检查是否使用协作模式
+            use_collaborative = params.get('collaborative', 'n') == 'y'
+            max_rounds = params.get('max_rounds', 3)
+
             if params['mode'] == '1':
                 # 主题生成模式
-                output_queue.put(('log', 'info', f"开始生成文章，主题: {params['theme']}"))
-                if style != 'standard':
-                    output_queue.put(('log', 'info', f"文风: {style[:50]}..."))
-                result = gen.generate_article_with_ai(
-                    theme=params['theme'],
-                    target_length=params['length'],
-                    style=style
-                )
+                if use_collaborative:
+                    # 协作模式 - 双作者协作
+                    output_queue.put(('log', 'info', f"开始协作生成文章，主题: {params['theme']}"))
+                    output_queue.put(('log', 'info', f"模式: 双作者协作 (最多{max_rounds}轮)"))
+                    if style != 'standard':
+                        output_queue.put(('log', 'info', f"文风: {style[:50]}..."))
+                    result = gen.generate_article_collaborative(
+                        theme=params['theme'],
+                        target_length=params['length'],
+                        style=style,
+                        max_rounds=max_rounds
+                    )
+                else:
+                    # 快速模式 - 单次生成
+                    output_queue.put(('log', 'info', f"开始生成文章，主题: {params['theme']}"))
+                    if style != 'standard':
+                        output_queue.put(('log', 'info', f"文风: {style[:50]}..."))
+                    result = gen.generate_article_with_ai(
+                        theme=params['theme'],
+                        target_length=params['length'],
+                        style=style
+                    )
             else:
                 # 草稿完善模式 - 从文件读取草稿内容
                 draft_path = params.get('draft_path', '').strip()
@@ -487,6 +548,10 @@ def stream_generator(gen, params):
 
             output_queue.put(('log', 'success', f"文章生成完成，标题: {result['title']}"))
             output_queue.put(('log', 'info', f"字数: {result['word_count']}"))
+
+            # 如果是协作模式，显示协作轮数
+            if result.get('source') == 'collaborative':
+                output_queue.put(('log', 'success', f"协作轮数: {result.get('rounds', 'N/A')}轮"))
 
             # 生成配图
             images = []

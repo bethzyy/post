@@ -19,6 +19,34 @@ from tool_details_config import get_tool_details
 
 app = Flask(__name__)
 
+# 使用频率记录文件路径
+USAGE_FREQUENCY_FILE = Path(__file__).parent / 'tool_usage_frequency.json'
+
+def load_usage_frequency():
+    """加载使用频率数据"""
+    if USAGE_FREQUENCY_FILE.exists():
+        try:
+            with open(USAGE_FREQUENCY_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+def save_usage_frequency(frequency_data):
+    """保存使用频率数据"""
+    with open(USAGE_FREQUENCY_FILE, 'w', encoding='utf-8') as f:
+        json.dump(frequency_data, f, ensure_ascii=False, indent=2)
+
+def record_tool_usage(tool_filename):
+    """记录工具使用（增加使用计数）"""
+    frequency_data = load_usage_frequency()
+    if tool_filename in frequency_data:
+        frequency_data[tool_filename] += 1
+    else:
+        frequency_data[tool_filename] = 1
+    save_usage_frequency(frequency_data)
+    return frequency_data.get(tool_filename, 0)
+
 # 禁用模板缓存
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
@@ -79,21 +107,39 @@ TOOL_DESCRIPTIONS = {
                 {"name": "theme", "label": "文章主题 (模式1)", "type": "text", "placeholder": "如: 过年回老家", "required": False},
                 {"name": "draft", "label": "草稿文件路径 (模式2)", "type": "text", "placeholder": "如: article/draft.txt 或 C:\\path\\to\\draft.txt", "required": False},
                 {"name": "length", "label": "文章长度", "type": "select", "options": [
+                    {"value": "800", "label": "800字 (短视频文案)"},
+                    {"value": "1200", "label": "1200字 (轻量阅读)"},
                     {"value": "1500", "label": "1500字 (快速阅读)"},
                     {"value": "2000", "label": "2000字 (标准长度)"},
-                    {"value": "2500", "label": "2500字 (深度文章)"}
+                    {"value": "2500", "label": "2500字 (深度文章)"},
+                    {"value": "3000", "label": "3000字 (长文深度)"},
+                    {"value": "4000", "label": "4000字 (专题报道)"}
                 ], "default": "2000"},
-                {"name": "style", "label": "文风描述", "type": "text", "placeholder": "如: 汪曾祺风格、鲁迅杂文风、温柔婉约、幽默风趣、严谨学术等", "required": False},
+                {"name": "style", "label": "文风描述", "type": "select", "options": [
+                    {"value": "", "label": "默认 (标准新闻体)"},
+                    {"value": "wangzengqi", "label": "汪曾祺风格 (平淡质朴)"},
+                    {"value": "luxun", "label": "鲁迅杂文风 (犀利批判)"},
+                    {"value": "humor", "label": "幽默风趣 (轻松调侃)"},
+                    {"value": "emotional", "label": "情感共鸣 (温暖治愈)"},
+                    {"value": "professional", "label": "专业严谨 (学术分析)"},
+                    {"value": "storytelling", "label": "故事叙述 (引人入胜)"},
+                    {"value": "internet", "label": "网感十足 (年轻化表达)"}
+                ], "default": ""},
                 {"name": "generate_images", "label": "生成配图", "type": "select", "options": [
-                    {"value": "y", "label": "是 (生成3张配图)"},
-                    {"value": "n", "label": "否 (仅生成文章)"}
+                    {"value": "n", "label": "不配图"},
+                    {"value": "y", "label": "3张配图"},
+                    {"value": "5", "label": "5张配图"},
+                    {"value": "7", "label": "7张配图"}
                 ], "default": "y"},
                 {"name": "image_style", "label": "配图风格", "type": "select", "options": [
                     {"value": "auto", "label": "自动 (AI智能选择)"},
                     {"value": "realistic", "label": "真实照片"},
                     {"value": "artistic", "label": "艺术创作"},
                     {"value": "cartoon", "label": "卡通插画"},
-                    {"value": "technical", "label": "技术图表 (流程图/架构图)"}
+                    {"value": "watercolor", "label": "水彩画风"},
+                    {"value": "ink", "label": "中国水墨画"},
+                    {"value": "technical", "label": "技术图表"},
+                    {"value": "minimalist", "label": "极简风格"}
                 ], "default": "auto"},
             ]
         },
@@ -136,8 +182,11 @@ def get_file_info(file_path):
     return modified, size
 
 def get_all_tools():
-    """获取所有分类的工具"""
+    """获取所有分类的工具（按使用频率排序）"""
     tools = {}
+
+    # 加载使用频率数据
+    frequency_data = load_usage_frequency()
 
     # 定义工具分类
     categories = {
@@ -163,6 +212,7 @@ def get_all_tools():
             rel_path = py_file.relative_to(BASE_DIR)
             sub_dir = str(rel_path.parent).replace('\\', '/') + '/'
             filename = py_file.name
+            tool_rel_path = str(rel_path).replace('\\', '/')
 
             tool_config = TOOL_DESCRIPTIONS.get(sub_dir, {}).get(filename)
 
@@ -182,15 +232,22 @@ def get_all_tools():
                 # 从tool_details_config.py获取详情
                 details = get_tool_details(str(rel_path))
 
+            # 获取使用频率
+            usage_count = frequency_data.get(tool_rel_path, 0)
+
             tools_list.append({
-                'filename': str(rel_path).replace('\\', '/'),
+                'filename': tool_rel_path,
                 'description': description,
                 'modified': modified,
                 'size': size,
                 'needs_input': needs_input,
                 'input_fields': input_fields,
-                'details': details  # 添加详细说明
+                'details': details,  # 添加详细说明
+                'usage_count': usage_count  # 添加使用频率
             })
+
+        # 按使用频率排序（高频在前），频率相同的按文件名排序
+        tools_list.sort(key=lambda x: (-x['usage_count'], x['filename']))
 
         if tools_list:
             tools[cat_name] = tools_list
@@ -274,6 +331,9 @@ def api_run():
 
     if not tool_path.exists():
         return jsonify({'success': False, 'error': f'工具不存在: {filename}'})
+
+    # 记录工具使用
+    record_tool_usage(filename)
 
     # 生成唯一的进程ID（将文件名中的斜杠替换为下划线，避免URL路由问题）
     safe_filename = filename.replace('/', '_').replace('\\', '_')

@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-今日头条高赞文章生成器 v3.2 - 增强版
+今日头条高赞文章生成器 v3.3 - 增强版
 支持用户输入自定义主题,使用AI生成高质量文章
 新增: 自动生成配图功能
+
+v3.3更新(2026-02-20):
+  ✅ 素材预搜索: 使用DuckDuckGo搜索名人美食故事/作品，确保素材真实
+  ✅ 废话检测: 作者2审校时识别并删除与主题无关的冗余内容
 
 v3.2更新(2026-02-15):
   ✅ 草稿完善模式: 强调最大程度保留原草稿内容，不大幅缩减
@@ -18,6 +22,7 @@ import base64
 import re
 from PIL import Image
 import io
+import time
 
 # 添加父目录到路径以导入config
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -25,8 +30,55 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import get_zhipu_anthropic_client, get_antigravity_client, get_volcano_client
 
 
+def ddg_search(query, max_results=5):
+    """
+    使用DuckDuckGo进行免费搜索（无需API Key）
+    用于在写作前搜集名人美食故事/作品的素材
+
+    Args:
+        query: 搜索查询
+        max_results: 最大结果数
+
+    Returns:
+        str: 格式化的搜索结果文本，用于注入到AI提示词中
+    """
+    print(f"[素材搜索] 查询: {query}")
+
+    try:
+        from duckduckgo_search import DDGS
+
+        results = []
+        with DDGS() as ddgs:
+            search_results = list(ddgs.text(query, max_results=max_results))
+
+            for r in search_results:
+                results.append({
+                    'title': r.get('title', ''),
+                    'snippet': r.get('body', ''),
+                    'url': r.get('href', '')
+                })
+
+        if results:
+            content = '\n\n'.join([
+                f"【{r['title']}】\n{r['snippet']}\n来源: {r['url']}"
+                for r in results
+            ])
+            print(f"[素材搜索] 找到 {len(results)} 条相关素材")
+            return content
+        else:
+            print(f"[素材搜索] 未找到相关素材")
+            return ""
+
+    except ImportError:
+        print("[素材搜索] 未安装duckduckgo-search库，跳过预搜索")
+        return ""
+    except Exception as e:
+        print(f"[素材搜索] 搜索异常: {e}")
+        return ""
+
+
 class ToutiaoArticleGenerator:
-    """今日头条文章生成器 - AI增强版 v3.1"""
+    """今日头条文章生成器 - AI增强版 v3.3"""
 
     def __init__(self):
         self.text_client = get_zhipu_anthropic_client()  # 使用Anthropic兼容接口
@@ -483,6 +535,612 @@ class ToutiaoArticleGenerator:
             import traceback
             traceback.print_exc()
             return None
+
+    def generate_article_collaborative(self, theme, target_length=2000, style='standard', max_rounds=3):
+        """双作者协作生成高质量文章
+
+        作者1负责原创写作，作者2负责审校和提出修改意见。
+        两位作者反复协作，直到达成一致或达到最大轮数。
+
+        Args:
+            theme: 文章主题
+            target_length: 目标字数
+            style: 写作风格
+            max_rounds: 最大协作轮数（默认3轮）
+
+        Returns:
+            dict: 包含标题、正文、协作历史等信息
+        """
+        print(f"\n{'='*60}")
+        print(f"[协作模式] 双顶级文学大家协作生成文章")
+        print(f"主题: {theme}")
+        print(f"目标字数: {target_length}")
+        print(f"文风: {style}")
+        print(f"最大协作轮数: {max_rounds}")
+        print(f"{'='*60}\n")
+
+        collaboration_history = []
+
+        # ========== 第零步：素材预搜索 ==========
+        print(f"\n[素材搜集] 正在搜索相关素材...")
+        search_materials = self._search_reference_materials(theme)
+        if search_materials:
+            print(f"[素材搜集] 成功获取素材，将用于指导创作")
+            collaboration_history.append({
+                'round': 0,
+                'author': '系统',
+                'action': '素材搜集',
+                'materials': search_materials[:500] + '...' if len(search_materials) > 500 else search_materials
+            })
+        else:
+            print(f"[素材搜集] 未获取到外部素材，将基于AI知识创作")
+
+        # ========== 第一步：作者1原创初稿 ==========
+        print(f"\n[作者1 - 原创] 正在创作初稿...")
+        draft_result = self._author1_create_draft(theme, target_length, style, search_materials)
+
+        if not draft_result:
+            print("[ERROR] 作者1创作初稿失败")
+            return None
+
+        current_title = draft_result['title']
+        current_content = draft_result['content']
+        collaboration_history.append({
+            'round': 0,
+            'author': '作者1',
+            'action': '创作初稿',
+            'content_preview': current_content[:200] + '...'
+        })
+        print(f"[作者1] 初稿完成: {current_title}")
+        print(f"[作者1] 字数: {len(current_content)}")
+
+        # ========== 开始多轮协作 ==========
+        for round_num in range(1, max_rounds + 1):
+            print(f"\n{'─'*40}")
+            print(f"[协作轮次 {round_num}]")
+            print(f"{'─'*40}")
+
+            # ========== 作者2审校 ==========
+            print(f"\n[作者2 - 审校] 正在审阅文章...")
+            review_result = self._author2_review(
+                theme=theme,
+                title=current_title,
+                content=current_content,
+                style=style
+            )
+
+            if not review_result:
+                print("[ERROR] 作者2审校失败")
+                break
+
+            collaboration_history.append({
+                'round': round_num,
+                'author': '作者2',
+                'action': '审校意见',
+                'opinion': review_result['opinion'],
+                'needs_revision': review_result['needs_revision'],
+                'issues': review_result.get('issues', [])
+            })
+
+            print(f"[作者2] 审校意见: {review_result['opinion'][:100]}...")
+
+            # 检查是否需要修改
+            if not review_result['needs_revision']:
+                print(f"\n[协作完成] 作者2认为文章质量达标，无需修改！")
+                collaboration_history.append({
+                    'round': round_num,
+                    'author': '系统',
+                    'action': '协作完成',
+                    'message': '两位作者达成一致，文章质量达标'
+                })
+                break
+
+            # 输出具体问题
+            if review_result.get('fact_errors'):
+                print(f"[作者2] 发现事实错误:")
+                for i, err in enumerate(review_result['fact_errors'][:5], 1):
+                    print(f"  {i}. {err}")
+            if review_result.get('redundant_content'):
+                print(f"[作者2] 发现冗余内容（需要删除的废话）:")
+                for i, rc in enumerate(review_result['redundant_content'][:5], 1):
+                    print(f"  {i}. {rc}")
+            if review_result.get('issues'):
+                print(f"[作者2] 发现其他问题:")
+                for i, issue in enumerate(review_result['issues'][:5], 1):
+                    print(f"  {i}. {issue}")
+
+            # ========== 作者1根据意见修改 ==========
+            print(f"\n[作者1 - 修改] 正在根据审校意见修改文章...")
+            revision_result = self._author1_revise(
+                theme=theme,
+                title=current_title,
+                content=current_content,
+                review_opinion=review_result['opinion'],
+                issues=review_result.get('issues', []),
+                fact_errors=review_result.get('fact_errors', []),
+                redundant_content=review_result.get('redundant_content', []),
+                target_length=target_length,
+                style=style
+            )
+
+            if not revision_result:
+                print("[WARN] 作者1修改失败，保持原内容")
+                break
+
+            current_title = revision_result['title']
+            current_content = revision_result['content']
+
+            collaboration_history.append({
+                'round': round_num,
+                'author': '作者1',
+                'action': '修改文章',
+                'content_preview': current_content[:200] + '...'
+            })
+
+            print(f"[作者1] 修改完成")
+            print(f"[作者1] 新字数: {len(current_content)}")
+
+            # 如果是最后一轮，强制完成
+            if round_num == max_rounds:
+                print(f"\n[协作完成] 达到最大轮数({max_rounds}轮)，协作结束")
+                collaboration_history.append({
+                    'round': round_num,
+                    'author': '系统',
+                    'action': '协作完成',
+                    'message': f'达到最大协作轮数({max_rounds}轮)'
+                })
+
+        # ========== 返回最终结果 ==========
+        print(f"\n{'='*60}")
+        print(f"[协作结束] 最终文章生成完成")
+        print(f"标题: {current_title}")
+        print(f"字数: {len(current_content)}")
+        print(f"协作轮数: {len([h for h in collaboration_history if h['author'] == '作者2'])}")
+        print(f"{'='*60}\n")
+
+        return {
+            'title': current_title,
+            'content': current_content,
+            'word_count': len(current_content),
+            'target_length': target_length,
+            'source': 'collaborative',
+            'collaboration_history': collaboration_history,
+            'rounds': len([h for h in collaboration_history if h['author'] == '作者2'])
+        }
+
+    def _author1_create_draft(self, theme, target_length, style, reference_materials=""):
+        """作者1: 创作初稿"""
+
+        # 构建素材部分
+        materials_section = ""
+        if reference_materials:
+            materials_section = f"""
+## 参考素材（来自网络搜索，请确保准确使用）
+以下是与主题相关的真实素材，请在创作时参考，确保引用准确：
+
+{reference_materials}
+
+**使用素材时请注意**:
+- 只使用您能确认准确性的内容
+- 如果素材与您了解的不符，以您的判断为准
+- 引用作品时要确认作者与作品的对应关系
+"""
+
+        prompt = f"""你是【作者1】，一位当代顶级文学大师，文坛泰斗级人物。
+
+你的文学成就斐然：
+- 深厚的古典文学功底，精通诗词歌赋
+- 对现代文学有独到见解，文风自成一派
+- 善于用平实的语言表达深刻的思想
+- 你的文字既有文化底蕴，又平易近人，深受读者喜爱
+
+## 核心目标
+**创作一篇高质量的极具欣赏性的美文**——让读者读后回味无穷，愿意收藏、转发。
+
+## 任务
+请根据以下主题创作一篇原创文章初稿。
+{materials_section}
+## 主题
+{theme}
+
+## 写作要求
+
+### 1. 整体风格
+- 字数: {target_length}字左右
+- 风格: {style if style and style != 'standard' else '优美雅致，有感染力，有文化底蕴'}
+
+### 2. 结构要求
+   - 标题：简洁有力，引人入胜（15-25字）
+   - 开头：要有"钩子"，一句话抓住读者
+   - 正文：层层递进，有起伏有节奏
+   - 结尾：余韵悠长，让读者回味
+
+### 3. 文笔美感（核心！）
+   - 语言要优美、有韵味
+   - 要有令人印象深刻的金句
+   - 句子长短搭配，节奏舒张有度
+   - 用词精准、生动，避免陈词滥调
+
+### 4. 内容准确性
+   - 涉及专业知识（如中医、历史、科学）必须准确
+   - 引用典籍要精确，不可曲解原意
+   - 引用名人作品时，务必确认作品与作者对应正确
+   - 不确定的内容宁可不写也不要编造
+
+### 5. 写作禁忌
+   - 不使用"首先、其次、最后"等公文式表达
+   - 不生硬列举"5个XX"、"3大XX"
+   - 不过度使用emoji（最多2-3处）
+   - 不写与主题无关的"废话"
+   - 每句话都要有存在的价值
+
+请直接输出文章，格式如下：
+---
+标题: [文章标题]
+
+[正文内容]
+---
+"""
+
+        try:
+            response = self.text_client.messages.create(
+                model="glm-4-flash",
+                max_tokens=4000,
+                messages=[{"role": "user", "content": prompt}]
+            )
+
+            content = response.content[0].text
+            return self._parse_article_response(content, theme)
+        except Exception as e:
+            print(f"[ERROR] 作者1创作失败: {e}")
+            return None
+
+    def _search_reference_materials(self, theme):
+        """搜索与主题相关的参考素材（名人故事、作品等）"""
+        # 从主题中提取可能的名人名字
+        import re
+        # 常见文学/美食名人列表
+        famous_people = [
+            '汪曾祺', '梁实秋', '周作人', '林语堂', '老舍', '鲁迅',
+            '蔡澜', '沈宏非', '陈晓卿', '王世襄', '唐鲁孙',
+            '苏轼', '袁枚', '李渔', '张岱'
+        ]
+
+        found_names = []
+        for name in famous_people:
+            if name in theme:
+                found_names.append(name)
+
+        # 搜索素材
+        all_materials = []
+
+        # 如果主题中有名人名字，搜索他们的美食故事/作品
+        for name in found_names[:2]:  # 最多搜索2个人物
+            query = f"{name} 美食 散文 作品 故事"
+            materials = ddg_search(query, max_results=3)
+            if materials:
+                all_materials.append(f"【{name}相关素材】\n{materials}")
+
+        # 搜索主题相关的素材
+        theme_query = f"{theme} 故事 典故 来源"
+        theme_materials = ddg_search(theme_query, max_results=3)
+        if theme_materials:
+            all_materials.append(f"【主题相关素材】\n{theme_materials}")
+
+        if all_materials:
+            return "\n\n".join(all_materials)
+        return ""
+
+    def _author2_review(self, theme, title, content, style):
+        """作者2: 审校文章，从顶级文学评论家角度提出意见"""
+        prompt = f"""你是【作者2】，一位当代顶级文学评论家、资深主编，文坛泰斗级人物。
+
+你的资历：
+- 担任多家顶级文学刊物主编数十年
+- 精通古今文学，对美食文学、文化散文有深入研究
+- 审稿以"火眼金睛"著称，任何瑕疵都逃不过你的眼睛
+- 你的标准极高，但评语中肯、建议务实
+
+## 原文信息
+- 主题: {theme}
+- 标题: {title}
+- 文风要求: {style if style and style != 'standard' else '通俗易懂，有感染力'}
+
+## 原文内容
+{content}
+
+## 你的审校职责
+
+### 🔴 第一优先级 - 内容精炼度检查（新增！）:
+**核心原则：文章中的每一句话都应该有其存在的价值。**
+
+1. **废话检测**（重点！）:
+   - 是否有与主题无关的段落或句子？
+   - 是否为了凑字数而添加的"填充内容"？
+   - 引用的典故、名人、作品是否与主题紧密相关？
+   - 例如："在《蔡澜食旅》中，虽然蔡澜并未详细描述品尝奶酪的过程"——这种内容对主题有任何助益吗？
+
+2. **冗余内容识别**:
+   - 是否有重复表达同一意思的句子？
+   - 是否有"正确的废话"（虽然没错但对读者无价值）？
+   - 引用某人物的作品时，该作品是否真的与主题相关？（如：主题是汪曾祺，却提《舌尖上的中国》）
+
+3. **精炼度评分标准**:
+   - 每个段落都必须推进主题
+   - 每个引用都必须紧密关联主题
+   - 不相关的名人/作品提及必须删除
+
+### 🔴 第二优先级 - 事实准确性（零容忍！）:
+
+1. **人物身份描述准确性（极易出错！）**:
+   - 不能把所有人都称为"文学大家"或"文学家"
+   - 汪曾祺：是文学家、作家
+   - 蔡澜：是美食家、作家、主持人，不是"文学大家"
+   - 于谦：是相声演员，不是"文学大家"
+   - 梁实秋、周作人：是文学家
+   - 称呼人物时必须使用准确的职业/身份描述
+   - 如果提到多个人，不能用一个不准确的统称
+
+2. **作品与作者对应**:
+   - 《舌尖上的中国》是央视纪录片，不是汪曾祺的作品
+   - 《人间有味是清欢》是苏轼的诗句，不是书名
+   - 必须核实每一个作品归属
+
+3. **引用细节准确性（所有引用都必须精确！）**:
+   - **相声、小品**：郭德纲相声《我要幸福》中有"要吃鱼翅"的包袱，而不是有一段相声叫《我要吃鱼翅》
+   - **文章、访谈、节目**：如果提到了具体的名称，必须确保确实存在且名称正确
+   - **核心原则**：
+     - 书名号《》只能用于真正存在的、有正式名称的作品
+     - 引用来源要根据文章需要决定说还是不说，但如果说了就必须准确
+     - 不能把作品中的某个片段、情节、包袱说成一个独立的作品
+   - **不确定时的处理**：如果无法确认某个引用的准确性，宁可不写也不要编造
+
+4. **历史准确性**:
+   - 历史事件的时间、地点、人物是否准确？
+   - 引用的名言是否确为该人物所说？
+
+### 🔴 第三优先级 - 文学性与美感评估:
+**核心目标：打造一篇高质量的极具欣赏性的美文**
+
+1. **文笔美感**:
+   - 语言是否优美、有韵味？
+   - 是否有令人印象深刻的金句？
+   - 用词是否精准、生动？
+   - 是否有不必要的冗余修饰？
+
+2. **情感共鸣**:
+   - 文章是否能打动读者？
+   - 情感表达是否真挚、自然？
+   - 是否能引发读者的联想和共鸣？
+
+3. **节奏与韵律**:
+   - 句子长短搭配是否合理？
+   - 段落节奏是否舒张有度？
+   - 读起来是否朗朗上口？
+
+4. **逻辑连贯性**: 论述是否清晰？段落之间是否流畅？
+5. **文风一致性**: 是否符合要求的文风？
+
+### 资深读者角度:
+1. **吸引力**: 开头是否足够吸引人？
+2. **共鸣感**: 内容是否能触动读者情感？
+3. **争议点**: 是否有表述可能引起误解或争议？
+
+## 评分标准（顶级文学标准，非常严格！）:
+- 9-10分: 文学佳作，内容精炼，无一字多余
+- 7-8分: 良好，有少许可优化之处
+- 5-6分: 及格，有明显冗余或小问题
+- 5分以下: 存在事实错误或大量废话，需要大幅修改
+
+## 输出格式（必须严格遵循JSON格式）
+
+{{
+    "opinion": "总体评价（50-100字，必须指出是否发现事实错误或冗余内容）",
+    "needs_revision": true或false,
+    "score": 1-10的评分,
+    "fact_errors": [
+        "事实错误1：具体描述错误内容和正确信息",
+        "事实错误2：..."
+    ],
+    "redundant_content": [
+        "冗余内容1：描述需要删除的段落或句子，说明为什么与主题无关",
+        "冗余内容2：例如'提及《舌尖上的中国》与汪曾祺主题无关，应删除'"
+    ],
+    "issues": [
+        "其他问题1：描述问题所在和建议修改方向",
+        "其他问题2：..."
+    ],
+    "suggestions": [
+        "修改建议1",
+        "修改建议2"
+    ]
+}}
+
+## 特别注意:
+- **冗余内容检测是最高优先级**：如果有与主题无关的内容，必须标记
+- 如果发现任何事实错误或冗余内容，必须设置 "needs_revision": true
+- fact_errors数组记录事实错误
+- redundant_content数组记录需要删除的废话
+- 评分要严格，存在事实错误或大量废话的文章不能超过6分
+
+请只输出JSON，不要有其他内容。
+"""
+
+        try:
+            response = self.text_client.messages.create(
+                model="glm-4-flash",
+                max_tokens=2000,
+                messages=[{"role": "user", "content": prompt}]
+            )
+
+            response_text = response.content[0].text.strip()
+
+            # 尝试解析JSON
+            # 处理可能的markdown代码块
+            if response_text.startswith('```'):
+                response_text = re.sub(r'^```json?\s*', '', response_text)
+                response_text = re.sub(r'```\s*$', '', response_text)
+
+            result = json.loads(response_text)
+
+            # 验证必要字段
+            if 'opinion' not in result:
+                result['opinion'] = '审校完成'
+            if 'needs_revision' not in result:
+                result['needs_revision'] = True
+            if 'issues' not in result:
+                result['issues'] = []
+            if 'fact_errors' not in result:
+                result['fact_errors'] = []
+            if 'redundant_content' not in result:
+                result['redundant_content'] = []
+            if 'score' not in result:
+                result['score'] = 7
+
+            # 如果有事实错误或冗余内容，强制设置needs_revision
+            if result.get('fact_errors') and len(result['fact_errors']) > 0:
+                result['needs_revision'] = True
+                if result['score'] > 6:
+                    result['score'] = 5
+
+            # 如果有冗余内容，也需要修改
+            if result.get('redundant_content') and len(result['redundant_content']) > 0:
+                result['needs_revision'] = True
+                if result['score'] > 7:
+                    result['score'] = 6  # 有冗余内容，评分降低
+
+            print(f"[作者2] 评分: {result.get('score', 'N/A')}/10")
+            if result.get('fact_errors'):
+                print(f"[作者2] 发现事实错误: {len(result['fact_errors'])}处")
+            if result.get('redundant_content'):
+                print(f"[作者2] 发现冗余内容: {len(result['redundant_content'])}处")
+
+            return result
+
+        except json.JSONDecodeError as e:
+            print(f"[WARN] 作者2返回非JSON格式，尝试提取信息")
+            # 尝试从文本中提取信息
+            return {
+                'opinion': response_text[:200] if response_text else '审校意见解析失败',
+                'needs_revision': True,
+                'issues': ['审校意见格式异常，建议重新审校'],
+                'fact_errors': [],
+                'redundant_content': [],
+                'fact_errors': [],
+                'score': 6
+            }
+        except Exception as e:
+            print(f"[ERROR] 作者2审校失败: {e}")
+            return None
+
+    def _author1_revise(self, theme, title, content, review_opinion, issues, fact_errors, redundant_content, target_length, style):
+        """作者1: 根据审校意见修改文章"""
+        issues_text = '\n'.join([f"- {issue}" for issue in issues]) if issues else "无其他问题"
+        fact_errors_text = '\n'.join([f"🔴 {err}" for err in fact_errors]) if fact_errors else "无事实错误"
+        redundant_text = '\n'.join([f"🗑️ {rc}" for rc in redundant_content]) if redundant_content else "无冗余内容"
+
+        prompt = f"""你是【作者1】，当代顶级文学大师，根据主编的审校意见修改你的文章。
+
+## 原文
+标题: {title}
+
+{content}
+
+## 主编审校意见
+{review_opinion}
+
+## 🔴 第一优先级 - 冗余内容删除（必须删除！）
+主编指出的与主题无关的废话，必须彻底删除：
+
+{redundant_text}
+
+**删除原则**：
+- 这些内容与主题无关，对读者没有任何价值
+- 删除后不会影响文章完整性
+- 删掉后文章会更加精炼、有力度
+
+## 🔴 第二优先级 - 事实错误修正（必须修正！）
+{fact_errors_text}
+
+## 其他问题
+{issues_text}
+
+## 修改要求（严格按优先级执行）
+
+### 🗑️ 第一优先级 - 删除冗余内容:
+1. **逐条删除主编标记的废话**: 不留任何痕迹，直接删除
+2. **检查关联内容**: 如果某段话是围绕冗余内容展开的，一并删除
+3. **不心疼任何废话**: 好文章是改出来的，精炼才是王道
+
+### 🔴 第二优先级 - 事实错误修正:
+1. **仔细核对每一个事实错误**: 主编指出的事实错误必须100%修正
+2. **删除或更正错误信息**:
+   - 如果不确定某个信息是否正确，宁可不写也不要编造
+   - 作品与作者的对应关系必须准确
+3. **不要用模糊表述掩盖错误**: 如"据说"、"有人认为"等
+
+### ✅ 第三优先级 - 内容优化:
+1. **认真对待每一条意见**: 仔细分析主编指出的问题
+2. **保持原文优点**: 不要为了修改而丢失原文的精彩之处
+3. **针对性修改**:
+   - 表述不清的地方重新表达
+   - 逻辑不通的地方调整结构
+   - 可能引起争议的地方斟酌措辞
+
+### 📝 格式要求:
+1. **字数控制**: 删除废话后字数可能会减少，这是正常的，精炼比冗长更好
+2. **保持风格**: 修改后的文风要与原文一致
+
+## 输出格式
+---
+标题: [修改后的标题]
+
+[修改后的正文内容]
+---
+
+请输出修改后的完整文章（不是修改说明，而是完整的修改后文章）。
+"""
+
+        try:
+            response = self.text_client.messages.create(
+                model="glm-4-flash",
+                max_tokens=4000,
+                messages=[{"role": "user", "content": prompt}]
+            )
+
+            content = response.content[0].text
+            return self._parse_article_response(content, theme)
+        except Exception as e:
+            print(f"[ERROR] 作者1修改失败: {e}")
+            return None
+
+    def _parse_article_response(self, response_text, default_theme):
+        """解析AI返回的文章内容"""
+        lines = response_text.split('\n')
+        title = ""
+        body_lines = []
+
+        for line in lines:
+            if line.startswith("标题:") or line.startswith("标题："):
+                title = line.replace("标题:", "").replace("标题：", "").strip()
+            elif line.strip() == "---":
+                continue
+            elif title:
+                body_lines.append(line)
+
+        body = '\n'.join(body_lines).strip()
+
+        if not title:
+            title = lines[0].strip() if lines else f"关于{default_theme}的思考"
+
+        if not body or len(body) < 50:
+            return None
+
+        return {
+            'title': title,
+            'content': body,
+            'word_count': len(body)
+        }
 
     def generate_article_images(self, theme, article_content, image_style="realistic"):
         """根据文章主题和内容生成3张配图，支持多模型降级
