@@ -232,6 +232,23 @@
             border-left-color: #dc3545;
         }
 
+        /* 文档链接样式 */
+        .tree-tool.document-link {
+            cursor: pointer;
+            color: #a5b4fc;
+        }
+
+        .tree-tool.document-link:hover {
+            background: linear-gradient(90deg, rgba(107, 70, 193, 0.2) 0%, rgba(90, 103, 216, 0.2) 100%);
+            border-left-color: #a5b4fc;
+            color: #c4b5fd;
+        }
+
+        .tree-tool.document-link::before {
+            content: '📖 ';
+            margin-right: 4px;
+        }
+
         .tree-run-btn {
             margin-left: auto;
             background: #5a67d8;
@@ -759,7 +776,14 @@
             const treeView = document.getElementById('tree-view');
             treeView.innerHTML = '';
 
-            for (const [category, tools] of Object.entries(toolsData)) {
+            // 对分类进行排序，确保"文档库"排在最后
+            const sortedCategories = Object.entries(toolsData).sort((a, b) => {
+                if (a[0] === '文档库') return 1;
+                if (b[0] === '文档库') return -1;
+                return 0;
+            });
+
+            for (const [category, tools] of sortedCategories) {
                 // 创建分类节点
                 const categoryDiv = document.createElement('div');
                 categoryDiv.className = 'tree-node';
@@ -787,6 +811,11 @@
                     toolDiv.dataset.filename = tool.filename;
                     toolDiv.dataset.tooltip = tool.description;
 
+                    // 文档类型 - 使用链接样式
+                    if (tool.is_document) {
+                        toolDiv.classList.add('document-link');
+                    }
+
                     // 工具名称 - 提取简化版本的功能描述
                     // 格式: "类型 - 名称 (详细说明)" -> "名称"
                     let shortName = tool.description;
@@ -804,8 +833,8 @@
                     nameSpan.title = tool.description;
                     toolDiv.appendChild(nameSpan);
 
-                    // 使用频率标签
-                    if (tool.usage_count && tool.usage_count > 0) {
+                    // 使用频率标签 (文档不显示)
+                    if (!tool.is_document && tool.usage_count && tool.usage_count > 0) {
                         const usageBadge = document.createElement('span');
                         usageBadge.className = 'usage-badge';
 
@@ -824,21 +853,29 @@
                         toolDiv.appendChild(usageBadge);
                     }
 
-                    // 运行按钮
-                    const runBtn = document.createElement('button');
-                    runBtn.className = 'tree-run-btn';
-                    runBtn.textContent = '▶';
-                    runBtn.title = '运行工具';
-                    runBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        runToolDirect(tool, toolDiv, runBtn);
-                    };
-                    toolDiv.appendChild(runBtn);
+                    // 运行按钮 (文档类型不显示按钮)
+                    if (!tool.is_document) {
+                        const runBtn = document.createElement('button');
+                        runBtn.className = 'tree-run-btn';
+                        runBtn.textContent = '▶';
+                        runBtn.title = '运行工具';
+                        runBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            runToolDirect(tool, toolDiv, runBtn);
+                        };
+                        toolDiv.appendChild(runBtn);
+                    }
 
-                    // 点击选择
-                    toolDiv.onclick = () => {
-                        selectTool(tool, toolDiv);
-                    };
+                    // 点击事件 - 文档类型选中显示说明，工具类型选择
+                    if (tool.is_document) {
+                        toolDiv.onclick = () => {
+                            selectDocument(tool, toolDiv);
+                        };
+                    } else {
+                        toolDiv.onclick = () => {
+                            selectTool(tool, toolDiv);
+                        };
+                    }
 
                     toolsDiv.appendChild(toolDiv);
                 });
@@ -851,6 +888,16 @@
 
         // 运行工具(从左侧树直接运行)
         async function runToolDirect(tool, element, btn) {
+            // 检查是否是文档类型
+            if (tool.is_document && tool.document_path) {
+                // 文档类型 - 在新窗口打开
+                addLog('info', `打开文档: ${tool.description}`);
+                const docUrl = '/view/document/' + tool.document_path;
+                window.open(docUrl, '_blank');
+                addLog('success', `文档已在新窗口打开`);
+                return;
+            }
+
             btn.disabled = true;
             btn.textContent = '⏳';
             btn.classList.add('running');
@@ -975,6 +1022,126 @@
             } catch (error) {
                 addLog('error', `状态检查失败: ${error.message}`);
             }
+        }
+
+        // 选择文档 - 显示文档说明
+        async function selectDocument(tool, element) {
+            // 移除其他选中状态
+            document.querySelectorAll('.tree-tool').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // 添加选中状态
+            element.classList.add('selected');
+
+            currentTool = tool;
+
+            // 更新内容区标题
+            document.getElementById('tool-title').textContent = tool.description;
+            document.getElementById('tool-description').textContent = `文档路径: ${tool.document_path || tool.filename}`;
+
+            const detailsDiv = document.getElementById('tool-details');
+
+            // 获取文档说明信息
+            let docInfo = null;
+            let readmePath = '';
+            try {
+                const docPath = tool.document_path || tool.filename;
+                const response = await fetch('/api/document-info?path=' + encodeURIComponent(docPath));
+                const data = await response.json();
+                if (data.success) {
+                    docInfo = data.info;
+                    // 构建README文件路径
+                    const pathParts = docPath.split('/');
+                    pathParts.pop(); // 移除文件名
+                    readmePath = pathParts.join('/') + '/README.md';
+                }
+            } catch (error) {
+                console.error('加载文档信息失败:', error);
+            }
+
+            // 构建文档显示内容
+            let html = `
+                <div class="detail-card">
+                    <h3>📖 文档信息</h3>
+                    <div class="meta-info">
+                        <div class="meta-item">
+                            <div class="meta-label">文档名称</div>
+                            <div class="meta-value">${docInfo ? docInfo.name : tool.description}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">文档路径</div>
+                            <div class="meta-value">${tool.document_path || tool.filename}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 添加操作按钮
+            html += `
+                <div class="detail-card" style="margin-top: 15px;">
+                    <h3>🔗 操作</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="openDocument('${tool.document_path || tool.filename}')" style="
+                            padding: 10px 20px;
+                            background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+                            border: none;
+                            border-radius: 8px;
+                            color: white;
+                            cursor: pointer;
+                            font-size: 14px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(124, 58, 237, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                            📖 打开文档
+                        </button>
+            `;
+
+            // 如果有README，显示查看说明链接
+            if (docInfo && docInfo.readme) {
+                html += `
+                        <button onclick="openReadme('${readmePath}')" style="
+                            padding: 10px 20px;
+                            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+                            border: none;
+                            border-radius: 8px;
+                            color: white;
+                            cursor: pointer;
+                            font-size: 14px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(5, 150, 105, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                            📋 查看生成说明
+                        </button>
+                `;
+            }
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            detailsDiv.innerHTML = html;
+        }
+
+        // 打开README说明文档
+        function openReadme(readmePath) {
+            // 使用新的 /view/readme/ 端点，将Markdown转换为HTML在浏览器中显示
+            const readmeUrl = '/view/readme/' + readmePath;
+            window.open(readmeUrl, '_blank');
+            addLog('info', `打开说明文档: ${readmePath}`);
+        }
+
+        // 在新窗口打开文档
+        function openDocument(docPath) {
+            const docUrl = '/view/document/' + docPath;
+            window.open(docUrl, '_blank');
+            addLog('info', `打开文档: ${docPath}`);
+            addLog('success', `文档已在新窗口打开`);
         }
 
         // 选择工具

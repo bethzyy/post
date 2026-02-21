@@ -171,6 +171,13 @@ TOOL_DESCRIPTIONS = {
     "test/": {
         "test_antigravity_models.py": "测试 - Anti-gravity多模型测试 (测试DALL-E/Gemini等模型)",
         "test_gemini_pro_image.py": "测试 - Gemini Pro Image 3测试 (测试gemini-3-pro-image-2K模型生成图像能力)",
+    },
+    "docs/": {
+        "二十四节气与中国传统色彩.html": {
+            "description": "📚 二十四节气与中国传统色彩 (384种传统色按节气分类解读)",
+            "is_document": True,
+            "category": "article/二十四节气色彩"
+        }
     }
 }
 
@@ -195,7 +202,8 @@ def get_all_tools():
         "article": "文章生成工具",
         "video": "视频工具(下载/生成)",
         "hotspot": "AI热点研究",
-        "test": "测试工具"
+        "test": "测试工具",
+        "docs": "文档库"
     }
 
     for cat_dir, cat_name in categories.items():
@@ -204,6 +212,33 @@ def get_all_tools():
             continue
 
         tools_list = []
+
+        # 处理docs目录（文档库）- 特殊处理HTML文件
+        if cat_dir == "docs":
+            for doc_key, doc_config in TOOL_DESCRIPTIONS.get("docs/", {}).items():
+                if isinstance(doc_config, dict) and doc_config.get('is_document'):
+                    doc_category = doc_config.get('category', '')
+                    doc_path = BASE_DIR / doc_category / doc_key
+                    if doc_path.exists():
+                        stat = doc_path.stat()
+                        modified = datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M')
+                        size = stat.st_size
+                        tools_list.append({
+                            'filename': f"docs/{doc_key}",
+                            'description': doc_config.get('description', doc_key),
+                            'modified': modified,
+                            'size': size,
+                            'needs_input': False,
+                            'input_fields': [],
+                            'details': None,
+                            'usage_count': 0,
+                            'is_document': True,
+                            'document_path': f"{doc_category}/{doc_key}"
+                        })
+            if tools_list:
+                tools[cat_name] = tools_list
+            continue
+
         # 只查找Python文件,不包含HTML文件
         for py_file in sorted(cat_path.glob("*.py")):
             modified, size = get_file_info(py_file)
@@ -252,6 +287,18 @@ def get_all_tools():
         if tools_list:
             tools[cat_name] = tools_list
 
+    # 确保文档库排在最后
+    docs_category = "文档库"
+    if docs_category in tools:
+        docs_data = tools.pop(docs_category)
+        # 使用OrderedDict确保顺序
+        from collections import OrderedDict
+        ordered_tools = OrderedDict()
+        for k, v in tools.items():
+            ordered_tools[k] = v
+        ordered_tools[docs_category] = docs_data
+        return dict(ordered_tools)
+
     return tools
 
 @app.route('/')
@@ -265,6 +312,149 @@ def view_article(filename):
     """查看生成的文章HTML文件"""
     article_dir = BASE_DIR / 'article'
     return send_from_directory(article_dir, filename)
+
+@app.route('/view/document/<path:doc_path>')
+def view_document(doc_path):
+    """查看文档库中的HTML文件"""
+    # doc_path格式如: article/二十四节气色彩/二十四节气与中国传统色彩.html
+    full_path = BASE_DIR / doc_path
+    if not full_path.exists():
+        return jsonify({'success': False, 'error': f'文档不存在: {doc_path}'}), 404
+
+    # 获取文件所在目录和文件名
+    parent_dir = full_path.parent
+    filename = full_path.name
+    return send_from_directory(parent_dir, filename)
+
+@app.route('/view/readme/<path:doc_path>')
+def view_readme(doc_path):
+    """查看README.md文件，以HTML格式显示"""
+    import re
+
+    full_path = BASE_DIR / doc_path
+    if not full_path.exists():
+        return f'<html><body><h1>文件不存在</h1><p>{doc_path}</p></body></html>', 404
+
+    try:
+        with open(full_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    except Exception as e:
+        return f'<html><body><h1>读取失败</h1><p>{str(e)}</p></body></html>', 500
+
+    # 简单的Markdown转HTML
+    html_content = content
+    # 转义HTML特殊字符
+    html_content = html_content.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+    # 标题
+    html_content = re.sub(r'^### (.*)$', r'<h3>\1</h3>', html_content, flags=re.MULTILINE)
+    html_content = re.sub(r'^## (.*)$', r'<h2>\1</h2>', html_content, flags=re.MULTILINE)
+    html_content = re.sub(r'^# (.*)$', r'<h1>\1</h1>', html_content, flags=re.MULTILINE)
+    # 粗体
+    html_content = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', html_content)
+    # 代码块
+    html_content = re.sub(r'```(\w*)\n(.*?)```', r'<pre><code class="\1">\2</code></pre>', html_content, flags=re.DOTALL)
+    # 行内代码
+    html_content = re.sub(r'`([^`]+)`', r'<code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;">\1</code>', html_content)
+    # 列表
+    html_content = re.sub(r'^- (.*)$', r'<li>\1</li>', html_content, flags=re.MULTILINE)
+    html_content = re.sub(r'^\d+\. (.*)$', r'<li>\1</li>', html_content, flags=re.MULTILINE)
+    # 链接
+    html_content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', html_content)
+    # 换行
+    html_content = html_content.replace('\n\n', '</p><p>')
+    html_content = html_content.replace('\n', '<br>')
+
+    # 构建完整HTML页面
+    html = f'''<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>README - {full_path.stem}</title>
+    <style>
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }}
+        h1 {{ color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }}
+        h2 {{ color: #34495e; margin-top: 30px; border-left: 4px solid #3498db; padding-left: 10px; }}
+        h3 {{ color: #7f8c8d; }}
+        code {{
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+        }}
+        pre {{
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }}
+        pre code {{
+            background: none;
+            padding: 0;
+        }}
+        li {{ margin: 5px 0; }}
+        a {{ color: #3498db; text-decoration: none; }}
+        a:hover {{ text-decoration: underline; }}
+        table {{
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }}
+        th, td {{
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }}
+        th {{ background: #f5f5f5; }}
+    </style>
+</head>
+<body>
+    <div style="background:white;padding:30px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+        <p>{html_content}</p>
+    </div>
+</body>
+</html>'''
+
+    return html
+
+@app.route('/api/document-info')
+def api_document_info():
+    """API: 获取文档的说明信息"""
+    doc_path = request.args.get('path', '')
+    if not doc_path:
+        return jsonify({'success': False, 'error': '缺少文档路径'})
+
+    # 获取文档所在目录的README.md
+    full_path = BASE_DIR / doc_path
+    if not full_path.exists():
+        return jsonify({'success': False, 'error': f'文档不存在: {doc_path}'})
+
+    # 查找README.md
+    doc_dir = full_path.parent
+    readme_path = doc_dir / 'README.md'
+
+    doc_info = {
+        'name': full_path.stem,
+        'path': doc_path,
+        'readme': None
+    }
+
+    if readme_path.exists():
+        try:
+            with open(readme_path, 'r', encoding='utf-8') as f:
+                doc_info['readme'] = f.read()
+        except Exception as e:
+            doc_info['readme'] = f'无法读取README: {str(e)}'
+
+    return jsonify({'success': True, 'info': doc_info})
 
 @app.route('/api/tools')
 def api_tools():

@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>春分节气中国传统色分析</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Noto Serif SC', serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .intro-section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .intro-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: inline-block;
+        }
+
+        .intro-section p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .sanhou-diagram {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .sanhou-item {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            min-width: 200px;
+            flex: 1;
+            max-width: 280px;
+            transition: transform 0.3s ease;
+        }
+
+        .sanhou-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .sanhou-item .number {
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .sanhou-item .name {
+            font-size: 1.3em;
+            color: #333;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .sanhou-item .desc {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .color-group {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .color-group h2 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .color-group h2 .icon {
+            font-size: 1.5em;
+        }
+
+        .color-group .subtitle {
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .colors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .color-card {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .color-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .color-preview {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .color-preview .name-cn {
+            color: white;
+            font-size: 1.8em;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            font-weight: bold;
+        }
+
+        .color-info {
+            padding: 25px;
+            background: white;
+        }
+
+        .color-info h3 {
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .color-info .pinyin {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .color-info .description {
+            color: #555;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+
+        .color-info .source {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            color: #666;
+            border-left: 3px solid #667eea;
+        }
+
+        .color-info .rgb-value {
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        /* 第一组颜色 - 玄鸟至 (白色系) */
+        .group-1 .color-card:nth-child(1) .color-preview { background: #EBEEE8; }
+        .group-1 .color-card:nth-child(2) .color-preview { background: #EBEDDF; }
+        .group-1 .color-card:nth-child(3) .color-preview { background: #E0E0D0; }
+        .group-1 .color-card:nth-child(4) .color-preview { background: #D8DCD4; }
+
+        .group-1 .color-preview .name-cn { color: #555 !important; }
+
+        /* 第二组颜色 - 玄鸟至续 (紫红色系) */
+        .group-2 .color-card:nth-child(1) .color-preview { background: #9B7BB8; }
+        .group-2 .color-card:nth-child(2) .color-preview { background: #C9A86C; }
+        .group-2 .color-card:nth-child(3) .color-preview { background: #B08050; }
+        .group-2 .color-card:nth-child(4) .color-preview { background: #A0522D; }
+
+        /* 第三组颜色 - 雷乃发声 (红色系) */
+        .group-3 .color-card:nth-child(1) .color-preview { background: #EA5514; }
+        .group-3 .color-card:nth-child(2) .color-preview { background: #D23918; }
+        .group-3 .color-card:nth-child(3) .color-preview { background: #C8161D; }
+        .group-3 .color-card:nth-child(4) .color-preview { background: #A41C1B; }
+
+        /* 第四组颜色 - 始电 (青色系) */
+        .group-4 .color-card:nth-child(1) .color-preview { background: #4A7C7B; }
+        .group-4 .color-card:nth-child(2) .color-preview { background: #2E8B57; }
+        .group-4 .color-card:nth-child(3) .color-preview { background: #1E6B5C; }
+        .group-4 .color-card:nth-child(4) .color-preview { background: #2F4F4F; }
+
+        .summary-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 50px 40px;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .summary-section h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .summary-item {
+            background: rgba(255,255,255,0.15);
+            padding: 25px;
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+        }
+
+        .summary-item h3 {
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .summary-item p {
+            opacity: 0.95;
+            line-height: 1.7;
+        }
+
+        .philosophy-section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .philosophy-section h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .philosophy-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .philosophy-item {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .philosophy-item .symbol {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .philosophy-item h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .philosophy-item p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            margin-top: 20px;
+        }
+
+        footer .source-note {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .color-group {
+                padding: 25px;
+            }
+
+            .sanhou-diagram {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .sanhou-item {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>春分节气 · 中国传统色分析</h1>
+            <p class="subtitle">《中国传统色：故宫里的色彩美学》中的时令色彩智慧</p>
+        </header>
+
+        <!-- 引言部分 -->
+        <section class="intro-section">
+            <h2>为什么这些颜色归为春分？</h2>
+
+            <p>春分，是二十四节气中的第四个节气，也是春季九十天的中分点。《月令七十二候集解》云："二月中，分者半也，此当九十日之半，故谓之分。"春分日，太阳直射赤道，昼夜等长，阴阳平衡，万物复苏。</p>
+
+            <p>《中国传统色：故宫里的色彩美学》一书由郭浩、李健明编著，从故宫文物中提取色值，结合古籍文献，将384种中国传统色与二十四节气、七十二物候相对应，形成了一套完整的传统色彩体系。春分节气共有三候，每候四色，共十二色，这些颜色之所以被归为春分，是因为它们与春分时节的自然现象、物候特征以及文化内涵高度契合。</p>
+
+            <div class="sanhou-diagram">
+                <div class="sanhou-item">
+                    <div class="number">一候</div>
+                    <div class="name">玄鸟至</div>
+                    <div class="desc">燕子从南方飞来<br>象征春归大地</div>
+                </div>
+                <div class="sanhou-item">
+                    <div class="number">二候</div>
+                    <div class="name">雷乃发声</div>
+                    <div class="desc">春雷开始轰响<br>阴阳交泰之象</div>
+                </div>
+                <div class="sanhou-item">
+                    <div class="number">三候</div>
+                    <div class="name">始电</div>
+                    <div class="desc">闪电开始出现<br>阳气勃发之兆</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第一组：玄鸟至 -->
+        <section class="color-group group-1">
+            <h2><span class="icon">🕊️</span> 第一组：玄鸟至（起承转合）</h2>
+            <p class="subtitle">皦玉、吉量、韶粉、霜地 — 燕归时节的素雅之色</p>
+
+            <div class="colors-grid">
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">皦玉</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>皦玉</h3>
+                        <p class="pinyin">jiǎo yù</p>
+                        <p class="description">古老的玉色，玉石之白也。许慎《说文解字》："皦，玉石之白也。"象征纯净与润白，如春分时节冰雪消融后大地的洁白底色。</p>
+                        <div class="source">《魏书·高闾传》："譬如玉石，皦然可知"</div>
+                        <p class="rgb-value">RGB: 235, 238, 232</p>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">吉量</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>吉量</h3>
+                        <p class="pinyin">jí liàng</p>
+                        <p class="description">神马之色，缟身朱鬣，目若黄金。《山海经》中记载的祥瑞之兽，骑之可寿千年。象征长寿、健康与吉祥，与春分万物复苏、生机勃发的意象相呼应。</p>
+                        <div class="source">《山海经·海内北经》："有文马，缟身朱鬣，目若黄金，名曰吉量"</div>
+                        <p class="rgb-value">RGB: 235, 237, 223</p>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">韶粉</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>韶粉</h3>
+                        <p class="pinyin">sháo fěn</p>
+                        <p class="description">古代高级铅粉，因辰韶诸郡专造而得名。既是传统妆色，也是中国画传统颜料。呈现淡雅的粉白色调，如春分时节的朦胧晨光。</p>
+                        <div class="source">宋应星《天工开物》："此物古因辰韶诸郡专造，故曰韶粉"</div>
+                        <p class="rgb-value">RGB: 224, 224, 208</p>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">霜地</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>霜地</h3>
+                        <p class="pinyin">shuāng dì</p>
+                        <p class="description">霜覆盖大地的颜色，呈现清冷素雅的灰白色调。描绘春分时节霜雪消融、大地回春的过渡景象，是冬去春来的最后一抹清寒。</p>
+                        <div class="source">取自春分时节霜雪渐融的自然景象</div>
+                        <p class="rgb-value">RGB: 216, 220, 212</p>
+                    </div>
+                </div>
+            </div>
+
+            <p style="margin-top: 25px; color: #666; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <strong>分析：</strong>这一组颜色以白色、米白色为主调，对应"玄鸟至"候应。燕子归来时节，冬雪消融未尽，大地呈现出一派素净淡雅的景象。皦玉之纯净、吉量之祥瑞、韶粉之朦胧、霜地之清冷，共同描绘出春分初期的清丽意境。这些颜色从洁白（皦玉）逐渐过渡到微黄（吉量）、淡粉（韶粉）、灰白（霜地），体现了中国传统色"起承转合"的色彩逻辑。
+            </p>
+        </section>
+
+        <!-- 第二组：玄鸟至续 -->
+        <section class="color-group group-2">
+            <h2><span class="icon">🌸</span> 第二组：玄鸟至续（华美之色）</h2>
+            <p class="subtitle">夏籥、紫磨金、檀色、赭罗 — 春归大地的华美意象</p>
+
+            <div class="colors-grid">
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">夏籥</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>夏籥</h3>
+                        <p class="pinyin">xià yuè</p>
+                        <p class="description">《夏籥》又名《大夏》，是歌颂夏禹治水功绩的乐舞。"籥"是古代一种乐器，象征礼乐文明的传承。此色典雅庄重，寓意春天的礼乐教化。</p>
+                        <div class="source">《周礼·春官》记载《大夏》乐舞</div>
+                        <p class="rgb-value">RGB: 155, 123, 184</p>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">紫磨金</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>紫磨金</h3>
+                        <p class="pinyin">zǐ mó jīn</p>
+                        <p class="description">品质最优的黄金，金质纯净且微泛紫色，被视为黄金中的上品。佛教经典常以紫磨金喻佛身，象征清净尊贵。与春分阳气上升的气象相呼应。</p>
+                        <div class="source">《金光明经》："紫磨金光身莹明"</div>
+                        <p class="rgb-value">RGB: 201, 168, 108</p>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">檀色</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>檀色</h3>
+                        <p class="pinyin">tán sè</p>
+                        <p class="description">色彩浓郁而富有层次感，取自紫檀木的色调。古诗用以描绘紫牡丹的华美，与春分时节百花争艳的景象相得益彰。</p>
+                        <div class="source">张翥《水龙吟》："钱均檀色妒胭脂，绿刺也生姿"</div>
+                        <p class="rgb-value">RGB: 176, 128, 80</p>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">赭罗</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>赭罗</h3>
+                        <p class="pinyin">zhě luó</p>
+                        <p class="description">猩红色调，热烈而奔放。辛弃疾用以形容杜鹃花的鲜艳，与春分时节花开满园、热情洋溢的景象相呼应。</p>
+                        <div class="source">辛弃疾《定风波》："猩猩血染赭罗巾"</div>
+                        <p class="rgb-value">RGB: 160, 82, 45</p>
+                    </div>
+                </div>
+            </div>
+
+            <p style="margin-top: 25px; color: #666; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <strong>分析：</strong>这一组颜色从典雅的紫色调（夏籥）过渡到华贵的金色（紫磨金），再到温暖的檀色和热烈的赭罗，对应春分时节春意渐浓、百花竞放的自然景象。燕子归来不仅带来了春天的气息，也带来了生机与活力，这些华美的颜色正是春天绚烂多姿的写照。从礼乐之雅到自然之美，体现了春分节气文化内涵的丰富性。
+            </p>
+        </section>
+
+        <!-- 第三组：雷乃发声 -->
+        <section class="color-group group-3">
+            <h2><span class="icon">⚡</span> 第三组：雷乃发声</h2>
+            <p class="subtitle">黄丹、洛神珠、丹雘、水华朱 — 春雷惊蛰的炽热之色</p>
+
+            <div class="colors-grid">
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">黄丹</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>黄丹</h3>
+                        <p class="pinyin">huáng dān</p>
+                        <p class="description">又称铅丹，由铅、硫磺、硝石等矿物合炼而成。是中国炼丹术中的神仙色，充满神秘感。在日本，被改良为皇太子的服色，既仙且贵。与春雷的神秘力量相呼应。</p>
+                        <div class="source">《升丹炼药秘诀》记载炼制方法</div>
+                        <p class="rgb-value">RGB: 234, 85, 20</p>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">洛神珠</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>洛神珠</h3>
+                        <p class="pinyin">luò shén zhū</p>
+                        <p class="description">来源于绛珠草（酸浆/菇娘）果实的颜色。《红楼梦》中林黛玉的前身绛珠仙草，纳兰性德赞其"樱唇微绽，靺鞨红殷"。充满诗意与灵气，如春雷惊醒的万物。</p>
+                        <div class="source">纳兰性德《浣溪沙》："樱唇微绽，靺鞨红殷"</div>
+                        <p class="rgb-value">RGB: 210, 57, 24</p>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">丹雘</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>丹雘</h3>
+                        <p class="pinyin">dān huò</p>
+                        <p class="description">中国画传统颜料色，常用于宫殿庙宇的涂饰。在传统文化中，总是与喜气、仙气、贵气、福气联系在一起。如春雷带来的吉祥与祝福。</p>
+                        <div class="source">《尚书·梓材》："若作室家，既勤垣墉，惟其涂塈茨"</div>
+                        <p class="rgb-value">RGB: 200, 22, 29</p>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">水华朱</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>水华朱</h3>
+                        <p class="pinyin">shuǐ huá zhū</p>
+                        <p class="description">银朱的别称，中国画传统颜料色，亦可入药。源自古代炼丹术，制作过程复杂神秘。是红色系中最深沉的色调，如春雷过后的血色夕阳。</p>
+                        <div class="source">《升丹炼药秘诀》记载炼制方法</div>
+                        <p class="rgb-value">RGB: 164, 28, 27</p>
+                    </div>
+                </div>
+            </div>
+
+            <p style="margin-top: 25px; color: #666; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <strong>分析：</strong>这一组颜色以红橙色系为主，对应"雷乃发声"候应。古人认为，春分时节"雷乃发声"是阴阳交泰、阳气上升的体现。黄丹如雷电的炽热光芒，洛神珠如被春雨滋润的果实，丹雘如宫殿的华彩，水华朱如春雷过后的深沉天色。这些颜色从明亮（黄丹）逐渐加深（水华朱），如同春雷从远到近、由弱变强的过程，体现了自然界的能量变化。
+            </p>
+        </section>
+
+        <!-- 第四组：始电 -->
+        <section class="color-group group-4">
+            <h2><span class="icon">💫</span> 第四组：始电</h2>
+            <p class="subtitle">青冥、青雘、青緺、骐驎 — 闪电划空的深邃之色</p>
+
+            <div class="colors-grid">
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">青冥</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>青冥</h3>
+                        <p class="pinyin">qīng míng</p>
+                        <p class="description">青苍幽远的天色，给人宁静而深远的感觉。"青冥"二字描绘了暴风雨来临前深邃幽暗的天空，与闪电的瞬时光芒形成强烈对比。</p>
+                        <div class="source">《楚辞·九章》："据青冥而摭虹兮，遂倏忽而扪天"</div>
+                        <p class="rgb-value">RGB: 74, 124, 123</p>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">青雘</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>青雘</h3>
+                        <p class="pinyin">qīng huò</p>
+                        <p class="description">如同翡翠般翠绿，带有一丝神秘的紫色。是中国画传统颜料中的石绿，又称孔雀石或空青。如闪电照亮后的青翠山峦。</p>
+                        <div class="source">《山海经·南山经》："其阴多青雘"</div>
+                        <p class="rgb-value">RGB: 46, 139, 87</p>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">青緺</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>青緺</h3>
+                        <p class="pinyin">qīng guā</p>
+                        <p class="description">深青色丝带的颜色，古人用以系官印。"官拜少常休，青緺换鹿裘"道出了仕途与归隐的选择。如闪电后深邃的夜空。</p>
+                        <div class="source">古诗："官拜少常休，青緺换鹿裘"</div>
+                        <p class="rgb-value">RGB: 30, 107, 92</p>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-preview">
+                        <span class="name-cn">骐驎</span>
+                    </div>
+                    <div class="color-info">
+                        <h3>骐驎</h3>
+                        <p class="pinyin">qí lín</p>
+                        <p class="description">取自神兽麒麟的毛色，深青色中带有神秘的光泽。"騄骥皆良马，骐驎带好儿"，象征祥瑞与高贵，如闪电划过夜空的神迹。</p>
+                        <div class="source">古诗："騄骥皆良马，骐驎带好儿"</div>
+                        <p class="rgb-value">RGB: 47, 79, 79</p>
+                    </div>
+                </div>
+            </div>
+
+            <p style="margin-top: 25px; color: #666; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <strong>分析：</strong>这一组颜色以青色系为主，对应"始电"候应。古人云："三候始电——电，阳光也；四阳盛长，值气泄时而光生焉。"闪电的出现标志着春分时节阳气已达到一定强度。青冥是暴风雨前的幽暗天色，青雘是闪电照亮的翡翠山色，青緺是深邃的夜空，骐驎是神秘的神兽之色。这四种颜色从浅青到深青，从明亮到幽深，如同闪电划过夜空的瞬间变化，体现了自然界能量的瞬间释放。
+            </p>
+        </section>
+
+        <!-- 总结部分 -->
+        <section class="summary-section">
+            <h2>总结：春分传统色的文化内涵</h2>
+
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h3>🌿 物候对应</h3>
+                    <p>春分三候（玄鸟至、雷乃发声、始电）分别对应白色系、红色系、青色系，反映了春分时节从冬寒消融到春雷乍响、再到阳气勃发的自然变化过程。</p>
+                </div>
+
+                <div class="summary-item">
+                    <h3>🎨 色彩逻辑</h3>
+                    <p>每候四色遵循"起承转合"的传统美学：起色（起始）、承色（延续）、转色（变化）、合色（收束）。这种逻辑体现了中国传统文化中对事物发展规律的认知。</p>
+                </div>
+
+                <div class="summary-item">
+                    <h3>📚 文化渊源</h3>
+                    <p>这些颜色名多出自《诗经》《楚辞》《山海经》《天工开物》等典籍，承载着深厚的文化内涵。从神兽（吉量、骐驎）到矿物（韶粉、丹雘），从乐器（夏籥）到诗意（洛神珠），每一种颜色都有其独特的故事。</p>
+                </div>
+
+                <div class="summary-item">
+                    <h3>🏛️ 故宫关联</h3>
+                    <p>这些颜色的色值均从故宫文物中提取，如瓷器、织物、绘画、建筑彩绘等。故宫作为明清两代皇家宫殿，其文物中的色彩代表了传统审美的最高水准。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 哲学思考 -->
+        <section class="philosophy-section">
+            <h2>中国传统色彩哲学</h2>
+
+            <div class="philosophy-content">
+                <div class="philosophy-item">
+                    <div class="symbol">☯️</div>
+                    <h3>阴阳平衡</h3>
+                    <p>春分日昼夜等长，阴阳平衡。传统色系中的白（阴）与红（阳）、青（阴）与黄（阳）的搭配，正体现了这种平衡之美。</p>
+                </div>
+
+                <div class="philosophy-item">
+                    <div class="symbol">🔄</div>
+                    <h3>天人合一</h3>
+                    <p>颜色与时令的对应，体现了中国人"观物取象"的思维方式。观察自然、感悟自然、效法自然，是传统色彩美学的核心。</p>
+                </div>
+
+                <div class="philosophy-item">
+                    <div class="symbol">📖</div>
+                    <h3>文脉传承</h3>
+                    <p>每种颜色都有其出处和典故，承载着历代文人雅士的审美情趣和文化记忆，是中华文明绵延不绝的见证。</p>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>本文基于《中国传统色：故宫里的色彩美学》（郭浩、李健明 著，中信出版集团）整理分析</p>
+            <p class="source-note">
+                参考来源：<br>
+                • [春分节气色卡：中国传统色之美](https://mbd.baidu.com/newspage/data/dtlandingsuper?from=2001k&nid=dt_4440456852928874638)<br>
+                • [中国气象局 - 二十四节气专题](https://www.cma.gov.cn/ztbd/2025zt/24jq/chunfen/)<br>
+                • [百度百科 - 中国传统色：故宫里的色彩美学](https://baike.baidu.com/item/%E4%B8%AD%E5%9B%BD%E4%BC%A0%E7%BB%9F%E8%89%B2%EF%BC%9A%E6%95%85%E5%AE%AB%E9%87%8C%E7%9A%84%E8%89%B2%E5%BD%A9%E7%BE%8E%E5%AD%A6/56817070)
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

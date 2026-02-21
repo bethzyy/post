@@ -108,6 +108,26 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         .btn-secondary { background: #e2e8f0; color: #4a5568; }
         .action-btn:hover { transform: translateY(-2px); }
         .hidden { display: none !important; }
+        .template-btn { background: #667eea; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        .template-btn:hover { background: #5a67d8; }
+        .save-template-label { display: flex; align-items: center; gap: 4px; font-size: 13px; color: #4a5568; cursor: pointer; }
+        .save-template-label input { margin: 0; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); padding: 0; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; }
+        .modal-header h3 { margin: 0; font-size: 18px; color: #2d3748; }
+        .modal-close { font-size: 24px; cursor: pointer; color: #718096; }
+        .modal-close:hover { color: #e53e3e; }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 16px 20px; border-top: 1px solid #e2e8f0; text-align: right; }
+        .template-item { padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
+        .template-item:hover { border-color: #667eea; background: #f7fafc; }
+        .template-item.selected { border-color: #667eea; background: #ebf4ff; }
+        .template-item-name { font-weight: 600; color: #2d3748; margin-bottom: 4px; }
+        .template-item-content { font-size: 13px; color: #718096; white-space: pre-wrap; max-height: 60px; overflow: hidden; }
+        .template-item-actions { margin-top: 8px; display: flex; gap: 8px; }
+        .template-item-actions button { font-size: 12px; padding: 4px 8px; }
+        .no-templates { text-align: center; color: #718096; padding: 20px; }
         @media (max-width: 600px) {
             .container { border-radius: 0; }
             .main-content { padding: 15px; }
@@ -204,6 +224,13 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 
             <div class="form-group">
                 <label>文风描述 <small style="color: #a0aec0; font-weight: normal;">(可选，直接指导作者1和作者2的工作原则)</small></label>
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <button type="button" class="template-btn" onclick="showTemplateDialog()">选择模板</button>
+                    <label class="save-template-label">
+                        <input type="checkbox" id="save-template-checkbox"> 保存为模板
+                    </label>
+                    <input type="text" id="template-name-input" placeholder="模板名称" style="flex: 1; display: none;">
+                </div>
                 <textarea id="style-input" placeholder="例如：汪曾祺风格、幽默风趣、严谨学术、温柔婉约、鲁迅杂文风等，也可以直接描述您想要的风格特点..." style="min-height: 80px;"></textarea>
             </div>
 
@@ -224,6 +251,22 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                         <button class="action-btn btn-secondary" onclick="resetForm()">重新生成</button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模板选择弹窗 -->
+    <div id="template-dialog" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 500px; max-height: 70vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3>选择文风模板</h3>
+                <span class="modal-close" onclick="closeTemplateDialog()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="template-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn btn-secondary" onclick="closeTemplateDialog()">取消</button>
             </div>
         </div>
     </div>
@@ -293,6 +336,11 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             if (imageCount < 0 || imageCount > 10) {
                 alert('配图数量请在0-10之间');
                 return;
+            }
+
+            // 保存模板（如果勾选了保存）
+            if (!saveTemplate()) {
+                return; // 保存失败，停止执行
             }
 
             btn.disabled = true;
@@ -399,6 +447,127 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             document.getElementById('progress-section').classList.remove('active');
             generatedFiles = {};
         }
+
+        // ===== 模板功能 =====
+        let selectedTemplateId = null;
+
+        // 显示/隐藏模板名称输入框
+        document.getElementById('save-template-checkbox').addEventListener('change', function() {
+            var nameInput = document.getElementById('template-name-input');
+            nameInput.style.display = this.checked ? 'block' : 'none';
+        });
+
+        // 显示模板选择弹窗
+        function showTemplateDialog() {
+            loadTemplates();
+            document.getElementById('template-dialog').style.display = 'flex';
+        }
+
+        // 关闭模板选择弹窗
+        function closeTemplateDialog() {
+            document.getElementById('template-dialog').style.display = 'none';
+            selectedTemplateId = null;
+        }
+
+        // 加载模板列表
+        function loadTemplates() {
+            var templates = getTemplates();
+            var listDiv = document.getElementById('template-list');
+
+            if (templates.length === 0) {
+                listDiv.innerHTML = '<div class="no-templates">暂无保存的模板</div>';
+                return;
+            }
+
+            var html = '';
+            templates.forEach(function(t, index) {
+                html += '<div class="template-item" onclick="selectTemplate(' + index + ')" id="template-' + index + '">' +
+                    '<div class="template-item-name">' + escapeHtml(t.name) + '</div>' +
+                    '<div class="template-item-content">' + escapeHtml(t.content.substring(0, 100)) + (t.content.length > 100 ? '...' : '') + '</div>' +
+                    '<div class="template-item-actions">' +
+                    '<button class="action-btn btn-primary" onclick="event.stopPropagation(); applyTemplate(' + index + ')">使用</button>' +
+                    '<button class="action-btn btn-secondary" onclick="event.stopPropagation(); deleteTemplate(' + index + ')">删除</button>' +
+                    '</div></div>';
+            });
+            listDiv.innerHTML = html;
+        }
+
+        // 选择模板
+        function selectTemplate(index) {
+            document.querySelectorAll('.template-item').forEach(function(item) {
+                item.classList.remove('selected');
+            });
+            document.getElementById('template-' + index).classList.add('selected');
+            selectedTemplateId = index;
+        }
+
+        // 应用模板
+        function applyTemplate(index) {
+            var templates = getTemplates();
+            if (templates[index]) {
+                document.getElementById('style-input').value = templates[index].content;
+                closeTemplateDialog();
+            }
+        }
+
+        // 删除模板
+        function deleteTemplate(index) {
+            if (confirm('确定要删除这个模板吗？')) {
+                var templates = getTemplates();
+                templates.splice(index, 1);
+                localStorage.setItem('style_templates', JSON.stringify(templates));
+                loadTemplates();
+            }
+        }
+
+        // 获取模板列表
+        function getTemplates() {
+            var data = localStorage.getItem('style_templates');
+            return data ? JSON.parse(data) : [];
+        }
+
+        // 保存模板
+        function saveTemplate() {
+            var checkbox = document.getElementById('save-template-checkbox');
+            if (!checkbox.checked) return true;  // 未勾选时返回true，继续执行
+
+            var name = document.getElementById('template-name-input').value.trim();
+            var content = document.getElementById('style-input').value.trim();
+
+            if (!name) {
+                alert('请输入模板名称');
+                return false;
+            }
+            if (!content) {
+                alert('文风描述为空，无法保存为模板');
+                return false;
+            }
+
+            var templates = getTemplates();
+            templates.push({
+                name: name,
+                content: content,
+                created: new Date().toISOString()
+            });
+            localStorage.setItem('style_templates', JSON.stringify(templates));
+
+            // 重置
+            checkbox.checked = false;
+            document.getElementById('template-name-input').value = '';
+            document.getElementById('template-name-input').style.display = 'none';
+
+            alert('模板 "' + name + '" 保存成功！');
+            return true;
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== 模板功能结束 =====
 
         // 保存参数到localStorage
         function saveParams() {
