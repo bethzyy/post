@@ -177,6 +177,12 @@ TOOL_DESCRIPTIONS = {
             "description": "📚 二十四节气与中国传统色彩 (384种传统色按节气分类解读)",
             "is_document": True,
             "category": "article/二十四节气色彩"
+        },
+        "二十四节气配图文档索引.html": {
+            "description": "🖼️ 二十四节气配图文档索引 (AI生成配图版)",
+            "is_document": True,
+            "category": "article/二十四节气色彩",
+            "readme_file": "article/二十四节气色彩/配图文档生成说明.md"
         }
     }
 }
@@ -230,7 +236,8 @@ def get_all_tools():
                             'size': size,
                             'needs_input': False,
                             'input_fields': [],
-                            'details': None,
+                            'details': doc_config.get('details'),
+                            'readme_file': doc_config.get('readme_file'),
                             'usage_count': 0,
                             'is_document': True,
                             'document_path': f"{doc_category}/{doc_key}"
@@ -260,12 +267,15 @@ def get_all_tools():
                 details = tool_config.get('details')
                 if not details:
                     details = get_tool_details(str(rel_path))
+                # 获取readme_file配置
+                readme_file = tool_config.get('readme_file')
             else:
                 description = tool_config if tool_config else f"{cat_name} - {filename}"
                 needs_input = False
                 input_fields = []
                 # 从tool_details_config.py获取详情
                 details = get_tool_details(str(rel_path))
+                readme_file = None
 
             # 获取使用频率
             usage_count = frequency_data.get(tool_rel_path, 0)
@@ -278,6 +288,7 @@ def get_all_tools():
                 'needs_input': needs_input,
                 'input_fields': input_fields,
                 'details': details,  # 添加详细说明
+                'readme_file': readme_file,  # 添加readme文件路径
                 'usage_count': usage_count  # 添加使用频率
             })
 

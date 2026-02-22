@@ -1051,10 +1051,14 @@
                 const data = await response.json();
                 if (data.success) {
                     docInfo = data.info;
-                    // 构建README文件路径
-                    const pathParts = docPath.split('/');
-                    pathParts.pop(); // 移除文件名
-                    readmePath = pathParts.join('/') + '/README.md';
+                    // 优先使用配置中的 readme_file，否则构建默认README路径
+                    if (tool.readme_file) {
+                        readmePath = tool.readme_file;
+                    } else {
+                        const pathParts = docPath.split('/');
+                        pathParts.pop(); // 移除文件名
+                        readmePath = pathParts.join('/') + '/README.md';
+                    }
                 }
             } catch (error) {
                 console.error('加载文档信息失败:', error);
@@ -1192,6 +1196,12 @@
             // 优先使用 details 中的详细信息
             let toolDetails = tool.details || {};
 
+            // 检查 details 是否是字符串（markdown内容）
+            let detailsMarkdown = null;
+            if (typeof tool.details === 'string') {
+                detailsMarkdown = tool.details;
+            }
+
             // 提取详细信息
             let detailedDescription = toolDetails['功能'] || toolDesc;
             let techStack = toolDetails['技术栈'] || [];
@@ -1215,9 +1225,9 @@
                     </div>
 
                     <div class="meta-item" style="margin-top: 12px;">
-                        <div class="meta-label">功能说明</div>
+                        <div class="meta-label">${detailsMarkdown ? '文档说明' : '功能说明'}</div>
                         <div style="color: #c5c5e0; line-height: 1.8; margin-top: 6px; padding: 15px; background: #1e1e2e; border-radius: 8px; border-left: 4px solid #5a67d8; white-space: pre-wrap; font-size: 0.95em;">
-                            ${detailedDescription}
+                            ${detailsMarkdown ? detailsMarkdown.replace(/\\n/g, '<br>').replace(/### /g, '<strong>').replace(/###/g, '</strong>').replace(/## /g, '<h4 style="color:#5a67d8;margin:10px 0 5px 0;">').replace(/##/g, '</h4>').replace(/- /g, '&bull; ') : detailedDescription}
                         </div>
                     </div>
             `;
