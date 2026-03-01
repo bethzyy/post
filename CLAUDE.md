@@ -29,6 +29,17 @@ python tool_manager.py
 # The batch file automatically opens browser and minimizes server window
 ```
 
+### Launch Standalone Web Services
+```bash
+# AI Image Generator V9.7 (7-level fallback)
+cd picture && python standalone_image_generator_v9.py
+# Access at: http://localhost:5009
+
+# Toutiao Article Generator Web App
+cd article && python toutiao_web_app.py
+# Access at: http://localhost:5010
+```
+
 ### Run Individual Tools
 ```bash
 # Article generation
@@ -52,14 +63,23 @@ The project is organized into functional categories:
 AI-powered article generation for Chinese social media platforms (今日头条/Toutiao).
 
 **Key Tools**:
-- **`toutiao_article_generator.py`** - Main article generator (v3.1)
+- **`toutiao_web_app.py`** - **PRIMARY WEB INTERFACE** (Standalone Flask app)
+  - Port: 5010 (http://localhost:5010)
+  - Two modes: Theme generation (主题生成) and Draft improvement (草稿完善)
+  - SSE streaming for real-time progress updates
+  - Parameter persistence via localStorage
+  - Generated HTML viewable via `/view/<filename>` endpoint
+  - Uses `toutiao_article_generator.py` for core generation logic
+
+- **`toutiao_article_generator.py`** - Core article generator (v3.8)
   - Two modes: Theme generation (AI from scratch) or Draft improvement (AI optimizes user draft)
-  - Supports 1500-2500 word articles with 3 AI-generated images
-  - Uses ZhipuAI GLM-4.6 for text generation
-  - Image generation: Anti-gravity API (Flux 1.1 Pro) with 5 free fallback APIs
-  - **Critical**: Image generation takes 30-60 seconds per image via Anti-gravity (~30s each)
-  - Output: HTML files with embedded images
+  - Supports 1500-2500 word articles with AI-generated images
+  - Uses ZhipuAI GLM-4-flash for text generation
+  - Image generation: 7-level fallback chain (same as standalone_image_generator_v9.py)
+  - **Critical**: Image generation takes 30-60 seconds per image
+  - Output: HTML files with embedded base64 images
   - Filename pattern: `今日头条文章_{theme}_{timestamp}.html`
+  - **Key Method**: `create_article_html()` returns HTML string (does NOT save to file)
 
 - `generate_food_article_images.py` - Food article generator
 - `article_review_and_revision.py` - AI-assisted editing
@@ -79,13 +99,17 @@ AI-powered article generation for Chinese social media platforms (今日头条/T
 Festival and themed image generation with multi-model comparison.
 
 **Key Tools**:
+- **`standalone_image_generator_v9.py`** (V9.7) - **PRIMARY IMAGE GENERATOR**
+  - Standalone Flask web service on port 5009
+  - 7-level fallback chain: Seedream 5.0/4.5/4.0/3.0 → Antigravity → CogView → Pollinations
+  - Supports batch generation with custom save paths
+  - 7 styles: 国风工笔, 国风水墨, 水彩画, 油画, 动漫插画, 写实摄影, 卡通插画
+  - Reference image support (image-to-image via binary_data_base64)
+  - Input format: Every 2 lines = 1 image (Line 1: filename, Line 2: description)
+  - Launch: `python standalone_image_generator_v9.py` → http://localhost:5009
+
 - `generate_festival_images.py` - Customizable festival image generator
 - Supports multiple models: Gemini, Pollinations, Volcano/Seedream
-
-**Model Priority** (see section below for detailed fallback order):
-1. Gemini (best quality, ~250/day free tier)
-2. Volcano/Seedream (no watermark, stable)
-3. Pollinations.ai (unlimited free, last resort)
 
 ### `/video` - Video Download Tools (7 files)
 Baidu video downloader with Selenium automation.
@@ -300,80 +324,133 @@ exit
 - Starts Python server minimized in background
 - Exits launcher CMD window (clean UX)
 
-## Image Generation Model Priority
+## Image Generation Model Priority (7-Level Fallback Chain)
 
-**MUST follow this priority order** (documented in `picture/画图模型选择原则.md`):
+**MUST follow this priority order** (V9.7 - updated 2026-03-01):
 
-### 1. Anti-gravity Proxy (Primary - Flux 1.1 Pro)
-```python
-from config import get_antigravity_client
-client = get_antigravity_client()
+The image generation system uses a 7-level fallback chain to maximize success rate:
 
-response = client.images.generate(
-    model="flux-1.1-pro",  # or "flux-1.1-pro-ultra"
-    prompt=prompt,
-    size="1024x1024"
-)
-# Returns base64 in response.data[0].b64_json
-```
-- **Performance**: ~30 seconds per image
-- **Quality**: Best overall for article illustrations
-- **Usage**: Primary choice for `toutiao_article_generator.py`
-- **Fallback**: Automatic if API fails
+### Fallback Chain Order
+1. **Seedream 5.0** (`doubao-seedream-5-0-260128`) - Latest, highest quality
+2. **Seedream 4.5** (`doubao-seedream-4-5-251128`) - High quality
+3. **Seedream 4.0** (`doubao-seedream-4-0-250828`) - Stable version
+4. **Seedream 3.0 t2i** (`doubao-seedream-3-0-t2i-250415`) - Free tier
+5. **Antigravity** (Gemini 3 Flash → Flux 1.1 Pro → Flux Schnell → DALL-E 3)
+6. **CogView-3-flash** (ZhipuAI free model)
+7. **Pollinations** (Free public service, unlimited)
 
-### 2. Gemini (via Anti-gravity)
-```python
-response = client.images.generate(
-    model="gemini-3-pro-image-4k",
-    prompt=prompt,
-    size="1024x1024"
-)
-```
-- **Quality**: Best composition and detail
-- **Limit**: ~250 images/day (free tier), returns HTTP 429 when exhausted
-- **Recovery**: Daily UTC reset (Beijing 8:00 AM)
-
-### 3. Volcano/Seedream (Fallback)
+### Seedream Models (Volcano Engine)
 ```python
 from config import get_volcano_client
 client = get_volcano_client()
 
+# Seedream 5.0/4.5/4.0 use 2048x2048
 response = client.images.generate(
-    model="doubao-seedream-4-5-251128",
+    model="doubao-seedream-5-0-260128",  # or 4-5, 4-0
     prompt=prompt,
-    size="2K",
+    size="2048x2048",  # MUST use this size for 5.0/4.5/4.0
     response_format="url",
     extra_body={"watermark": False}
 )
-# Must download from URL
 image_url = response.data[0].url
-```
-- **Advantage**: No watermark, stable
-- **Use when**: Gemini returns 429
 
-### 4. Pollinations.ai (Last Resort)
+# Seedream 3.0 t2i uses 1024x1024
+response = client.images.generate(
+    model="doubao-seedream-3-0-t2i-250415",
+    prompt=prompt,
+    size="1024x1024",  # 3.0 t2i supports smaller size
+    response_format="url",
+    extra_body={"watermark": False}
+)
+```
+
+### Model Name Mapping
+When returning model names to users, use friendly names:
+```python
+model_name_map = {
+    "doubao-seedream-5-0-260128": "Seedream 5.0",
+    "doubao-seedream-4-5-251128": "Seedream 4.5",
+    "doubao-seedream-4-0-250828": "Seedream 4.0",
+    "doubao-seedream-3-0-t2i-250415": "Seedream 3.0 t2i"
+}
+```
+
+### CogView-3-flash (ZhipuAI Free Model)
+```python
+from openai import OpenAI
+client = OpenAI(
+    base_url="https://open.bigmodel.cn/api/paas/v4/",
+    api_key=zhipu_api_key
+)
+
+response = client.images.generations(  # NOTE: generations() not generate()
+    model="cogview-3-flash",
+    prompt=prompt,
+    size="1024x1024"
+)
+# Returns URL in response.data[0].url
+```
+- **Advantage**: Free, no quota limits
+- **API Method**: Use `client.images.generations()` (plural), NOT `generate()`
+
+### Pollinations.ai (Last Resort)
 ```python
 import requests
-url = f"https://image.pollinations.ai/prompt/{prompt}"
+from urllib.parse import quote
+url = f"https://image.pollinations.ai/prompt/{quote(prompt)}"
 response = requests.get(url, timeout=60)
 ```
-- **Advantage**: No quota limits
-- **Use when**: All paid APIs fail
+- **Advantage**: No quota limits, always available
+- **Use when**: All other APIs fail
 
 ### Error Handling Pattern
 ```python
-def generate_with_priority(prompt, filename):
+def generate_image_with_fallback(prompt, output_path):
+    """7-level fallback chain implementation"""
+    # Try Seedream 5.0 → 4.5 → 4.0 → 3.0 t2i
+    for model_id, friendly_name in model_name_map.items():
+        try:
+            return generate_with_seedream(prompt, output_path, model_id)
+        except Exception as e:
+            if "429" in str(e):  # Quota exhausted
+                continue
+            raise
+
+    # Try Antigravity (multiple models)
     try:
-        return generate_with_antigravity(prompt, filename)
-    except Exception as e:
-        if "429" in str(e) or "quota" in str(e).lower():
-            return generate_with_pollinations(prompt, filename)
-        raise
+        return generate_with_antigravity(prompt, output_path)
+    except Exception:
+        pass
+
+    # Try CogView-3-flash
+    try:
+        return generate_with_cogview(prompt, output_path)
+    except Exception:
+        pass
+
+    # Last resort: Pollinations
+    return generate_with_pollinations(prompt, output_path)
 ```
 
 ## Critical Architecture Patterns
 
-### Article Generator Flow (`toutiao_article_generator.py`)
+### Article Generator Flow (`toutiao_article_generator.py` and `toutiao_web_app.py`)
+
+**`toutiao_web_app.py`** - Standalone Flask Web App:
+- Port: 5010
+- HTML_TEMPLATE embedded in Python file (triple-quoted string)
+- **CRITICAL**: All `\n` in JavaScript strings must be escaped as `\\n`
+  ```python
+  # WRONG - causes "Invalid or unexpected token" in browser
+  text.split('\n')  # Python interprets as actual newline
+
+  # CORRECT - escapes for JavaScript
+  text.split('\\n')  # JavaScript receives literal \n
+  ```
+- SSE streaming endpoint: `POST /api/generate`
+- File serving: `GET /view/<filename>` for generated HTML
+
+**`toutiao_article_generator.py`** - Core Generator:
 
 **Lines 49-1650**: Complete article generation pipeline
 
@@ -541,6 +618,27 @@ running_processes[process_id] = {
 - **NEVER** use internal mode strings in user-facing outputs (filenames, prompts, content)
 
 ## Troubleshooting
+
+### Problem: Server Running Old Cached Code
+**Symptoms**: After code changes, server still behaves as before (e.g., shows "[Fallback 1/3]" instead of "[Fallback 1/7]")
+
+**Root Cause**: Python bytecode cache (`__pycache__/`) or old processes still running
+
+**Solution**:
+```bash
+# 1. Kill all Python processes (use PowerShell for reliability)
+powershell -Command "Get-Process python* -ErrorAction SilentlyContinue | Stop-Process -Force"
+
+# 2. Clear all Python cache
+cd C:/D/CAIE_tool/MyAIProduct/post
+find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null
+find . -name "*.pyc" -delete 2>/dev/null
+
+# 3. Restart server
+python picture/standalone_image_generator_v9.py
+```
+
+**IMPORTANT**: On Windows, `taskkill /F /IM python.exe` often fails silently. Use PowerShell's `Stop-Process -Force` instead.
 
 ### Problem: Article Generator Fails Silently (No Output File)
 **Symptoms**: Tool shows "运行完成" but no HTML file is generated

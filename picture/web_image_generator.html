@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI图像生成器 V9.4 - 多模型Fallback</title>
+    <title>AI图像生成器 V9.7 - 7级Fallback链</title>
     <style>
         * {
             margin: 0;
@@ -439,7 +439,7 @@
     <div class="container">
         <div class="header">
             <h1>AI图像生成器</h1>
-            <p>智能图像生成工具 - 多模型Fallback (Seedream 4.5 → 4.0 → Antigravity) - 支持批量生成</p>
+            <p>智能图像生成工具 - 7级Fallback (Seedream 5.0 → 4.5 → 4.0 → 3.0 → Antigravity → CogView → Pollinations)</p>
         </div>
 
         <div class="main-content">
@@ -649,12 +649,14 @@
 
             const filename = imageData.filename;
             const imgSrc = 'data:image/png;base64,' + imageData.base64;
+            const model = imageData.model || 'unknown';
 
             item.innerHTML = `
                 <img src="${imgSrc}" alt="${filename}" data-index="${index}" class="clickable-image" style="cursor:pointer;">
                 <div class="item-info">
                     <span class="status-badge success">生成成功</span>
                     <div class="item-name">${filename}</div>
+                    <div class="item-model" style="color: #667eea; font-size: 0.85em; margin-bottom: 8px;">模型: ${model}</div>
                     <div class="item-actions">
                         <button class="item-btn download-btn" data-index="${index}">下载</button>
                         <button class="item-btn save-btn" id="saveBtn${index}" data-index="${index}">保存到路径</button>
@@ -805,6 +807,7 @@
                                 filename: generateFilename(group.filename),  // 使用第1行作为文件名
                                 description: group.description,
                                 style: result.style,
+                                model: result.model || 'unknown',  // 添加模型信息
                                 timestamp: result.timestamp
                             };
                             generatedImages.push(imageData);

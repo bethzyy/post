@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-今日头条高赞文章生成器 v3.7 - 增强版
+今日头条高赞文章生成器 v3.8 - 7级图像Fallback版
 支持用户输入自定义主题,使用AI生成高质量文章
-新增: 自动生成配图功能
+新增: 自动生成配图功能 (7级Fallback)
+
+v3.8更新(2026-03-01):
+  ✅ 图像生成升级为7级Fallback链:
+     1. Seedream 5.0 → 2. Seedream 4.5 → 3. Seedream 4.0
+     4. Seedream 3.0 t2i → 5. Antigravity → 6. CogView-3-flash → 7. Pollinations
 
 v3.7更新(2026-02-21):
   ✅ 简化提示词: 用户在文风描述中的要求直接传递给AI，不做额外处理
@@ -1206,7 +1211,7 @@ class ToutiaoArticleGenerator:
         }
 
     def generate_article_images(self, theme, article_content, image_style="realistic", num_images=3):
-        """根据文章主题和内容生成配图，支持多模型降级
+        """根据文章主题和内容生成配图，支持7级Fallback
 
         Args:
             theme: 文章主题
@@ -1214,7 +1219,14 @@ class ToutiaoArticleGenerator:
             image_style: 图片风格
             num_images: 配图数量（默认3张）
 
-        优先级: Seedream 4.5 -> Seedream 4.0 -> Antigravity -> Pollinations
+        7级Fallback优先级 (V9.7):
+        1. Seedream 5.0 (doubao-seedream-5-0-260128) - 最新版本
+        2. Seedream 4.5 (doubao-seedream-4-5-251128)
+        3. Seedream 4.0 (doubao-seedream-4-0-250828)
+        4. Seedream 3.0 t2i (doubao-seedream-3-0-t2i-250415) - 免费版本
+        5. Antigravity: Gemini 3 Flash -> Flux 1.1 Pro -> Flux Schnell -> DALL-E 3
+        6. CogView-3-flash (智谱AI)
+        7. Pollinations (免费服务)
         """
 
         import urllib.parse
@@ -1237,159 +1249,155 @@ class ToutiaoArticleGenerator:
 
             image_generated = False
 
-            # 1. 优先尝试 Seedream 4.5 (火山引擎)
+            # 辅助函数: 保存图片
+            def save_image(img_bytes, model_name):
+                nonlocal image_generated
+                try:
+                    img = Image.open(BytesIO(img_bytes))
+                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                    safe_desc = "".join(c for c in img_desc if c.isalnum() or c in ('_', '-'))[:20]
+                    filename = f"article_img{i}_{safe_desc}_{timestamp}.jpg"
+                    tool_dir = Path(__file__).parent
+                    img_path = str(tool_dir / filename)
+                    img.save(img_path, 'JPEG', quality=95)
+                    generated_images.append(img_path)
+                    print(f"    [OK] {filename} ({model_name})")
+                    image_generated = True
+                except Exception as e:
+                    print(f"    [WARN] Save failed: {e}")
+
+            # 1. 尝试 Seedream 5.0 (最新)
             if not image_generated and self.volcano_client:
                 try:
-                    print(f"    [TRY] Seedream 4.5...")
+                    print(f"    [1/7] Seedream 5.0...")
+                    response = self.volcano_client.images.generate(
+                        model="doubao-seedream-5-0-260128",
+                        prompt=img_prompt,
+                        size="2048x2048",
+                        response_format="url",
+                        extra_body={"watermark": False},
+                    )
+                    if hasattr(response, 'data') and len(response.data) > 0:
+                        img_response = requests.get(response.data[0].url, timeout=60)
+                        if img_response.status_code == 200:
+                            save_image(img_response.content, "Seedream 5.0")
+                except Exception as e:
+                    print(f"    [WARN] Seedream 5.0: {str(e)[:60]}")
+
+            # 2. 尝试 Seedream 4.5
+            if not image_generated and self.volcano_client:
+                try:
+                    print(f"    [2/7] Seedream 4.5...")
                     response = self.volcano_client.images.generate(
                         model="doubao-seedream-4-5-251128",
                         prompt=img_prompt,
-                        size="2K",  # 高分辨率，不限制形状
+                        size="2048x2048",
                         response_format="url",
-                        extra_body={
-                            "watermark": False,
-                        },
+                        extra_body={"watermark": False},
                     )
-
                     if hasattr(response, 'data') and len(response.data) > 0:
-                        image_url = response.data[0].url
-                        img_response = requests.get(image_url, timeout=60)
+                        img_response = requests.get(response.data[0].url, timeout=60)
                         if img_response.status_code == 200:
-                            img = Image.open(BytesIO(img_response.content))
-                            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                            safe_desc = "".join(c for c in img_desc if c.isalnum() or c in ('_', '-'))[:20]
-                            filename = f"article_img{i}_{safe_desc}_{timestamp}.jpg"
-                            tool_dir = Path(__file__).parent
-                            img_path = str(tool_dir / filename)
-                            img.save(img_path, 'JPEG', quality=95)
-                            generated_images.append(img_path)
-                            print(f"    [OK] {filename} (Seedream 4.5)")
-                            image_generated = True
-                        else:
-                            print(f"    [WARN] Seedream 4.5 download failed: HTTP {img_response.status_code}")
+                            save_image(img_response.content, "Seedream 4.5")
                 except Exception as e:
-                    error_str = str(e)
-                    if "429" in error_str or "quota" in error_str.lower():
-                        print(f"    [WARN] Seedream 4.5 quota exceeded, trying 4.0...")
-                    else:
-                        print(f"    [WARN] Seedream 4.5 failed: {error_str[:60]}")
+                    print(f"    [WARN] Seedream 4.5: {str(e)[:60]}")
 
-            # 2. 如果 Seedream 4.5 失败(配额问题)，尝试 Seedream 4.0
+            # 3. 尝试 Seedream 4.0
             if not image_generated and self.volcano_client:
                 try:
-                    print(f"    [TRY] Seedream 4.0...")
+                    print(f"    [3/7] Seedream 4.0...")
                     response = self.volcano_client.images.generate(
                         model="doubao-seedream-4-0-250828",
                         prompt=img_prompt,
-                        size="2K",  # 高分辨率，不限制形状
+                        size="2048x2048",
                         response_format="url",
-                        extra_body={
-                            "watermark": False,
-                        },
+                        extra_body={"watermark": False},
                     )
-
                     if hasattr(response, 'data') and len(response.data) > 0:
-                        image_url = response.data[0].url
-                        img_response = requests.get(image_url, timeout=60)
+                        img_response = requests.get(response.data[0].url, timeout=60)
                         if img_response.status_code == 200:
-                            img = Image.open(BytesIO(img_response.content))
-                            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                            safe_desc = "".join(c for c in img_desc if c.isalnum() or c in ('_', '-'))[:20]
-                            filename = f"article_img{i}_{safe_desc}_{timestamp}.jpg"
-                            tool_dir = Path(__file__).parent
-                            img_path = str(tool_dir / filename)
-                            img.save(img_path, 'JPEG', quality=95)
-                            generated_images.append(img_path)
-                            print(f"    [OK] {filename} (Seedream 4.0)")
-                            image_generated = True
-                        else:
-                            print(f"    [WARN] Seedream 4.0 download failed: HTTP {img_response.status_code}")
+                            save_image(img_response.content, "Seedream 4.0")
                 except Exception as e:
-                    print(f"    [WARN] Seedream 4.0 failed: {str(e)[:60]}")
+                    print(f"    [WARN] Seedream 4.0: {str(e)[:60]}")
 
-            # 3. 如果 Seedream 都失败，尝试 Antigravity 模型
+            # 4. 尝试 Seedream 3.0 t2i (免费)
+            if not image_generated and self.volcano_client:
+                try:
+                    print(f"    [4/7] Seedream 3.0 t2i...")
+                    response = self.volcano_client.images.generate(
+                        model="doubao-seedream-3-0-t2i-250415",
+                        prompt=img_prompt,
+                        size="1024x1024",
+                        response_format="url",
+                        extra_body={"watermark": False},
+                    )
+                    if hasattr(response, 'data') and len(response.data) > 0:
+                        img_response = requests.get(response.data[0].url, timeout=60)
+                        if img_response.status_code == 200:
+                            save_image(img_response.content, "Seedream 3.0 t2i")
+                except Exception as e:
+                    print(f"    [WARN] Seedream 3.0: {str(e)[:60]}")
+
+            # 5. 尝试 Antigravity 模型
             if not image_generated and self.image_client:
-                # 定义 Antigravity 模型优先级
                 antigravity_models = [
                     {"model": "gemini-3-flash-image", "name": "Gemini 3 Flash"},
                     {"model": "flux-1.1-pro", "name": "Flux 1.1 Pro"},
                     {"model": "flux-schnell", "name": "Flux Schnell"},
                     {"model": "dall-e-3", "name": "DALL-E 3"},
                 ]
-
                 for model_info in antigravity_models:
                     if image_generated:
                         break
                     try:
-                        print(f"    [TRY] {model_info['name']}...")
+                        print(f"    [5/7] {model_info['name']}...")
                         response = self.image_client.images.generate(
                             model=model_info["model"],
                             prompt=img_prompt,
                             size="1024x1024",
                             n=1,
                         )
-
                         if hasattr(response, 'data') and len(response.data) > 0:
-                            image_data = response.data[0]
-                            b64_json = getattr(image_data, 'b64_json', None)
-
+                            b64_json = getattr(response.data[0], 'b64_json', None)
                             if b64_json:
-                                image_bytes = base64.b64decode(b64_json)
-                                img = Image.open(io.BytesIO(image_bytes))
-                                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                                safe_desc = "".join(c for c in img_desc if c.isalnum() or c in ('_', '-'))[:20]
-                                filename = f"article_img{i}_{safe_desc}_{timestamp}.jpg"
-                                tool_dir = Path(__file__).parent
-                                img_path = str(tool_dir / filename)
-                                img.save(img_path, 'JPEG', quality=95)
-                                generated_images.append(img_path)
-                                print(f"    [OK] {filename} ({model_info['name']})")
-                                image_generated = True
+                                save_image(base64.b64decode(b64_json), model_info['name'])
                     except Exception as e:
-                        error_str = str(e)
-                        if "404" in error_str or "NOT_FOUND" in error_str:
-                            print(f"    [SKIP] {model_info['name']}: not available")
-                        elif "429" in error_str or "quota" in error_str.lower():
-                            print(f"    [SKIP] {model_info['name']}: quota exceeded")
-                        else:
-                            print(f"    [WARN] {model_info['name']} failed: {error_str[:50]}")
+                        print(f"    [SKIP] {model_info['name']}: {str(e)[:40]}")
 
-            # 4. 最后备选：Pollinations.ai
+            # 6. 尝试 CogView-3-flash (智谱AI)
             if not image_generated:
-                print(f"    [FALLBACK] Trying Pollinations.ai...")
                 try:
-                    content_lower = article_content.lower() if article_content else ""
-                    if any(kw in content_lower for kw in ['ai', 'glm', 'artificial', 'model', 'code']):
-                        simple_topic = "robot"
-                    elif any(kw in content_lower for kw in ['food', 'cook', 'recipe', '美食']):
-                        simple_topic = "food"
-                    elif any(kw in content_lower for kw in ['travel', 'landscape', '风景']):
-                        simple_topic = "landscape"
-                    else:
-                        simple_topic = "technology"
+                    print(f"    [6/7] CogView-3-flash...")
+                    from config import get_zhipuai_client
+                    zhipu_client = get_zhipuai_client()
+                    if zhipu_client:
+                        response = zhipu_client.images.generations(
+                            model="cogview-3-flash",
+                            prompt=img_prompt,
+                            size="1024x1024"
+                        )
+                        if hasattr(response, 'data') and len(response.data) > 0:
+                            img_url = response.data[0].url
+                            img_response = requests.get(img_url, timeout=60)
+                            if img_response.status_code == 200:
+                                save_image(img_response.content, "CogView-3-flash")
+                except Exception as e:
+                    print(f"    [WARN] CogView: {str(e)[:60]}")
 
-                    encoded_prompt = urllib.parse.quote(simple_topic)
+            # 7. 最后备选：Pollinations.ai
+            if not image_generated:
+                print(f"    [7/7] Pollinations...")
+                try:
+                    encoded_prompt = urllib.parse.quote(img_prompt[:200])
                     pollinations_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}"
-
                     response = requests.get(pollinations_url, timeout=90)
                     if response.status_code == 200:
-                        img = Image.open(BytesIO(response.content))
-                        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                        filename = f"article_img{i}_{img_desc}_{timestamp}.jpg"
-                        tool_dir = Path(__file__).parent
-                        img_path = str(tool_dir / filename)
-                        img.save(img_path, 'JPEG', quality=95)
-                        generated_images.append(img_path)
-                        print(f"    [OK] {filename} (Pollinations)")
-                        image_generated = True
-                    else:
-                        print(f"    [FAIL] Pollinations HTTP {response.status_code}")
-
-                except Exception as e2:
-                    print(f"    [FAIL] Pollinations error: {str(e2)[:80]}")
+                        save_image(response.content, "Pollinations")
+                except Exception as e:
+                    print(f"    [FAIL] Pollinations: {str(e)[:60]}")
 
             if not image_generated:
-                print(f"    [FAIL] Could not generate image {i}")
+                print(f"    [FAIL] All models failed for image {i}")
 
         return generated_images
 

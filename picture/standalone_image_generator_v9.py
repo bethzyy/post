@@ -1,32 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-AI图像生成器 - Web版 V9.5 (扩展Fallback链)
+AI图像生成器 - Web版 V9.7 (7级Fallback链)
 支持主题输入或参考图片,多种画图风格选择
-支持多模型自动切换:Seedream 4.5 -> Seedream 4.0 -> Antigravity -> CogView-3-flash -> Pollinations
+支持多模型自动切换:Seedream 5.0 -> 4.5 -> 4.0 -> 3.0 -> Antigravity -> CogView -> Pollinations
 
-V9.5改进(2026-03-01):
-  ✅ 新增CogView-3-flash作为备选(智谱AI免费图像模型)
-  ✅ 新增Pollinations作为最终免费备选
-  ✅ Fallback优先级: Seedream 4.5 -> Seedream 4.0 -> Antigravity -> CogView-3-flash -> Pollinations
+V9.7改进(2026-03-01):
+  ✅ 新增Seedream 5.0 (doubao-seedream-5-0-260128) - 最新版本
+  ✅ Fallback优先级扩展为7级:
+     1. Seedream 5.0 -> 2. Seedream 4.5 -> 3. Seedream 4.0 -> 4. Seedream 3.0 t2i
+     5. Antigravity -> 6. CogView-3-flash -> 7. Pollinations
 
-V9.4修复(2026-02-15):
-  ✅ 根据官网示例修复API调用方式
-  ✅ 使用OpenAI客户端方式调用Seedream API
-  ✅ size参数从"2048x2048"改为"2K"(官网格式)
-  ✅ 使用extra_body传递watermark等参数
-
-V9.3改进(2026-02-15):
-  ✅ 新增Seedream 4.0作为备选:当4.5配额用尽时自动切换到4.0
-  ✅ Fallback优先级: Seedream 4.5 -> Seedream 4.0 -> Antigravity
-
-V9.2改进(2026-02-15):
-  ✅ 添加多模型Fallback机制:Seedream配额用尽时自动切换到Antigravity模型
-  ✅ 支持Antigravity的多个图像模型:flux-1.1-pro, flux-schnell, gemini-3-flash-image等
-
-V9.1修复(2026-02-13):
-  ✅ 修复图生图参数:使用binary_data_base64替代image_urls
-  ✅ 图生图现在正确保留参考图片的主体内容
+V9.6改进(2026-03-01):
+  ✅ 新增Seedream 3.0 t2i作为备选(火山引擎免费图像模型)
 """
 
 import sys
@@ -254,7 +240,14 @@ def generate_with_seedream(prompt, reference_image_path, output_path, style_name
         # 获取图片URL
         if response.data and len(response.data) > 0:
             image_url = response.data[0].url
-            model_used = 'seedream-v9'
+            # 根据model_version映射友好名称
+            model_name_map = {
+                "doubao-seedream-5-0-260128": "Seedream 5.0",
+                "doubao-seedream-4-5-251128": "Seedream 4.5",
+                "doubao-seedream-4-0-250828": "Seedream 4.0",
+                "doubao-seedream-3-0-t2i-250415": "Seedream 3.0 t2i"
+            }
+            model_used = model_name_map.get(model_version, model_version)
 
             logging.info(f"[图片URL] {image_url}")
 
@@ -497,14 +490,16 @@ def generate_with_pollinations(prompt, output_path, style_name):
 
 
 def generate_image_with_fallback(prompt, reference_image_path, output_path, style_name):
-    """智能图像生成: 优先Seedream 4.5 -> Seedream 4.0 -> Antigravity -> CogView -> Pollinations
+    """智能图像生成: 7级Fallback链
 
-    Fallback优先级 (V9.5):
-    1. Seedream 4.5 (doubao-seedream-4-5-251128) - 最新版本
-    2. Seedream 4.0 (doubao-seedream-4-0-250828) - 稳定版本
-    3. Antigravity: Gemini 3 Flash Image -> Flux 1.1 Pro -> Flux Schnell -> DALL-E 3
-    4. CogView-3-flash (智谱AI免费模型)
-    5. Pollinations (免费公开服务)
+    Fallback优先级 (V9.7):
+    1. Seedream 5.0 (doubao-seedream-5-0-260128) - 最新版本
+    2. Seedream 4.5 (doubao-seedream-4-5-251128) - 高质量
+    3. Seedream 4.0 (doubao-seedream-4-0-250828) - 稳定版本
+    4. Seedream 3.0 t2i (doubao-seedream-3-0-t2i-250415) - 免费版本
+    5. Antigravity: Gemini 3 Flash Image -> Flux 1.1 Pro -> Flux Schnell -> DALL-E 3
+    6. CogView-3-flash (智谱AI免费模型)
+    7. Pollinations (免费公开服务)
 
     Args:
         prompt: 文本提示词
@@ -517,8 +512,19 @@ def generate_image_with_fallback(prompt, reference_image_path, output_path, styl
     """
     last_error = ""
 
-    # 1. 尝试 Seedream 4.5
-    logging.info("[Fallback 1/5] 尝试 Seedream 4.5...")
+    # 1. 尝试 Seedream 5.0 (最新)
+    logging.info("[Fallback 1/7] 尝试 Seedream 5.0...")
+    success, message, model_used = generate_with_seedream(
+        prompt, reference_image_path, output_path, style_name,
+        model_version="doubao-seedream-5-0-260128"
+    )
+    if success:
+        return success, message, model_used
+    last_error = f"Seedream 5.0: {message}"
+    logging.warning(f"[Fallback 1/7 失败] {message}")
+
+    # 2. 尝试 Seedream 4.5
+    logging.info("[Fallback 2/7] 尝试 Seedream 4.5...")
     success, message, model_used = generate_with_seedream(
         prompt, reference_image_path, output_path, style_name,
         model_version="doubao-seedream-4-5-251128"
@@ -526,10 +532,10 @@ def generate_image_with_fallback(prompt, reference_image_path, output_path, styl
     if success:
         return success, message, model_used
     last_error = f"Seedream 4.5: {message}"
-    logging.warning(f"[Fallback 1/5 失败] {message}")
+    logging.warning(f"[Fallback 2/7 失败] {message}")
 
-    # 2. 尝试 Seedream 4.0
-    logging.info("[Fallback 2/5] 尝试 Seedream 4.0...")
+    # 3. 尝试 Seedream 4.0
+    logging.info("[Fallback 3/7] 尝试 Seedream 4.0...")
     success, message, model_used = generate_with_seedream(
         prompt, reference_image_path, output_path, style_name,
         model_version="doubao-seedream-4-0-250828"
@@ -537,26 +543,37 @@ def generate_image_with_fallback(prompt, reference_image_path, output_path, styl
     if success:
         return success, message, model_used
     last_error = f"Seedream 4.0: {message}"
-    logging.warning(f"[Fallback 2/5 失败] {message}")
+    logging.warning(f"[Fallback 3/7 失败] {message}")
 
-    # 3. Fallback到Antigravity
-    logging.info("[Fallback 3/5] 尝试 Antigravity备选模型...")
+    # 4. 尝试 Seedream 3.0 t2i (免费)
+    logging.info("[Fallback 4/7] 尝试 Seedream 3.0 t2i...")
+    success, message, model_used = generate_with_seedream(
+        prompt, reference_image_path, output_path, style_name,
+        model_version="doubao-seedream-3-0-t2i-250415"
+    )
+    if success:
+        return success, message, model_used
+    last_error = f"Seedream 3.0 t2i: {message}"
+    logging.warning(f"[Fallback 4/7 失败] {message}")
+
+    # 5. Fallback到Antigravity
+    logging.info("[Fallback 5/7] 尝试 Antigravity备选模型...")
     success, message, model_used = generate_with_antigravity(prompt, output_path, style_name)
     if success:
         return success, message, model_used
     last_error = f"Antigravity: {message}"
-    logging.warning(f"[Fallback 3/5 失败] {message}")
+    logging.warning(f"[Fallback 5/7 失败] {message}")
 
-    # 4. 尝试 CogView-3-flash
-    logging.info("[Fallback 4/5] 尝试 CogView-3-flash...")
+    # 6. 尝试 CogView-3-flash
+    logging.info("[Fallback 6/7] 尝试 CogView-3-flash...")
     success, message, model_used = generate_with_cogview(prompt, output_path, style_name)
     if success:
         return success, message, model_used
     last_error = f"CogView-3-flash: {message}"
-    logging.warning(f"[Fallback 4/5 失败] {message}")
+    logging.warning(f"[Fallback 6/7 失败] {message}")
 
-    # 5. 最后尝试 Pollinations
-    logging.info("[Fallback 5/5] 尝试 Pollinations免费服务...")
+    # 7. 最后尝试 Pollinations
+    logging.info("[Fallback 7/7] 尝试 Pollinations免费服务...")
     success, message, model_used = generate_with_pollinations(prompt, output_path, style_name)
     if success:
         return success, message, model_used
@@ -827,7 +844,7 @@ def api_save_image():
 def main():
     """主函数"""
     print("\n" + "="*80)
-    print("                    AI图像生成器 - Web版 V9.5 (扩展Fallback链)")
+    print("                    AI图像生成器 - Web版 V9.7 (7级Fallback链)")
     print("="*80)
     print()
     print("启动Web服务器: http://localhost:5009")
@@ -839,19 +856,19 @@ def main():
     print("  🎨 多种画图风格选择")
     print("  🤖 多模型自动切换")
     print()
-    print("V9.5新增(2026-03-01):")
-    print("  ✅ 新增CogView-3-flash (智谱AI免费模型)")
-    print("  ✅ 新增Pollinations (免费公开服务)")
-    print("  ✅ Fallback优先级 (5级):")
-    print("     1. Seedream 4.5 (火山引擎)")
-    print("     2. Seedream 4.0 (火山引擎)")
-    print("     3. Antigravity: Gemini/Flux/DALL-E")
-    print("     4. CogView-3-flash (智谱AI)")
-    print("     5. Pollinations (免费服务)")
+    print("V9.7更新(2026-03-01):")
+    print("  ✅ 新增Seedream 5.0 (doubao-seedream-5-0-260128)")
+    print("  ✅ Fallback优先级 (7级):")
+    print("     1. Seedream 5.0 (火山引擎最新)")
+    print("     2. Seedream 4.5 (火山引擎)")
+    print("     3. Seedream 4.0 (火山引擎)")
+    print("     4. Seedream 3.0 t2i (火山引擎免费)")
+    print("     5. Antigravity: Gemini/Flux/DALL-E")
+    print("     6. CogView-3-flash (智谱AI)")
+    print("     7. Pollinations (免费服务)")
     print()
-    print("V9.4修复(2026-02-15):")
-    print("  ✅ 修复Seedream API调用方式")
-    print("  ✅ 使用OpenAI客户端方式调用")
+    print("V9.6更新(2026-03-01):")
+    print("  ✅ 新增Seedream 3.0 t2i备选")
     print("="*80)
     print()
     print("💡 调试提示:")
