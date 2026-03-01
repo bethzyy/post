@@ -733,7 +733,9 @@ def stream_generator(gen, params):
 
             # 生成配图
             images = []
-            image_count = params.get('image_count', 0)
+            image_count = int(params.get('image_count', 0) or 0)
+            print(f"[SERVER DEBUG] image_count = {image_count}, raw = {params.get('image_count')}")
+            output_queue.put(('log', 'info', f'[DEBUG] image_count = {image_count}'))
             if image_count > 0:
                 output_queue.put(('log', 'info', f'开始生成{image_count}张配图...'))
                 images = gen.generate_article_images(

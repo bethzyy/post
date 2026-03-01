@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity完整模型测试报告</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header .meta {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+            color: #667eea;
+        }
+
+        .summary-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-available {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .status-quota_exceeded {
+            color: #ffc107;
+            font-weight: 600;
+        }
+
+        .status-not_found {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .status-error {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .badge-text {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-image {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .response {
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .stats-detail {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .stats-detail h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .stats-detail ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .stats-detail li {
+            padding: 5px 0;
+        }
+
+        .quota-section {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-left: 5px solid #ff9800;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 12px;
+        }
+
+        .quota-section h2 {
+            color: #e65100;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .quota-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .quota-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #ff9800;
+        }
+
+        .quota-card h3 {
+            color: #e65100;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .quota-card .time {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .quota-card .desc {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .quota-card .reliability {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Antigravity 完整模型测试报告</h1>
+            <p class="meta">生成时间: 2026-02-22 16:34:29</p>
+            <p class="meta" style="font-size: 0.85em; margin-top: 10px;">测试范围: 文本模型(14个) + 图像模型(14个) = 总计28个模型</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <h3>28</h3>
+                <p>总模型数</p>
+            </div>
+            <div class="summary-card">
+                <h3>0</h3>
+                <p>当前可用</p>
+            </div>
+            <div class="summary-card">
+                <h3>5</h3>
+                <p>配额耗尽</p>
+            </div>
+            <div class="summary-card">
+                <h3>14</h3>
+                <p>文本模型</p>
+            </div>
+            <div class="summary-card">
+                <h3>14</h3>
+                <p>图像模型</p>
+            </div>
+        </div>
+
+        <!-- 配额恢复时间预测 -->
+        <div class="quota-section" id="quota-recovery">
+            <h2>⏰ 配额恢复时间预测</h2>
+            <p style="color: #666; margin-bottom: 20px;">基于当前时间(2026-02-22 16:34)的智能预测</p>
+
+            <div class="quota-grid">
+
+                <div class="quota-card">
+                    <h3>Gemini系列</h3>
+                    <div class="time" style="color: #ffa500;">明天上午8点 (15小时后)</div>
+                    <div class="desc">每日UTC 00:00重置,北京时间上午8点</div>
+                    <div class="reliability" style="background: #ffa500; color: white;">
+                        🟡 可靠性: 中
+                    </div>
+                </div>
+
+                <div class="quota-card">
+                    <h3>GLM系列</h3>
+                    <div class="time" style="color: #ffa500;">明天凌晨0点 (7小时后)</div>
+                    <div class="desc">每日重置</div>
+                    <div class="reliability" style="background: #ffa500; color: white;">
+                        🟡 可靠性: 中
+                    </div>
+                </div>
+
+                <div class="quota-card">
+                    <h3>GPT-4系列</h3>
+                    <div class="time" style="color: #dc3545;">下月1日 (6天后) 或充值后</div>
+                    <div class="desc">按月计算或需购买付费额度</div>
+                    <div class="reliability" style="background: #dc3545; color: white;">
+                        🔴 可靠性: 低
+                    </div>
+                </div>
+
+                <div class="quota-card">
+                    <h3>Claude系列</h3>
+                    <div class="time" style="color: #dc3545;">下月1日 (6天后)</div>
+                    <div class="desc">按月重置,每月1日恢复</div>
+                    <div class="reliability" style="background: #dc3545; color: white;">
+                        🔴 可靠性: 低
+                    </div>
+                </div>
+
+                <div class="quota-card">
+                    <h3>DALL-E系列</h3>
+                    <div class="time" style="color: #dc3545;">下月1日 (6天后) 或充值后</div>
+                    <div class="desc">免费层按月计算,建议充值</div>
+                    <div class="reliability" style="background: #dc3545; color: white;">
+                        🔴 可靠性: 低
+                    </div>
+                </div>
+
+                <div class="quota-card">
+                    <h3>Flux/SD系列</h3>
+                    <div class="time" style="color: #ffa000;">下周一 (02-23) 或明天</div>
+                    <div class="desc">可能每周或每日重置</div>
+                    <div class="reliability" style="background: #ffa000; color: white;">
+                        🟡 可靠性: 中
+                    </div>
+                </div>
+
+                <div class="quota-card">
+                    <h3>Gemini图像系列</h3>
+                    <div class="time" style="color: #ffa500;">明天上午8点 (15小时后)</div>
+                    <div class="desc">与Gemini文本配额可能独立</div>
+                    <div class="reliability" style="background: #ffa500; color: white;">
+                        🟡 可靠性: 中
+                    </div>
+                </div>
+
+            </div>
+
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 4px solid #4caf50;">
+                <h3 style="color: #2e7d32; margin-bottom: 10px;">💡 立即可用的方案</h3>
+                <ul style="color: #666; line-height: 1.8;">
+                    <li><strong>继续使用</strong>: gpt-3.5-turbo (当前可用)</li>
+                    <li><strong>明天上午8点</strong>: Gemini系列可能恢复</li>
+                    <li><strong>购买额度</strong>: 需要持续使用时考虑充值</li>
+                    <li><strong>免费替代</strong>: Groq、Hugging Face、本地模型</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <h2>📝 文本生成模型 ({text_total}个)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>模型ID</th>
+                            <th>系列</th>
+                            <th>描述</th>
+                            <th>状态</th>
+                            <th>响应示例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            <td><code>gemini-2.0-flash-exp</code></td>
+                            <td>Gemini</td>
+                            <td>最新Flash实验版</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>gemini-2.5-pro</code></td>
+                            <td>Gemini</td>
+                            <td>2.5 Pro版本</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>gemini-pro</code></td>
+                            <td>Gemini</td>
+                            <td>标准版</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>gemini-1.5-pro</code></td>
+                            <td>Gemini</td>
+                            <td>1.5 Pro版本</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>gemini-1.5-flash</code></td>
+                            <td>Gemini</td>
+                            <td>1.5 Flash版本</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>gpt-4-turbo</code></td>
+                            <td>GPT</td>
+                            <td>GPT-4 Turbo</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>gpt-4o</code></td>
+                            <td>GPT</td>
+                            <td>GPT-4 Omni</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>gpt-4</code></td>
+                            <td>GPT</td>
+                            <td>GPT-4标准版</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>gpt-3.5-turbo</code></td>
+                            <td>GPT</td>
+                            <td>GPT-3.5 Turbo</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>claude-sonnet-4-5-20250514</code></td>
+                            <td>Claude</td>
+                            <td>Sonnet 4.5最新版</td>
+                            <td class="status-quota_exceeded">⚠️ 配额耗尽</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>claude-3-5-sonnet-20241022</code></td>
+                            <td>Claude</td>
+                            <td>Sonnet 3.5</td>
+                            <td class="status-quota_exceeded">⚠️ 配额耗尽</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>claude-3-opus-20240229</code></td>
+                            <td>Claude</td>
+                            <td>Opus 3</td>
+                            <td class="status-quota_exceeded">⚠️ 配额耗尽</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>glm-4.6</code></td>
+                            <td>GLM</td>
+                            <td>智谱GLM-4.6</td>
+                            <td class="status-quota_exceeded">⚠️ 配额耗尽</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>glm-4</code></td>
+                            <td>GLM</td>
+                            <td>智谱GLM-4</td>
+                            <td class="status-quota_exceeded">⚠️ 配额耗尽</td>
+                            <td>-</td>
+                        </tr>
+
+                    </tbody>
+                </table>
+
+                <div class="stats-detail">
+                    <h3>文本模型统计</h3>
+                    <ul>
+                        <li>✅ 可用: 0个</li>
+                        <li>⚠️ 配额耗尽: 5个</li>
+                        <li>❌ 未找到: 9个</li>
+                        <li>❌ 其他错误: 0个</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🎨 图像生成模型 (14个)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>模型ID</th>
+                            <th>系列</th>
+                            <th>描述</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            <td><code>dall-e-3</code></td>
+                            <td>DALL-E</td>
+                            <td>OpenAI最新图像模型</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>dall-e-2</code></td>
+                            <td>DALL-E</td>
+                            <td>OpenAI经典图像模型</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>flux-1.1-pro</code></td>
+                            <td>Flux</td>
+                            <td>Black Forest Labs 1.1 Pro</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>flux-schnell</code></td>
+                            <td>Flux</td>
+                            <td>Schnell快速版</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>flux-dev</code></td>
+                            <td>Flux</td>
+                            <td>Dev开发版</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>sd-3</code></td>
+                            <td>Stable Diffusion</td>
+                            <td>SD 3 (stable-diffusion-3)</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>sd-xl-lightning</code></td>
+                            <td>Stable Diffusion</td>
+                            <td>SDXL Lightning</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>sdxl-lightning</code></td>
+                            <td>Stable Diffusion</td>
+                            <td>SDXL Lightning (别名)</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>sdxl-turbo</code></td>
+                            <td>Stable Diffusion</td>
+                            <td>SDXL Turbo</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>gemini-3-pro-image-4k</code></td>
+                            <td>Gemini Image</td>
+                            <td>3 Pro Image 4K最高分辨率</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>gemini-3-pro-image-2k</code></td>
+                            <td>Gemini Image</td>
+                            <td>3 Pro Image 2K高分辨率</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>gemini-3-flash-image</code></td>
+                            <td>Gemini Image</td>
+                            <td>3 Flash Image快速版</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>gemini-2-pro-image</code></td>
+                            <td>Gemini Image</td>
+                            <td>2 Pro Image第二代专业版</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                        <tr>
+                            <td><code>gemini-2-flash-image</code></td>
+                            <td>Gemini Image</td>
+                            <td>2 Flash Image第二代快速版</td>
+                            <td class="status-not_found">❌ 未找到</td>
+                        </tr>
+
+                    </tbody>
+                </table>
+
+                <div class="stats-detail">
+                    <h3>图像模型统计</h3>
+                    <ul>
+                        <li>✅ 可用: 0个</li>
+                        <li>⚠️ 配额耗尽: 0个</li>
+                        <li>❌ 未找到: 14个</li>
+                        <li>❌ 其他错误: 0个</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

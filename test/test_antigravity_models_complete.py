@@ -581,7 +581,7 @@ def generate_html_report(text_results, image_results):
             <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 4px solid #4caf50;">
                 <h3 style="color: #2e7d32; margin-bottom: 10px;">💡 立即可用的方案</h3>
                 <ul style="color: #666; line-height: 1.8;">
-                    <li><strong>继续使用</strong>: gpt-3.5-turbo (当前可用)</li>
+""" + f"""                    <li><strong>继续使用</strong>: {', '.join([r['model_id'] for r in text_results if r['status'] == 'available']) if text_available else '暂无可用模型'}</li>
                     <li><strong>明天上午8点</strong>: Gemini系列可能恢复</li>
                     <li><strong>购买额度</strong>: 需要持续使用时考虑充值</li>
                     <li><strong>免费替代</strong>: Groq、Hugging Face、本地模型</li>
