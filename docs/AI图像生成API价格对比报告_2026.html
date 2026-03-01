@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI图像生成API价格对比报告 - 2026年3月</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header .meta {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .summary-card.best {
+            border: 3px solid #28a745;
+        }
+
+        .summary-card h3 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+            color: #667eea;
+        }
+
+        .summary-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .price-low {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .price-medium {
+            color: #ffc107;
+            font-weight: 600;
+        }
+
+        .price-high {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .badge-free {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-paid {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-best {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-china {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .highlight-row {
+            background: #e8f5e9 !important;
+        }
+
+        .recommendation {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 5px solid #28a745;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .recommendation h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .recommendation ul {
+            color: #555;
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+
+        .platform-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .platform-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .platform-card .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .platform-card .detail-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+
+        .platform-card .detail-item label {
+            font-size: 0.85em;
+            color: #666;
+            display: block;
+        }
+
+        .platform-card .detail-item value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .warning-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .sources {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+        }
+
+        .sources h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .sources ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sources li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .sources a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .sources a:hover {
+            text-decoration: underline;
+        }
+
+        .tier-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            margin-left: 5px;
+        }
+
+        .tier-1 { background: #ffd700; color: #333; }
+        .tier-2 { background: #c0c0c0; color: #333; }
+        .tier-3 { background: #cd7f32; color: #fff; }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .content {
+                padding: 20px;
+            }
+            table {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI图像生成API价格对比报告</h1>
+            <p class="meta">📊 全面对比主流平台价格与免费额度</p>
+            <p class="meta">生成时间: 2026年3月1日</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card best">
+                <h3>¥0.054</h3>
+                <p>最低单价<br>Gemini 3.1 Flash</p>
+                <span class="badge badge-best">性价比之王</span>
+            </div>
+            <div class="summary-card">
+                <h3>¥0.10</h3>
+                <p>国内最低单价<br>智谱AI / 火山引擎</p>
+                <span class="badge badge-china">国产优选</span>
+            </div>
+            <div class="summary-card">
+                <h3>完全免费</h3>
+                <p>Pollinations AI<br>无需注册</p>
+                <span class="badge badge-free">零成本</span>
+            </div>
+            <div class="summary-card">
+                <h3>100张</h3>
+                <p>最大免费额度<br>阿里云FLUX</p>
+                <span class="badge badge-free">新用户福利</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- 第一部分：单张价格对比 -->
+            <div class="section">
+                <h2>💰 单张价格对比（从低到高）</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>排名</th>
+                            <th>平台/模型</th>
+                            <th>单价（元/张）</th>
+                            <th>分辨率</th>
+                            <th>备注</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="highlight-row">
+                            <td><span class="tier-badge tier-1">🥇</span></td>
+                            <td><strong>Gemini 3.1 Flash Image</strong></td>
+                            <td class="price-low">¥0.054</td>
+                            <td>标准</td>
+                            <td>预览价，Google出品</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td><span class="tier-badge tier-2">🥈</span></td>
+                            <td><strong>Gemini 3 Pro Image Preview</strong></td>
+                            <td class="price-low">¥0.095</td>
+                            <td>2K/4K</td>
+                            <td>2K和4K同价</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td><span class="tier-badge tier-3">🥉</span></td>
+                            <td><strong>智谱AI CogView-3-Flash</strong></td>
+                            <td class="price-low">¥0.10</td>
+                            <td>标准</td>
+                            <td><span class="badge badge-free">免费可用</span></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>火山引擎 Seedream（通用）</td>
+                            <td class="price-low">¥0.10</td>
+                            <td>标准</td>
+                            <td>限时优惠</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>阿里云通义万相（标准）</td>
+                            <td class="price-low">¥0.12</td>
+                            <td>标准</td>
+                            <td>批量有折扣</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>阿里云 wanx-v1</td>
+                            <td class="price-medium">¥0.16</td>
+                            <td>标准</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>Gemini 3 Pro Image（正式版）</td>
+                            <td class="price-medium">¥0.18</td>
+                            <td>2K/4K</td>
+                            <td>高质量</td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td>火山引擎 Seedream 4.0</td>
+                            <td class="price-medium">¥0.20</td>
+                            <td>高清</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td>火山引擎 Seedream 4.5</td>
+                            <td class="price-medium">¥0.25</td>
+                            <td>高清</td>
+                            <td>最新版</td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td>Gemini 2.5 Flash Image</td>
+                            <td class="price-medium">¥0.28</td>
+                            <td>标准</td>
+                            <td>约$0.039</td>
+                        </tr>
+                        <tr>
+                            <td>11</td>
+                            <td>DALL-E 3（标准1024²）</td>
+                            <td class="price-medium">¥0.29</td>
+                            <td>1024×1024</td>
+                            <td>约$0.04</td>
+                        </tr>
+                        <tr>
+                            <td>12</td>
+                            <td>DALL-E 3（高清1024²）</td>
+                            <td class="price-high">¥0.58</td>
+                            <td>1024×1024</td>
+                            <td>约$0.08</td>
+                        </tr>
+                        <tr>
+                            <td>13</td>
+                            <td>DALL-E 3（高清宽幅）</td>
+                            <td class="price-high">¥0.87</td>
+                            <td>1792×1024</td>
+                            <td>约$0.12</td>
+                        </tr>
+                        <tr>
+                            <td>14</td>
+                            <td>Midjourney</td>
+                            <td class="price-high">¥70/月起</td>
+                            <td>多变</td>
+                            <td>$10/月订阅制</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 第二部分：免费额度对比 -->
+            <div class="section">
+                <h2>🎁 免费额度对比</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>平台</th>
+                            <th>免费额度</th>
+                            <th>有效期</th>
+                            <th>条件</th>
+                            <th>推荐度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="highlight-row">
+                            <td><strong>Pollinations AI</strong></td>
+                            <td><span class="badge badge-free">无限制</span></td>
+                            <td>永久</td>
+                            <td>无需注册</td>
+                            <td>⭐⭐⭐⭐⭐</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td><strong>阿里云 FLUX API</strong></td>
+                            <td><span class="badge badge-free">100张</span></td>
+                            <td>90天</td>
+                            <td>开通DashScope</td>
+                            <td>⭐⭐⭐⭐⭐</td>
+                        </tr>
+                        <tr>
+                            <td><strong>智谱AI CogView-3-Flash</strong></td>
+                            <td><span class="badge badge-free">免费模型</span></td>
+                            <td>长期</td>
+                            <td>注册即可</td>
+                            <td>⭐⭐⭐⭐⭐</td>
+                        </tr>
+                        <tr>
+                            <td><strong>火山引擎（即梦）</strong></td>
+                            <td><span class="badge badge-free">每日20次 + 500万tokens</span></td>
+                            <td>活动期</td>
+                            <td>实名认证</td>
+                            <td>⭐⭐⭐⭐</td>
+                        </tr>
+                        <tr>
+                            <td><strong>阿里云百炼</strong></td>
+                            <td><span class="badge badge-free">100张</span></td>
+                            <td>新用户期</td>
+                            <td>新注册</td>
+                            <td>⭐⭐⭐⭐</td>
+                        </tr>
+                        <tr>
+                            <td><strong>LiblibAI</strong></td>
+                            <td><span class="badge badge-free">每日20积分</span></td>
+                            <td>每日刷新</td>
+                            <td>登录领取</td>
+                            <td>⭐⭐⭐⭐</td>
+                        </tr>
+                        <tr>
+                            <td><strong>百度文心一格</strong></td>
+                            <td><span class="badge badge-free">100积分+每日任务</span></td>
+                            <td>长期</td>
+                            <td>注册+做任务</td>
+                            <td>⭐⭐⭐</td>
+                        </tr>
+                        <tr>
+                            <td><strong>腾讯混元</strong></td>
+                            <td><span class="badge badge-free">有免费额度</span></td>
+                            <td>限时</td>
+                            <td>开通服务</td>
+                            <td>⭐⭐⭐</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Midjourney国内版</strong></td>
+                            <td><span class="badge badge-free">6积分(约6张)</span></td>
+                            <td>一次性</td>
+                            <td>首次注册</td>
+                            <td>⭐⭐</td>
+                        </tr>
+                        <tr>
+                            <td><strong>DALL-E 3 API</strong></td>
+                            <td><span class="badge badge-paid">无免费额度</span></td>
+                            <td>-</td>
+                            <td>需绑定信用卡</td>
+                            <td>⭐</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 第三部分：平台详情 -->
+            <div class="section">
+                <h2>📋 各平台详情</h2>
+
+                <div class="platform-card">
+                    <h4>🆓 Pollinations AI - 完全免费首选</h4>
+                    <p>柏林团队开发的开源AI平台，完全免费且无需注册。</p>
+                    <div class="details">
+                        <div class="detail-item">
+                            <label>价格</label>
+                            <value>完全免费</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>注册要求</label>
+                            <value>无需注册</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>API密钥</label>
+                            <value>无需</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>支持模型</label>
+                            <value>FLUX, Turbo, Kontext</value>
+                        </div>
+                    </div>
+                    <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                        API示例: <code>https://image.pollinations.ai/prompt/你的描述</code>
+                    </p>
+                </div>
+
+                <div class="platform-card">
+                    <h4>🇨🇳 智谱AI - 国产性价比之王</h4>
+                    <p>国内领先的AI平台，CogView-3-Flash模型完全免费使用。</p>
+                    <div class="details">
+                        <div class="detail-item">
+                            <label>免费模型</label>
+                            <value>CogView-3-Flash</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>付费模型</label>
+                            <value>GLM-Image ¥0.10/张</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>并发限制</label>
+                            <value>2个</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>官网</label>
+                            <value>open.bigmodel.cn</value>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="platform-card">
+                    <h4>🌋 火山引擎 Seedream - 字节跳动出品</h4>
+                    <p>字节跳动旗下的图像生成服务，质量高且有免费额度。</p>
+                    <div class="details">
+                        <div class="detail-item">
+                            <label>Seedream 4.0</label>
+                            <value>¥0.20/张</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>Seedream 4.5</label>
+                            <value>¥0.25/张</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>通用版(优惠)</label>
+                            <value>¥0.10/张</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>免费额度</label>
+                            <value>每日20次</value>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="platform-card">
+                    <h4>☁️ 阿里云通义万相 - 大厂稳定之选</h4>
+                    <p>阿里云旗下的图像生成服务，稳定可靠，有批量折扣。</p>
+                    <div class="details">
+                        <div class="detail-item">
+                            <label>标准版</label>
+                            <value>¥0.12/张</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>wanx-v1</label>
+                            <value>¥0.16/张</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>FLUX免费额度</label>
+                            <value>100张(90天)</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>批量折扣</label>
+                            <value>最高8折</value>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="platform-card">
+                    <h4>🎨 Gemini Image - Google出品</h4>
+                    <p>Google的图像生成服务，价格极具竞争力，2K/4K同价。</p>
+                    <div class="details">
+                        <div class="detail-item">
+                            <label>3.1 Flash(预览)</label>
+                            <value>¥0.054/张</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>3 Pro(预览)</label>
+                            <value>¥0.095/张</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>3 Pro(正式)</label>
+                            <value>¥0.18/张</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>分辨率</label>
+                            <value>2K/4K同价</value>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="platform-card">
+                    <h4>🖼️ DALL-E 3 - OpenAI出品</h4>
+                    <p>OpenAI的图像生成服务，质量高但价格较高，无免费额度。</p>
+                    <div class="details">
+                        <div class="detail-item">
+                            <label>标准1024²</label>
+                            <value>¥0.29/张</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>高清1024²</label>
+                            <value>¥0.58/张</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>高清宽幅</label>
+                            <value>¥0.87/张</value>
+                        </div>
+                        <div class="detail-item">
+                            <label>免费额度</label>
+                            <value>无</value>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第四部分：推荐方案 -->
+            <div class="section">
+                <h2>💡 推荐方案</h2>
+
+                <div class="recommendation">
+                    <h3>🇨🇳 国内用户推荐</h3>
+                    <ul>
+                        <li><strong>零成本体验</strong>：Pollinations AI（完全免费，无需注册）</li>
+                        <li><strong>日常使用</strong>：智谱AI CogView-3-Flash（免费模型）</li>
+                        <li><strong>高质量需求</strong>：火山引擎 Seedream 4.5（¥0.25/张）</li>
+                        <li><strong>大批量使用</strong>：阿里云通义万相（批量8折）</li>
+                    </ul>
+                </div>
+
+                <div class="recommendation">
+                    <h3>🌍 国际用户推荐</h3>
+                    <ul>
+                        <li><strong>最便宜</strong>：Gemini 3.1 Flash Image（¥0.054/张）</li>
+                        <li><strong>高质量</strong>：Gemini 3 Pro Image（¥0.18/张，2K/4K同价）</li>
+                        <li><strong>免费体验</strong>：Pollinations AI（完全免费）</li>
+                        <li><strong>本地部署</strong>：Stable Diffusion / Flux（完全免费，需GPU）</li>
+                    </ul>
+                </div>
+
+                <div class="recommendation">
+                    <h3>🔧 开发者推荐</h3>
+                    <ul>
+                        <li><strong>快速集成</strong>：Pollinations AI（无需API Key，URL直接调用）</li>
+                        <li><strong>稳定服务</strong>：智谱AI / 阿里云（国内直连，稳定可靠）</li>
+                        <li><strong>多模型切换</strong>：使用 Antigravity 等聚合API服务</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <h4>⚠️ 注意事项</h4>
+                    <ul>
+                        <li>价格信息基于2026年3月数据，可能随时变动，请以官网为准</li>
+                        <li>免费额度通常有时间限制或条件限制</li>
+                        <li>Midjourney国际版需要国际信用卡，国内版渠道有限</li>
+                        <li>本地部署Stable Diffusion需要较好的GPU（推荐8GB+显存）</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 数据来源 -->
+            <div class="sources">
+                <h3>📚 数据来源</h3>
+                <ul>
+                    <li>火山引擎官方文档: <a href="https://www.volcengine.com/docs/86081/1805689" target="_blank">计费说明</a></li>
+                    <li>智谱AI开放平台: <a href="https://open.bigmodel.cn" target="_blank">open.bigmodel.cn</a></li>
+                    <li>阿里云百炼: <a href="https://help.aliyun.com/zh/model-studio/" target="_blank">模型服务文档</a></li>
+                    <li>Google AI Studio: <a href="https://ai.google.dev" target="_blank">Gemini API定价</a></li>
+                    <li>OpenAI官方: <a href="https://openai.com/pricing" target="_blank">定价页面</a></li>
+                    <li>Pollinations AI: <a href="https://pollinations.ai" target="_blank">官方网站</a></li>
+                    <li>LiblibAI: <a href="https://www.liblib.art" target="_blank">官方网站</a></li>
+                    <li>腾讯云: <a href="https://cloud.tencent.com/document/buy-guide/1729/105925" target="_blank">混元生图计费</a></li>
+                </ul>
+                <p style="margin-top: 15px; font-size: 0.85em; color: #666;">
+                    * 本报告仅供参考，具体价格以各平台官网最新信息为准。报告生成时间：2026年3月1日
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

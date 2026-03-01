@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-AI图像生成器 - Web版 V9.4 (官网API修复版)
+AI图像生成器 - Web版 V9.5 (扩展Fallback链)
 支持主题输入或参考图片,多种画图风格选择
-支持多模型自动切换:Seedream 4.5 -> Seedream 4.0 -> Antigravity多模型
+支持多模型自动切换:Seedream 4.5 -> Seedream 4.0 -> Antigravity -> CogView-3-flash -> Pollinations
+
+V9.5改进(2026-03-01):
+  ✅ 新增CogView-3-flash作为备选(智谱AI免费图像模型)
+  ✅ 新增Pollinations作为最终免费备选
+  ✅ Fallback优先级: Seedream 4.5 -> Seedream 4.0 -> Antigravity -> CogView-3-flash -> Pollinations
 
 V9.4修复(2026-02-15):
   ✅ 根据官网示例修复API调用方式
@@ -43,7 +48,7 @@ if sys.platform == 'win32':
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from config import Config, get_antigravity_client, get_zhipu_anthropic_client
+from config import Config, get_antigravity_client, get_zhipu_anthropic_client, get_zhipuai_client
 
 app = Flask(__name__)
 BASE_DIR = Path(__file__).parent.parent
@@ -355,13 +360,151 @@ def generate_with_antigravity(prompt, output_path, style_name):
         return False, f"Antigravity生成失败: {str(e)}", "unknown"
 
 
-def generate_image_with_fallback(prompt, reference_image_path, output_path, style_name):
-    """智能图像生成: 优先Seedream 4.5 -> Seedream 4.0 -> Antigravity
+def generate_with_cogview(prompt, output_path, style_name):
+    """使用智谱AI CogView-3-flash生成图像
 
-    Fallback优先级:
+    CogView-3-flash是智谱AI的免费图像生成模型
+
+    Args:
+        prompt: 文本提示词(已包含风格信息)
+        output_path: 输出文件路径
+        style_name: 风格名称
+
+    Returns:
+        (success, message, model_used)
+    """
+    try:
+        client = get_zhipuai_client()
+        if not client:
+            logging.error("[CogView] ZhipuAI客户端未配置")
+            return False, "ZhipuAI客户端未配置", "unknown"
+
+        logging.info("[CogView-3-flash] 正在生成图像...")
+        logging.info(f"[提示词] {prompt[:100]}...")
+
+        # 使用智谱AI SDK调用CogView-3-flash (注意:是generations不是generate)
+        response = client.images.generations(
+            model="cogview-3-flash",
+            prompt=prompt,
+            size="1024x1024"
+        )
+
+        if response.data and len(response.data) > 0:
+            # CogView返回的是URL
+            image_data = response.data[0]
+
+            # 检查返回类型
+            if hasattr(image_data, 'url') and image_data.url:
+                image_url = image_data.url
+                logging.info(f"[CogView] 获取图片URL: {image_url[:50]}...")
+
+                # 下载图片
+                img_response = requests.get(image_url, timeout=60)
+                if img_response.status_code == 200:
+                    with open(output_path, 'wb') as f:
+                        f.write(img_response.content)
+                    logging.info(f"[✓] CogView图片已保存: {output_path}")
+                    return True, f"成功生成(使用CogView-3-flash): {output_path}", "cogview-3-flash"
+                else:
+                    logging.warning(f"[CogView] 下载失败: HTTP {img_response.status_code}")
+                    return False, f"下载图像失败: HTTP {img_response.status_code}", "cogview-3-flash"
+            elif hasattr(image_data, 'b64_json') and image_data.b64_json:
+                # 直接是base64编码
+                image_bytes = base64.b64decode(image_data.b64_json)
+                with open(output_path, 'wb') as f:
+                    f.write(image_bytes)
+                logging.info(f"[✓] CogView图片已保存(base64): {output_path}")
+                return True, f"成功生成(使用CogView-3-flash): {output_path}", "cogview-3-flash"
+            else:
+                # 尝试直接访问url属性(可能是对象)
+                image_url = getattr(image_data, 'url', None)
+                if image_url:
+                    img_response = requests.get(image_url, timeout=60)
+                    if img_response.status_code == 200:
+                        with open(output_path, 'wb') as f:
+                            f.write(img_response.content)
+                        logging.info(f"[✓] CogView图片已保存: {output_path}")
+                        return True, f"成功生成(使用CogView-3-flash): {output_path}", "cogview-3-flash"
+
+                logging.warning(f"[CogView] 响应格式未知: {type(image_data)}, dir={dir(image_data)}")
+                return False, "CogView返回格式未知", "cogview-3-flash"
+        else:
+            logging.warning("[CogView] 返回空响应")
+            return False, "CogView返回空响应", "cogview-3-flash"
+
+    except Exception as e:
+        error_str = str(e)
+        logging.error(f"[CogView] 生成失败: {error_str}")
+        import traceback
+        logging.debug(traceback.format_exc())
+
+        # 检查是否是配额问题
+        if "429" in error_str or "quota" in error_str.lower() or "limit" in error_str.lower():
+            return False, error_str, "cogview-3-flash"
+
+        return False, f"CogView生成失败: {error_str}", "cogview-3-flash"
+
+
+def generate_with_pollinations(prompt, output_path, style_name):
+    """使用Pollinations免费API生成图像
+
+    Pollinations是免费的图像生成服务,无需API密钥
+
+    Args:
+        prompt: 文本提示词(已包含风格信息)
+        output_path: 输出文件路径
+        style_name: 风格名称
+
+    Returns:
+        (success, message, model_used)
+    """
+    try:
+        import urllib.parse
+
+        logging.info("[Pollinations] 正在生成图像(免费服务)...")
+        logging.info(f"[提示词] {prompt[:100]}...")
+
+        # Pollinations API URL编码
+        encoded_prompt = urllib.parse.quote(prompt)
+        image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}"
+
+        logging.info(f"[Pollinations] 请求URL: {image_url[:80]}...")
+
+        # 下载图片
+        img_response = requests.get(image_url, timeout=120)
+
+        if img_response.status_code == 200:
+            # 检查是否返回了有效图片
+            content_type = img_response.headers.get('Content-Type', '')
+            if 'image' in content_type:
+                with open(output_path, 'wb') as f:
+                    f.write(img_response.content)
+                logging.info(f"[✓] Pollinations图片已保存: {output_path}")
+                return True, f"成功生成(使用Pollinations): {output_path}", "pollinations"
+            else:
+                logging.warning(f"[Pollinations] 响应非图片: {content_type}")
+                return False, f"Pollinations返回非图片内容: {content_type}", "pollinations"
+        else:
+            logging.warning(f"[Pollinations] 请求失败: HTTP {img_response.status_code}")
+            return False, f"Pollinations请求失败: HTTP {img_response.status_code}", "pollinations"
+
+    except Exception as e:
+        error_str = str(e)
+        logging.error(f"[Pollinations] 生成失败: {error_str}")
+        import traceback
+        logging.debug(traceback.format_exc())
+        return False, f"Pollinations生成失败: {error_str}", "pollinations"
+
+
+def generate_image_with_fallback(prompt, reference_image_path, output_path, style_name):
+    """智能图像生成: 优先Seedream 4.5 -> Seedream 4.0 -> Antigravity -> CogView -> Pollinations
+
+    Fallback优先级 (V9.5):
     1. Seedream 4.5 (doubao-seedream-4-5-251128) - 最新版本
     2. Seedream 4.0 (doubao-seedream-4-0-250828) - 稳定版本
     3. Antigravity: Gemini 3 Flash Image -> Flux 1.1 Pro -> Flux Schnell -> DALL-E 3
+    4. CogView-3-flash (智谱AI免费模型)
+    5. Pollinations (免费公开服务)
 
     Args:
         prompt: 文本提示词
@@ -372,37 +515,55 @@ def generate_image_with_fallback(prompt, reference_image_path, output_path, styl
     Returns:
         (success, message, model_used)
     """
-    # 1. 首先尝试 Seedream 4.5
-    logging.info("[Fallback 1/3] 尝试 Seedream 4.5...")
+    last_error = ""
+
+    # 1. 尝试 Seedream 4.5
+    logging.info("[Fallback 1/5] 尝试 Seedream 4.5...")
     success, message, model_used = generate_with_seedream(
         prompt, reference_image_path, output_path, style_name,
         model_version="doubao-seedream-4-5-251128"
     )
+    if success:
+        return success, message, model_used
+    last_error = f"Seedream 4.5: {message}"
+    logging.warning(f"[Fallback 1/5 失败] {message}")
 
+    # 2. 尝试 Seedream 4.0
+    logging.info("[Fallback 2/5] 尝试 Seedream 4.0...")
+    success, message, model_used = generate_with_seedream(
+        prompt, reference_image_path, output_path, style_name,
+        model_version="doubao-seedream-4-0-250828"
+    )
+    if success:
+        return success, message, model_used
+    last_error = f"Seedream 4.0: {message}"
+    logging.warning(f"[Fallback 2/5 失败] {message}")
+
+    # 3. Fallback到Antigravity
+    logging.info("[Fallback 3/5] 尝试 Antigravity备选模型...")
+    success, message, model_used = generate_with_antigravity(prompt, output_path, style_name)
+    if success:
+        return success, message, model_used
+    last_error = f"Antigravity: {message}"
+    logging.warning(f"[Fallback 3/5 失败] {message}")
+
+    # 4. 尝试 CogView-3-flash
+    logging.info("[Fallback 4/5] 尝试 CogView-3-flash...")
+    success, message, model_used = generate_with_cogview(prompt, output_path, style_name)
+    if success:
+        return success, message, model_used
+    last_error = f"CogView-3-flash: {message}"
+    logging.warning(f"[Fallback 4/5 失败] {message}")
+
+    # 5. 最后尝试 Pollinations
+    logging.info("[Fallback 5/5] 尝试 Pollinations免费服务...")
+    success, message, model_used = generate_with_pollinations(prompt, output_path, style_name)
     if success:
         return success, message, model_used
 
-    # 检查是否是配额问题
-    if "429" in message or "limit" in message.lower() or "quota" in message.lower():
-        logging.info("[Fallback 2/3] Seedream 4.5配额用尽,尝试 Seedream 4.0...")
-
-        # 2. 尝试 Seedream 4.0
-        success, message, model_used = generate_with_seedream(
-            prompt, reference_image_path, output_path, style_name,
-            model_version="doubao-seedream-4-0-250828"
-        )
-
-        if success:
-            return success, message, model_used
-
-        # 检查是否还是配额问题
-        if "429" in message or "limit" in message.lower() or "quota" in message.lower():
-            logging.info("[Fallback 3/3] Seedream 4.0也配额用尽,切换到Antigravity备选模型...")
-            # 3. Fallback到Antigravity
-            return generate_with_antigravity(prompt, output_path, style_name)
-
-    # 其他错误直接返回
-    return success, message, model_used
+    # 所有方法都失败
+    logging.error("[Fallback] 所有图像生成服务都失败!")
+    return False, f"所有服务均失败。最后错误: {message}", "unknown"
 
 
 def encode_image_to_base64(image_path):
@@ -666,7 +827,7 @@ def api_save_image():
 def main():
     """主函数"""
     print("\n" + "="*80)
-    print("                    AI图像生成器 - Web版 V9.3 (多模型Fallback版)")
+    print("                    AI图像生成器 - Web版 V9.5 (扩展Fallback链)")
     print("="*80)
     print()
     print("启动Web服务器: http://localhost:5009")
@@ -678,19 +839,19 @@ def main():
     print("  🎨 多种画图风格选择")
     print("  🤖 多模型自动切换")
     print()
-    print("V9.3新增(2026-02-15):")
-    print("  ✅ 新增Seedream 4.0作为备选模型")
-    print("  ✅ Fallback优先级:")
-    print("     1. Seedream 4.5 (doubao-seedream-4-5-251128)")
-    print("     2. Seedream 4.0 (doubao-seedream-4-0-250828)")
+    print("V9.5新增(2026-03-01):")
+    print("  ✅ 新增CogView-3-flash (智谱AI免费模型)")
+    print("  ✅ 新增Pollinations (免费公开服务)")
+    print("  ✅ Fallback优先级 (5级):")
+    print("     1. Seedream 4.5 (火山引擎)")
+    print("     2. Seedream 4.0 (火山引擎)")
     print("     3. Antigravity: Gemini/Flux/DALL-E")
+    print("     4. CogView-3-flash (智谱AI)")
+    print("     5. Pollinations (免费服务)")
     print()
-    print("V9.2功能:")
-    print("  ✅ Antigravity多个图像模型备选:")
-    print("     - Gemini 3 Flash Image")
-    print("     - Flux 1.1 Pro")
-    print("     - Flux Schnell")
-    print("     - DALL-E 3")
+    print("V9.4修复(2026-02-15):")
+    print("  ✅ 修复Seedream API调用方式")
+    print("  ✅ 使用OpenAI客户端方式调用")
     print("="*80)
     print()
     print("💡 调试提示:")
