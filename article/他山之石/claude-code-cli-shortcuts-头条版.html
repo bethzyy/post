@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code CLI完全指南：从入门到精通，90%用户不知道的高效操作技巧</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.9;
+            color: #222;
+            font-size: 17px;
+            padding: 0;
+            margin: 0;
+            max-width: 750px;
+            margin: 0 auto;
+            background: #fff;
+        }
+        .article-container {
+            padding: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            color: #000;
+        }
+        .article-meta {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        h2 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #333;
+            border-left: 4px solid #f85959;
+            padding-left: 12px;
+        }
+        h3 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            color: #444;
+        }
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        .highlight-box {
+            background: #f8f9fa;
+            border-left: 3px solid #f85959;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .tip-box {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .warning-box {
+            background: #fff3e0;
+            border-left: 3px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 15px;
+            color: #e83e8c;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 15px;
+        }
+        table th {
+            background: #f85959;
+            color: white;
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+        table td {
+            border: 1px solid #e0e0e0;
+            padding: 10px;
+        }
+        table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        ul, ol {
+            margin-bottom: 15px;
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .rank-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .rank-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .rank-medium {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        .rank-low {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .category-header {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .emoji {
+            font-size: 18px;
+        }
+        .author-info {
+            background: #f8f9fa;
+            padding: 20px;
+            margin-top: 40px;
+            border-radius: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="article-container">
+        <h1>Claude Code CLI完全指南：从入门到精通，90%用户不知道的高效操作技巧</h1>
+
+        <div class="article-meta">
+            <span>发布时间：2026-03-03</span> | <span>阅读时间：约8分钟</span> | <span>分类：技术教程</span>
+        </div>
+
+        <div class="highlight-box">
+            <strong>📌 核心提示：</strong>Claude Code 是 Anthropic 推出的命令行 AI 编程助手，掌握快捷键和斜杠命令可以大幅提升开发效率。本文将帮你快速掌握核心操作，覆盖90%的日常使用场景！
+        </div>
+
+        <h2><span class="emoji">🎯</span> 一、先搞懂三个核心概念</h2>
+
+        <p>很多新手容易混淆这三个概念，先明确一下：</p>
+
+        <ul>
+            <li><strong>快捷键：</strong>键盘组合键（如 Ctrl+C），按下立即生效，不需要回车</li>
+            <li><strong>斜杠命令：</strong>以 / 开头的文本命令（如 /help），输入后需要按回车执行</li>
+            <li><strong>特殊前缀：</strong>!/@/#/& 等符号开头的快捷输入方式，触发特定功能</li>
+        </ul>
+
+        <div class="tip-box">
+            <strong>💡 记忆技巧：</strong>快捷键像"一键触发"，斜杠命令像"程序指令"，特殊前缀像"快捷方式"
+        </div>
+
+        <h2><span class="emoji">🔥</span> 二、使用频率 TOP 15 榜单（必看）</h2>
+
+        <p>我根据日常使用经验，统计了最常用的15个操作。掌握前8个就能覆盖90%的使用场景！</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th width="60">排名</th>
+                    <th width="150">操作</th>
+                    <th>功能说明</th>
+                    <th width="80">频率</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="4" class="category-header">⌨️ 键盘快捷键部分</td>
+                </tr>
+                <tr>
+                    <td><strong>1</strong></td>
+                    <td><code>Ctrl+C</code></td>
+                    <td><strong>取消当前输入或停止生成</strong><br><small>Claude回复太长需要中断、生成方向错误时立即停止</small></td>
+                    <td><span class="rank-tag rank-high">极高</span></td>
+                </tr>
+                <tr>
+                    <td><strong>2</strong></td>
+                    <td><code>↑ / ↓</code></td>
+                    <td><strong>导航命令历史</strong><br><small>重复执行之前的命令、查看之前输入的提示词</small></td>
+                    <td><span class="rank-tag rank-high">极高</span></td>
+                </tr>
+                <tr>
+                    <td><strong>3</strong></td>
+                    <td><code>\ + Enter</code></td>
+                    <td><strong>多行输入（换行）</strong><br><small>输入复杂的提示词需要换行、所有终端通用</small></td>
+                    <td><span class="rank-tag rank-high">极高</span></td>
+                </tr>
+                <tr>
+                    <td><strong>6</strong></td>
+                    <td><code>Ctrl+L</code></td>
+                    <td><strong>清除终端屏幕（保留对话历史）</strong><br><small>屏幕太乱需要清理、想清空终端但不想丢失对话上下文</small></td>
+                    <td><span class="rank-tag rank-medium">高</span></td>
+                </tr>
+                <tr>
+                    <td><strong>7</strong></td>
+                    <td><code>Ctrl+R</code></td>
+                    <td><strong>反向搜索命令历史</strong><br><small>想找之前执行的某个命令但记不清内容</small></td>
+                    <td><span class="rank-tag rank-medium">高</span></td>
+                </tr>
+                <tr>
+                    <td><strong>10</strong></td>
+                    <td><code>Shift+Tab</code></td>
+                    <td><strong>切换权限模式</strong><br><small>在自动接受、计划模式、普通模式之间循环切换</small></td>
+                    <td><span class="rank-tag rank-medium">中高</span></td>
+                </tr>
+                <tr>
+                    <td><strong>11</strong></td>
+                    <td><code>Ctrl+O</code></td>
+                    <td><strong>切换详细输出模式</strong><br><small>调试时想看Claude内部思考过程</small></td>
+                    <td><span class="rank-tag rank-medium">中高</span></td>
+                </tr>
+                <tr>
+                    <td colspan="4" class="category-header">💬 斜杠命令部分（需回车）</td>
+                </tr>
+                <tr>
+                    <td><strong>4</strong></td>
+                    <td><code>/help</code></td>
+                    <td><strong>显示帮助信息</strong><br><small>忘记命令时查看、新手入门必用</small></td>
+                    <td><span class="rank-tag rank-high">极高</span></td>
+                </tr>
+                <tr>
+                    <td><strong>5</strong></td>
+                    <td><code>/clear</code></td>
+                    <td><strong>清除对话历史</strong><br><small>开启新话题、清除上下文限制</small></td>
+                    <td><span class="rank-tag rank-high">极高</span></td>
+                </tr>
+                <tr>
+                    <td><strong>8</strong></td>
+                    <td><code>/compact</code></td>
+                    <td><strong>压缩对话历史</strong><br><small>对话太长时压缩上下文、节省token</small></td>
+                    <td><span class="rank-tag rank-medium">高</span></td>
+                </tr>
+                <tr>
+                    <td><strong>12</strong></td>
+                    <td><code>/commit</code></td>
+                    <td><strong>创建Git提交</strong><br><small>自动生成commit message并提交代码</small></td>
+                    <td><span class="rank-tag rank-medium">中高</span></td>
+                </tr>
+                <tr>
+                    <td><strong>13</strong></td>
+                    <td><code>/config</code></td>
+                    <td><strong>打开配置面板</strong><br><small>修改设置、切换模型、调整权限模式</small></td>
+                    <td><span class="rank-tag rank-medium">中</span></td>
+                </tr>
+                <tr>
+                    <td><strong>14</strong></td>
+                    <td><code>/terminal-setup</code></td>
+                    <td><strong>配置终端快捷键</strong><br><small>启用Shift+Enter多行输入、首次使用必选</small></td>
+                    <td><span class="rank-tag rank-low">低（仅一次）</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="highlight-box">
+            <strong>📚 学习建议：</strong>优先掌握前8个操作（Ctrl+C、↑/↓、\+Enter、/help、/clear、Ctrl+L、Ctrl+R、/compact），它们能覆盖90%的日常使用场景！
+        </div>
+
+        <h2><span class="emoji">⌨️</span> 三、键盘快捷键完整清单</h2>
+
+        <h3>1. 常规控制</h3>
+        <ul>
+            <li><code>Ctrl+C</code> - 取消当前输入或生成</li>
+            <li><code>Ctrl+D</code> - 退出Claude Code</li>
+            <li><code>Ctrl+L</code> - 清屏（保留历史）</li>
+            <li><code>?</code> - 查看可用快捷键</li>
+        </ul>
+
+        <h3>2. 历史与搜索</h3>
+        <ul>
+            <li><code>↑ / ↓</code> - 导航命令历史</li>
+            <li><code>Ctrl+R</code> - 反向搜索历史</li>
+        </ul>
+
+        <h3>3. 模式切换</h3>
+        <ul>
+            <li><code>Shift+Tab</code> - 切换权限模式</li>
+            <li><code>Alt+M</code> - 切换权限模式（备选）</li>
+            <li><code>Tab</code> - 切换扩展思考模式</li>
+            <li><code>Ctrl+O</code> - 切换详细输出模式</li>
+            <li><code>Esc+Esc</code> - 回退代码/对话</li>
+        </ul>
+
+        <h3>4. 多行输入方法对比</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>快捷键</th>
+                    <th>适用环境</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>\ + Enter</code></td>
+                    <td><strong>所有终端</strong></td>
+                    <td>最通用的方式，推荐</td>
+                </tr>
+                <tr>
+                    <td><code>Option+Enter</code></td>
+                    <td>macOS默认</td>
+                    <td>macOS上的默认设置</td>
+                </tr>
+                <tr>
+                    <td><code>Shift+Enter</code></td>
+                    <td>需配置</td>
+                    <td>运行/terminal-setup后可用</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2><span class="emoji">💬</span> 四、斜杠命令完整清单</h2>
+
+        <p>斜杠命令需要输入完整命令后按回车执行，不同于快捷键。以下是常用命令分类：</p>
+
+        <h3>1. 基础命令（高频使用）</h3>
+        <ul>
+            <li><code>/help</code> - 显示帮助信息</li>
+            <li><code>/clear</code> - 清除对话历史</li>
+            <li><code>/exit</code> - 退出Claude Code</li>
+            <li><code>/compact</code> - 压缩对话历史</li>
+        </ul>
+
+        <h3>2. 项目管理</h3>
+        <ul>
+            <li><code>/init</code> - 初始化项目配置</li>
+            <li><code>/add-dir</code> - 添加工作目录</li>
+            <li><code>/commit</code> - 创建Git提交</li>
+        </ul>
+
+        <h3>3. 配置管理</h3>
+        <ul>
+            <li><code>/config</code> - 打开配置面板</li>
+            <li><code>/model</code> - 切换AI模型</li>
+            <li><code>/keybindings</code> - 打开快捷键配置</li>
+            <li><code>/terminal-setup</code> - 配置终端快捷键</li>
+        </ul>
+
+        <h2><span class="emoji">⚡</span> 五、特殊前缀快捷输入</h2>
+
+        <p>在输入开始时输入这些字符可以触发特殊功能：</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>前缀</th>
+                    <th>功能</th>
+                    <th>示例</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>!</code></td>
+                    <td>Bash模式，直接运行Shell命令</td>
+                    <td><code>ls -la</code></td>
+                </tr>
+                <tr>
+                    <td><code>@</code></td>
+                    <td>文件引用，触发路径自动补全</td>
+                    <td><code>@src/main.ts</code></td>
+                </tr>
+                <tr>
+                    <td><code>#</code></td>
+                    <td>内存快捷方式，添加到CLAUDE.md</td>
+                    <td><code>#always use npm</code></td>
+                </tr>
+                <tr>
+                    <td><code>&</code></td>
+                    <td>后台运行命令</td>
+                    <td><code>&npm run dev</code></td>
+                </tr>
+                <tr>
+                    <td><code>/</code></td>
+                    <td>斜杠命令（见上面章节）</td>
+                    <td><code>/help</code></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2><span class="emoji">⚠️</span> 六、重要注意事项</h2>
+
+        <div class="warning-box">
+            <h4>macOS用户注意</h4>
+            <p>macOS用户需要在终端中将<strong>Option键配置为Meta键</strong>，才能使用Alt+B、Alt+F等文本编辑快捷键。</p>
+        </div>
+
+        <div class="warning-box">
+            <h4>Shift+Enter配置</h4>
+            <p>如果你使用VS Code Terminal、Alacritty、Zed或Warp，需要先运行<code>/terminal-setup</code>命令安装键位绑定。</p>
+        </div>
+
+        <div class="highlight-box">
+            <strong>自定义快捷键：</strong>运行<code>/keybindings</code>命令可以创建或编辑配置文件。修改配置后会自动热重载，无需重启。
+        </div>
+
+        <div class="highlight-box">
+            <strong>查看可用快捷键：</strong>在Claude Code中按<strong>?</strong>可以查看当前环境中可用的所有快捷键。快捷键可能因平台和终端而异。
+        </div>
+
+        <h2><span class="emoji">📚</span> 七、7天学习路径规划</h2>
+
+        <ol>
+            <li><strong>第1天：</strong>掌握Ctrl+C、↑/↓、\+Enter（最常用快捷键）</li>
+            <li><strong>第2天：</strong>学习/help、/clear（高频斜杠命令）</li>
+            <li><strong>第3-4天：</strong>学习Ctrl+L、Ctrl+R、Shift+Tab（提升效率）</li>
+            <li><strong>第5-7天：</strong>掌握/compact、Ctrl+O、Esc+Esc（进阶功能）</li>
+            <li><strong>第2周：</strong>学习特殊前缀（!/@/#/&）、文本编辑快捷键</li>
+            <li><strong>高级阶段：</strong>自定义快捷键、Vim模式（专家级）</li>
+        </ol>
+
+        <div class="highlight-box">
+            <h3 style="margin-top: 0;">🎯 掌握程度自测</h3>
+            <p>✅ <strong>入门级别：</strong>掌握前3个快捷键 + /help、/clear</p>
+            <p>✅ <strong>熟练级别：</strong>掌握前8个操作（TOP 15榜单）</p>
+            <p>✅ <strong>专家级别：</strong>掌握所有快捷键 + 常用斜杠命令 + 特殊前缀</p>
+        </div>
+
+        <h2><span class="emoji">💡</span> 八、实战技巧分享</h2>
+
+        <h3>1. 提升效率的黄金组合</h3>
+        <ul>
+            <li><strong>Ctrl+R + 关键词</strong> - 快速找到历史命令</li>
+            <li><strong>@文件路径 + Tab</strong> - 自动补全文件路径</li>
+            <li><strong>/commit</strong> - 自动生成规范的Git提交信息</li>
+        </ul>
+
+        <h3>2. 新手常见误区</h3>
+        <ul>
+            <li><strong>误区：</strong>以为斜杠命令需要快捷键触发<br><strong>真相：</strong>直接输入命令+回车即可</li>
+            <li><strong>误区：</strong>不知道多行输入怎么换行<br><strong>真相：</strong>使用\+Enter（所有终端通用）</li>
+            <li><strong>误区：</strong>对话太长不知道怎么办<br><strong>真相：</strong>使用/compact压缩上下文</li>
+        </ul>
+
+        <h3>3. 高级技巧</h3>
+        <ul>
+            <li>使用<code>#always use npm</code>可以让Claude记住你的偏好</li>
+            <li>使用<code>&</code>前缀可以后台运行开发服务器</li>
+            <li>使用<code>!</code>前缀快速执行Shell命令而不退出对话</li>
+        </ul>
+
+        <h2><span class="emoji">🎓</span> 九、总结</h2>
+
+        <p>Claude Code的强大之处在于它能显著提升编程效率，但前提是你必须熟练掌握各种快捷操作。通过本文的学习，你应该已经掌握了：</p>
+
+        <ul>
+            <li>✅ 核心快捷键和斜杠命令的区别</li>
+            <li>✅ 15个最常用操作的使用场景</li>
+            <li>✅ 特殊前缀的强大功能</li>
+            <li>✅ 系统的学习路径规划</li>
+        </ul>
+
+        <p><strong>最后建议：</strong>不要试图一次性记住所有快捷键，按照7天学习路径循序渐进，每天掌握几个高频操作，一周后你就会发现开发效率有了明显提升！</p>
+
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+
+        <div class="author-info">
+            <p style="margin: 0; font-weight: bold; font-size: 16px;">关于作者</p>
+            <p style="margin: 5px 0 0; color: #666; font-size: 14px;">AI编程工具研究者，专注于提升开发者效率。欢迎点赞、收藏、转发，如有疑问欢迎在评论区讨论！</p>
+        </div>
+
+        <p style="text-align: center; color: #999; font-size: 13px; margin-top: 30px;">
+            本文首发于今日头条 | 未经授权禁止转载 | 最后更新：2026-03-03
+        </p>
+    </div>
+</body>
+</html>

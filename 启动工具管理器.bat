@@ -1,21 +1,9 @@
 @echo off
-chcp 65001 >nul
 cd /d "%~dp0"
-
-echo ================================================================================
-echo                    [AI文章工具管理器 - Web界面]
-echo ================================================================================
-echo.
-echo 当前目录: %cd%
-echo 启动Web管理界面: http://localhost:5000
-echo ================================================================================
-echo.
-echo [提示] Web服务器启动后,会自动在浏览器中打开管理界面
-echo [提示] 关闭此窗口将停止服务器
-echo.
-echo ================================================================================
-echo.
-
-start "" http://localhost:5000
+echo Starting Tool Manager...
 start /min python tool_manager.py
+ping 127.0.0.1 -n 4 >nul
+start "" http://localhost:5001
+echo Server started. Browser opened.
+timeout /t 2 >nul
 exit

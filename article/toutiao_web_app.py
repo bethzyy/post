@@ -649,6 +649,37 @@ def stream_generator(gen, params):
 
     def run_generation():
         try:
+            # 创建日志文件
+            log_file = Path(__file__).parent / f'debug_log_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
+
+            def log_to_file(message):
+                """同时输出到文件和控制台"""
+                timestamp = datetime.now().strftime('%H:%M:%S')
+                log_message = f"[{timestamp}] {message}\n"
+                with open(log_file, 'a', encoding='utf-8') as f:
+                    f.write(log_message)
+
+            # ========== 输出所有接收到的参数到文件和浏览器 ==========
+            log_to_file("=" * 60)
+            log_to_file("[PARAMS] 接收到的完整参数:")
+            log_to_file(f"[PARAMS] mode = {params.get('mode')}")
+            log_to_file(f"[PARAMS] theme = {params.get('theme')}")
+            log_to_file(f"[PARAMS] draft_path = {params.get('draft_path')}")
+            log_to_file(f"[PARAMS] length = {params.get('length')}")
+            log_to_file(f"[PARAMS] style = {params.get('style')}")
+            log_to_file(f"[PARAMS] image_count = {params.get('image_count')}")
+            log_to_file(f"[PARAMS] image_style = {params.get('image_style')}")
+            log_to_file(f"[PARAMS] collaborative = {params.get('collaborative')}")
+            log_to_file(f"[PARAMS] max_rounds = {params.get('max_rounds')}")
+            log_to_file("=" * 60)
+
+            # 同时输出到浏览器控制台
+            output_queue.put(('log', 'info', "=" * 60))
+            output_queue.put(('log', 'info', f"[PARAMS] mode={params.get('mode')}, image_count={params.get('image_count')}, draft_path={params.get('draft_path')}"))
+            output_queue.put(('log', 'info', f"[LOG] 详细日志已保存到: {log_file.name}"))
+            output_queue.put(('log', 'info', "=" * 60))
+            # ============================================
+
             # 获取文风描述 - 如果有自定义文风则使用，否则使用默认值
             style = params.get('style', '').strip()
             if not style:
@@ -734,16 +765,36 @@ def stream_generator(gen, params):
             # 生成配图
             images = []
             image_count = int(params.get('image_count', 0) or 0)
+
+            log_to_file(f"[IMAGE GEN] 开始配图生成流程")
+            log_to_file(f"[IMAGE GEN] image_count原始值 = {params.get('image_count')}")
+            log_to_file(f"[IMAGE GEN] image_count转换后 = {image_count}")
+            log_to_file(f"[IMAGE GEN] image_style = {params.get('image_style', 'realistic')}")
+
             print(f"[SERVER DEBUG] image_count = {image_count}, raw = {params.get('image_count')}")
             output_queue.put(('log', 'info', f'[DEBUG] image_count = {image_count}'))
+
             if image_count > 0:
+                # 详细参数输出到浏览器控制台
+                output_queue.put(('log', 'info', f'[DEBUG] 准备生成图片...'))
+                output_queue.put(('log', 'info', f'[DEBUG] 图片数量: {image_count}'))
+                output_queue.put(('log', 'info', f'[DEBUG] 文章主题: {params.get("theme", result["title"])[:50]}...'))
+                output_queue.put(('log', 'info', f'[DEBUG] 文章字数: {len(result["content"])}'))
+                output_queue.put(('log', 'info', f'[DEBUG] 配图风格: {params.get("image_style", "realistic")}'))
+
                 output_queue.put(('log', 'info', f'开始生成{image_count}张配图...'))
+                log_to_file(f"[IMAGE GEN] 调用 generate_article_images(), num_images={image_count}")
+
                 images = gen.generate_article_images(
                     theme=params.get('theme', result['title']),
                     article_content=result['content'],
                     image_style=params.get('image_style', 'realistic'),
                     num_images=image_count
                 )
+
+                log_to_file(f"[IMAGE GEN] generate_article_images() 返回, 结果数量 = {len(images)}")
+                output_queue.put(('log', 'info', f'[DEBUG] 实际生成 {len(images)} 张图片'))
+
                 if images:
                     output_queue.put(('log', 'success', f'配图生成完成，共{len(images)}张'))
 
@@ -847,7 +898,9 @@ def view_article(filename):
     """查看生成的文章"""
     article_dir = Path(__file__).parent
     from flask import send_from_directory
-    return send_from_directory(article_dir, filename)
+    response = send_from_directory(article_dir, filename)
+    response.headers['Content-Disposition'] = 'inline'
+    return response
 
 
 def main():
@@ -856,7 +909,7 @@ def main():
     print("                    今日头条文章生成器 - Web版 V1.0")
     print("=" * 80)
     print()
-    print("启动Web服务器: http://localhost:5010")
+    print("启动Web服务器: http://localhost:5014")
     print("请在浏览器中打开上述地址")
     print()
     print("功能特性:")
@@ -867,7 +920,7 @@ def main():
     print("=" * 80)
     print()
 
-    app.run(host='0.0.0.0', port=5010, debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=5014, debug=False, threaded=True)
 
 
 if __name__ == '__main__':

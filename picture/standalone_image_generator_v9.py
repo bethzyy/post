@@ -1,9 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-AI图像生成器 - Web版 V9.7 (7级Fallback链)
+AI图像生成器 - Web版 V9.8 (8级Fallback链)
 支持主题输入或参考图片,多种画图风格选择
-支持多模型自动切换:Seedream 5.0 -> 4.5 -> 4.0 -> 3.0 -> Antigravity -> CogView -> Pollinations
+支持多模型自动切换 (与 image-gen v2.1.1 一致):
+Gemini -> Antigravity -> Seedream 5.0 -> 4.5 -> 4.0 -> 3.0 -> CogView -> Pollinations
+
+V9.8改进(2026-03-04):
+  ✅ 升级为8级Fallback链 (与 image-gen v2.1.1 一致):
+     1. Gemini 3 Flash Image (最快且质量最高，单独提取到第1级)
+     2. Antigravity (Flux 1.1 Pro → Flux Schnell → DALL-E 3, 不包括 Gemini)
+     3. Seedream 5.0 -> 4. Seedream 4.5 -> 5. Seedream 4.0
+     6. Seedream 3.0 t2i -> 7. CogView-3-flash -> 8. Pollinations
 
 V9.7改进(2026-03-01):
   ✅ 新增Seedream 5.0 (doubao-seedream-5-0-260128) - 最新版本
@@ -353,6 +361,82 @@ def generate_with_antigravity(prompt, output_path, style_name):
         return False, f"Antigravity生成失败: {str(e)}", "unknown"
 
 
+def generate_with_antigravity_no_gemini(prompt, output_path, style_name):
+    """使用Antigravity图像模型生成图像 (不包括 Gemini)
+
+    Gemini 已在第1级单独尝试，这里跳过 Gemini
+
+    Args:
+        prompt: 文本提示词(已包含风格信息)
+        output_path: 输出文件路径
+        style_name: 风格名称
+
+    Returns:
+        (success, message, model_used)
+    """
+    try:
+        client = get_antigravity_client()
+        if not client:
+            logging.error("[Antigravity] 客户端未配置")
+            return False, "Antigravity客户端未配置", "unknown"
+
+        logging.info("[Antigravity] 正在尝试备选图像模型 (不包括 Gemini)...")
+
+        # 跳过第一个模型 (Gemini)，从第二个开始
+        for model_id, model_name, model_desc in ANTIGRAVITY_IMAGE_MODELS[1:]:
+            try:
+                logging.info(f"[Antigravity] 尝试模型: {model_name} ({model_id})")
+
+                response = client.images.generate(
+                    model=model_id,
+                    prompt=prompt,
+                    size="1024x1024"
+                )
+
+                if response.data and len(response.data) > 0:
+                    image_url = response.data[0].url
+
+                    logging.info(f"[Antigravity] 获取图片URL: {image_url[:50]}...")
+
+                    # 下载图片
+                    img_response = requests.get(image_url, timeout=60)
+                    if img_response.status_code == 200:
+                        with open(output_path, 'wb') as f:
+                            f.write(img_response.content)
+                        logging.info(f"[✓] Antigravity图片已保存: {output_path}")
+                        logging.info(f"[✓] 使用模型: {model_name}")
+                        return True, f"成功生成(使用{model_name}): {output_path}", f"antigravity-{model_id}"
+                    else:
+                        logging.warning(f"[Antigravity] 下载失败: HTTP {img_response.status_code}")
+                        continue
+                else:
+                    logging.warning(f"[Antigravity] {model_name} 返回空响应")
+                    continue
+
+            except Exception as e:
+                error_str = str(e)
+                # 检查是否是配额问题
+                if "429" in error_str or "quota" in error_str.lower() or "limit" in error_str.lower():
+                    logging.warning(f"[Antigravity] {model_name} 配额已用尽,尝试下一个模型...")
+                    continue
+                elif "404" in error_str or "NOT_FOUND" in error_str:
+                    logging.warning(f"[Antigravity] {model_name} 模型未找到,尝试下一个...")
+                    continue
+                else:
+                    logging.warning(f"[Antigravity] {model_name} 生成失败: {error_str[:100]}")
+                    continue
+
+        # 所有模型都失败
+        logging.error("[Antigravity] 所有备选模型都不可用")
+        return False, "所有图像模型配额已用尽", "unknown"
+
+    except Exception as e:
+        logging.error(f"[Antigravity] 错误: {str(e)}")
+        import traceback
+        logging.debug(traceback.format_exc())
+        return False, f"Antigravity生成失败: {str(e)}", "unknown"
+
+
 def generate_with_cogview(prompt, output_path, style_name):
     """使用智谱AI CogView-3-flash生成图像
 
@@ -490,16 +574,17 @@ def generate_with_pollinations(prompt, output_path, style_name):
 
 
 def generate_image_with_fallback(prompt, reference_image_path, output_path, style_name):
-    """智能图像生成: 7级Fallback链
+    """智能图像生成: 8级Fallback链 (与 image-gen v2.1.1 一致)
 
-    Fallback优先级 (V9.7):
-    1. Seedream 5.0 (doubao-seedream-5-0-260128) - 最新版本
-    2. Seedream 4.5 (doubao-seedream-4-5-251128) - 高质量
-    3. Seedream 4.0 (doubao-seedream-4-0-250828) - 稳定版本
-    4. Seedream 3.0 t2i (doubao-seedream-3-0-t2i-250415) - 免费版本
-    5. Antigravity: Gemini 3 Flash Image -> Flux 1.1 Pro -> Flux Schnell -> DALL-E 3
-    6. CogView-3-flash (智谱AI免费模型)
-    7. Pollinations (免费公开服务)
+    Fallback优先级 (V9.8):
+    1. Gemini 3 Flash Image (Google, 最快且质量最高)
+    2. Antigravity: Flux 1.1 Pro -> Flux Schnell -> DALL-E 3 (不包括 Gemini)
+    3. Seedream 5.0 (doubao-seedream-5-0-260128) - 最新版本
+    4. Seedream 4.5 (doubao-seedream-4-5-251128) - 高质量
+    5. Seedream 4.0 (doubao-seedream-4-0-250828) - 稳定版本
+    6. Seedream 3.0 t2i (doubao-seedream-3-0-t2i-250415) - 免费版本
+    7. CogView-3-flash (智谱AI免费模型)
+    8. Pollinations (免费公开服务)
 
     Args:
         prompt: 文本提示词
@@ -512,8 +597,40 @@ def generate_image_with_fallback(prompt, reference_image_path, output_path, styl
     """
     last_error = ""
 
-    # 1. 尝试 Seedream 5.0 (最新)
-    logging.info("[Fallback 1/7] 尝试 Seedream 5.0...")
+    # 1. 尝试 Gemini 3 Flash Image (最快且质量最高) - 单独提取到第1级
+    logging.info("[Fallback 1/8] 尝试 Gemini 3 Flash Image...")
+    try:
+        client = get_antigravity_client()
+        if client:
+            response = client.images.generate(
+                model="gemini-3-flash-image",
+                prompt=prompt,
+                size="1024x1024"
+            )
+            if response.data and len(response.data) > 0:
+                img_url = response.data[0].url
+                img_response = requests.get(img_url, timeout=60)
+                if img_response.status_code == 200:
+                    with open(output_path, 'wb') as f:
+                        f.write(img_response.content)
+                    logging.info(f"[✓] Gemini 3 Flash Image 图片已保存: {output_path}")
+                    return True, f"成功生成(使用 Gemini 3 Flash Image): {output_path}", "gemini-3-flash-image"
+        last_error = "Gemini 3 Flash Image: 生成失败"
+        logging.warning(f"[Fallback 1/8 失败] {last_error}")
+    except Exception as e:
+        last_error = f"Gemini 3 Flash Image: {str(e)[:60]}"
+        logging.warning(f"[Fallback 1/8 失败] {last_error}")
+
+    # 2. 尝试 Antigravity (不包括 Gemini，已在第1级尝试)
+    logging.info("[Fallback 2/8] 尝试 Antigravity备选模型...")
+    success, message, model_used = generate_with_antigravity_no_gemini(prompt, output_path, style_name)
+    if success:
+        return success, message, model_used
+    last_error = f"Antigravity: {message}"
+    logging.warning(f"[Fallback 2/8 失败] {message}")
+
+    # 3. 尝试 Seedream 5.0 (最新)
+    logging.info("[Fallback 3/8] 尝试 Seedream 5.0...")
     success, message, model_used = generate_with_seedream(
         prompt, reference_image_path, output_path, style_name,
         model_version="doubao-seedream-5-0-260128"
@@ -521,10 +638,10 @@ def generate_image_with_fallback(prompt, reference_image_path, output_path, styl
     if success:
         return success, message, model_used
     last_error = f"Seedream 5.0: {message}"
-    logging.warning(f"[Fallback 1/7 失败] {message}")
+    logging.warning(f"[Fallback 3/8 失败] {message}")
 
-    # 2. 尝试 Seedream 4.5
-    logging.info("[Fallback 2/7] 尝试 Seedream 4.5...")
+    # 4. 尝试 Seedream 4.5
+    logging.info("[Fallback 4/8] 尝试 Seedream 4.5...")
     success, message, model_used = generate_with_seedream(
         prompt, reference_image_path, output_path, style_name,
         model_version="doubao-seedream-4-5-251128"
@@ -532,10 +649,10 @@ def generate_image_with_fallback(prompt, reference_image_path, output_path, styl
     if success:
         return success, message, model_used
     last_error = f"Seedream 4.5: {message}"
-    logging.warning(f"[Fallback 2/7 失败] {message}")
+    logging.warning(f"[Fallback 4/8 失败] {message}")
 
-    # 3. 尝试 Seedream 4.0
-    logging.info("[Fallback 3/7] 尝试 Seedream 4.0...")
+    # 5. 尝试 Seedream 4.0
+    logging.info("[Fallback 5/8] 尝试 Seedream 4.0...")
     success, message, model_used = generate_with_seedream(
         prompt, reference_image_path, output_path, style_name,
         model_version="doubao-seedream-4-0-250828"
@@ -543,10 +660,10 @@ def generate_image_with_fallback(prompt, reference_image_path, output_path, styl
     if success:
         return success, message, model_used
     last_error = f"Seedream 4.0: {message}"
-    logging.warning(f"[Fallback 3/7 失败] {message}")
+    logging.warning(f"[Fallback 5/8 失败] {message}")
 
-    # 4. 尝试 Seedream 3.0 t2i (免费)
-    logging.info("[Fallback 4/7] 尝试 Seedream 3.0 t2i...")
+    # 6. 尝试 Seedream 3.0 t2i (免费)
+    logging.info("[Fallback 6/8] 尝试 Seedream 3.0 t2i...")
     success, message, model_used = generate_with_seedream(
         prompt, reference_image_path, output_path, style_name,
         model_version="doubao-seedream-3-0-t2i-250415"
@@ -554,26 +671,18 @@ def generate_image_with_fallback(prompt, reference_image_path, output_path, styl
     if success:
         return success, message, model_used
     last_error = f"Seedream 3.0 t2i: {message}"
-    logging.warning(f"[Fallback 4/7 失败] {message}")
+    logging.warning(f"[Fallback 6/8 失败] {message}")
 
-    # 5. Fallback到Antigravity
-    logging.info("[Fallback 5/7] 尝试 Antigravity备选模型...")
-    success, message, model_used = generate_with_antigravity(prompt, output_path, style_name)
-    if success:
-        return success, message, model_used
-    last_error = f"Antigravity: {message}"
-    logging.warning(f"[Fallback 5/7 失败] {message}")
-
-    # 6. 尝试 CogView-3-flash
-    logging.info("[Fallback 6/7] 尝试 CogView-3-flash...")
+    # 7. 尝试 CogView-3-flash
+    logging.info("[Fallback 7/8] 尝试 CogView-3-flash...")
     success, message, model_used = generate_with_cogview(prompt, output_path, style_name)
     if success:
         return success, message, model_used
     last_error = f"CogView-3-flash: {message}"
-    logging.warning(f"[Fallback 6/7 失败] {message}")
+    logging.warning(f"[Fallback 7/8 失败] {message}")
 
-    # 7. 最后尝试 Pollinations
-    logging.info("[Fallback 7/7] 尝试 Pollinations免费服务...")
+    # 8. 最后尝试 Pollinations
+    logging.info("[Fallback 8/8] 尝试 Pollinations免费服务...")
     success, message, model_used = generate_with_pollinations(prompt, output_path, style_name)
     if success:
         return success, message, model_used
@@ -844,7 +953,7 @@ def api_save_image():
 def main():
     """主函数"""
     print("\n" + "="*80)
-    print("                    AI图像生成器 - Web版 V9.7 (7级Fallback链)")
+    print("                    AI图像生成器 - Web版 V9.8 (8级Fallback链)")
     print("="*80)
     print()
     print("启动Web服务器: http://localhost:5009")
@@ -856,6 +965,17 @@ def main():
     print("  🎨 多种画图风格选择")
     print("  🤖 多模型自动切换")
     print()
+    print("V9.8更新(2026-03-04):")
+    print("  ✅ 升级为8级Fallback链 (与 image-gen v2.1.1 一致):")
+    print("     1. Gemini 3 Flash Image (Google, 最快且质量最高)")
+    print("     2. Antigravity (Flux/DALL-E, 不包括 Gemini)")
+    print("     3. Seedream 5.0 (火山引擎最新)")
+    print("     4. Seedream 4.5 (火山引擎)")
+    print("     5. Seedream 4.0 (火山引擎)")
+    print("     6. Seedream 3.0 t2i (火山引擎免费)")
+    print("     7. CogView-3-flash (智谱AI)")
+    print("     8. Pollinations (免费服务)")
+    print()
     print("V9.7更新(2026-03-01):")
     print("  ✅ 新增Seedream 5.0 (doubao-seedream-5-0-260128)")
     print("  ✅ Fallback优先级 (7级):")
@@ -866,9 +986,6 @@ def main():
     print("     5. Antigravity: Gemini/Flux/DALL-E")
     print("     6. CogView-3-flash (智谱AI)")
     print("     7. Pollinations (免费服务)")
-    print()
-    print("V9.6更新(2026-03-01):")
-    print("  ✅ 新增Seedream 3.0 t2i备选")
     print("="*80)
     print()
     print("💡 调试提示:")

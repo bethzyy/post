@@ -20,7 +20,7 @@ ENV/
 *.swp
 *.swo
 
-# 生成可执行文件
+# 生成可执行文�?
 *.exe
 
 # 生成的图片和测试输出
@@ -34,3 +34,9 @@ picture/test_*.png
 .DS_Store
 
 nul
+
+# Claude Code 本地配置
+.claude/settings.local.json
+
+
+

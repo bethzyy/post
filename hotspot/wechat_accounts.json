@@ -1,0 +1,11 @@
+{
+  "accounts": [
+    {"name": "新智元", "keywords": ["新智元", "AI_era"]},
+    {"name": "GitHubDaily", "keywords": ["GitHubDaily"]},
+    {"name": "宝玉AI", "keywords": ["宝玉AI", "baoyuai"]},
+    {"name": "机器之心", "keywords": ["机器之心", "jiqizhixin"]},
+    {"name": "夕小瑶科技说", "keywords": ["夕小瑶", "xixiaoyao"]}
+  ],
+  "manual_links": {
+  }
+}

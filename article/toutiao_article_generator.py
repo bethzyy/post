@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-今日头条高赞文章生成器 v3.8 - 7级图像Fallback版
+今日头条高赞文章生成器 v3.9 - 8级图像Fallback版
 支持用户输入自定义主题,使用AI生成高质量文章
-新增: 自动生成配图功能 (7级Fallback)
+新增: 自动生成配图功能 (8级Fallback)
+
+v3.9更新(2026-03-04):
+  ✅ 图像生成升级为8级Fallback链 (与 image-gen v2.1.1 一致):
+     1. Gemini 3 Flash Image (最快且质量最高)
+     2. Antigravity (Flux 1.1 Pro → Flux Schnell → DALL-E 3, 不包括 Gemini)
+     3. Seedream 5.0 → 4. Seedream 4.5 → 5. Seedream 4.0
+     6. Seedream 3.0 t2i → 7. CogView-3-flash → 8. Pollinations
 
 v3.8更新(2026-03-01):
   ✅ 图像生成升级为7级Fallback链:
@@ -52,6 +59,23 @@ import time
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config import get_zhipu_anthropic_client, get_antigravity_client, get_volcano_client
+
+
+def safe_print_text(text, max_length=100):
+    """
+    过滤emoji和特殊字符，防止Windows GBK编码错误
+
+    Args:
+        text: 原始文本
+        max_length: 最大长度
+
+    Returns:
+        str: 安全的文本（仅包含GBK可编码字符）
+    """
+    # 过滤emoji和非GBK字符
+    safe_text = ''.join(c for c in text if ord(c) < 0x10000 or c in '，。！？、；：""''（）【】《》')
+    # 限制长度
+    return safe_text[:max_length]
 
 
 def ddg_search(query, max_results=5):
@@ -1211,7 +1235,7 @@ class ToutiaoArticleGenerator:
         }
 
     def generate_article_images(self, theme, article_content, image_style="realistic", num_images=3):
-        """根据文章主题和内容生成配图，支持7级Fallback
+        """根据文章主题和内容生成配图，支持8级Fallback
 
         Args:
             theme: 文章主题
@@ -1219,14 +1243,15 @@ class ToutiaoArticleGenerator:
             image_style: 图片风格
             num_images: 配图数量（默认3张）
 
-        7级Fallback优先级 (V9.7):
-        1. Seedream 5.0 (doubao-seedream-5-0-260128) - 最新版本
-        2. Seedream 4.5 (doubao-seedream-4-5-251128)
-        3. Seedream 4.0 (doubao-seedream-4-0-250828)
-        4. Seedream 3.0 t2i (doubao-seedream-3-0-t2i-250415) - 免费版本
-        5. Antigravity: Gemini 3 Flash -> Flux 1.1 Pro -> Flux Schnell -> DALL-E 3
-        6. CogView-3-flash (智谱AI)
-        7. Pollinations (免费服务)
+        8级Fallback优先级 (v3.9 - 与 image-gen v2.1.1 一致):
+        1. Gemini 3 Flash Image (Google, 最快且质量最高)
+        2. Antigravity (Flux 1.1 Pro → Flux Schnell → DALL-E 3, 不包括 Gemini)
+        3. Seedream 5.0 (doubao-seedream-5-0-260128)
+        4. Seedream 4.5 (doubao-seedream-4-5-251128)
+        5. Seedream 4.0 (doubao-seedream-4-0-250828)
+        6. Seedream 3.0 t2i (doubao-seedream-3-0-t2i-250415) - 免费版本
+        7. CogView-3-flash (智谱AI)
+        8. Pollinations (免费服务)
         """
 
         import urllib.parse
@@ -1239,9 +1264,17 @@ class ToutiaoArticleGenerator:
 
         print(f"\n[INFO] Generating {num_images} images for theme: {clean_theme}")
         print(f"[INFO] Image style: {image_style}")
+        print(f"[INFO] Article content length: {len(article_content)} chars")
 
         # 根据文章内容提取关键词生成配图提示词
+        print(f"[INFO] Calling _generate_contextual_prompts with num_images={num_images}")
         image_prompts = self._generate_contextual_prompts(clean_theme, article_content, image_style, num_images)
+        print(f"[INFO] Received {len(image_prompts)} prompts from _generate_contextual_prompts")
+        print(f"[INFO] Expected {num_images} prompts")
+
+        if len(image_prompts) != num_images:
+            print(f"[ERROR] Prompt count mismatch! Expected {num_images}, got {len(image_prompts)}")
+
         generated_images = []
 
         for i, (img_prompt, img_desc) in enumerate(image_prompts, 1):
@@ -1266,10 +1299,54 @@ class ToutiaoArticleGenerator:
                 except Exception as e:
                     print(f"    [WARN] Save failed: {e}")
 
-            # 1. 尝试 Seedream 5.0 (最新)
+            # ========== 8级 Fallback 链开始 ==========
+
+            # 1. 尝试 Gemini 3 Flash Image (最快且质量最高)
+            if not image_generated and self.image_client:
+                try:
+                    print(f"    [1/8] Gemini 3 Flash Image...")
+                    response = self.image_client.images.generate(
+                        model="gemini-3-flash-image",
+                        prompt=img_prompt,
+                        size="1024x1024",
+                        n=1,
+                    )
+                    if hasattr(response, 'data') and len(response.data) > 0:
+                        b64_json = getattr(response.data[0], 'b64_json', None)
+                        if b64_json:
+                            save_image(base64.b64decode(b64_json), "Gemini 3 Flash Image")
+                except Exception as e:
+                    print(f"    [WARN] Gemini 3 Flash: {str(e)[:60]}")
+
+            # 2. 尝试 Antigravity 模型 (不包括 Gemini，已在第1级尝试)
+            if not image_generated and self.image_client:
+                antigravity_models = [
+                    {"model": "flux-1.1-pro", "name": "Flux 1.1 Pro"},
+                    {"model": "flux-schnell", "name": "Flux Schnell"},
+                    {"model": "dall-e-3", "name": "DALL-E 3"},
+                ]
+                for model_info in antigravity_models:
+                    if image_generated:
+                        break
+                    try:
+                        print(f"    [2/8] {model_info['name']}...")
+                        response = self.image_client.images.generate(
+                            model=model_info["model"],
+                            prompt=img_prompt,
+                            size="1024x1024",
+                            n=1,
+                        )
+                        if hasattr(response, 'data') and len(response.data) > 0:
+                            b64_json = getattr(response.data[0], 'b64_json', None)
+                            if b64_json:
+                                save_image(base64.b64decode(b64_json), model_info['name'])
+                    except Exception as e:
+                        print(f"    [SKIP] {model_info['name']}: {str(e)[:40]}")
+
+            # 3. 尝试 Seedream 5.0 (最新)
             if not image_generated and self.volcano_client:
                 try:
-                    print(f"    [1/7] Seedream 5.0...")
+                    print(f"    [3/8] Seedream 5.0...")
                     response = self.volcano_client.images.generate(
                         model="doubao-seedream-5-0-260128",
                         prompt=img_prompt,
@@ -1284,10 +1361,10 @@ class ToutiaoArticleGenerator:
                 except Exception as e:
                     print(f"    [WARN] Seedream 5.0: {str(e)[:60]}")
 
-            # 2. 尝试 Seedream 4.5
+            # 4. 尝试 Seedream 4.5
             if not image_generated and self.volcano_client:
                 try:
-                    print(f"    [2/7] Seedream 4.5...")
+                    print(f"    [4/8] Seedream 4.5...")
                     response = self.volcano_client.images.generate(
                         model="doubao-seedream-4-5-251128",
                         prompt=img_prompt,
@@ -1302,10 +1379,10 @@ class ToutiaoArticleGenerator:
                 except Exception as e:
                     print(f"    [WARN] Seedream 4.5: {str(e)[:60]}")
 
-            # 3. 尝试 Seedream 4.0
+            # 5. 尝试 Seedream 4.0
             if not image_generated and self.volcano_client:
                 try:
-                    print(f"    [3/7] Seedream 4.0...")
+                    print(f"    [5/8] Seedream 4.0...")
                     response = self.volcano_client.images.generate(
                         model="doubao-seedream-4-0-250828",
                         prompt=img_prompt,
@@ -1320,10 +1397,10 @@ class ToutiaoArticleGenerator:
                 except Exception as e:
                     print(f"    [WARN] Seedream 4.0: {str(e)[:60]}")
 
-            # 4. 尝试 Seedream 3.0 t2i (免费)
+            # 6. 尝试 Seedream 3.0 t2i (免费)
             if not image_generated and self.volcano_client:
                 try:
-                    print(f"    [4/7] Seedream 3.0 t2i...")
+                    print(f"    [6/8] Seedream 3.0 t2i...")
                     response = self.volcano_client.images.generate(
                         model="doubao-seedream-3-0-t2i-250415",
                         prompt=img_prompt,
@@ -1338,36 +1415,10 @@ class ToutiaoArticleGenerator:
                 except Exception as e:
                     print(f"    [WARN] Seedream 3.0: {str(e)[:60]}")
 
-            # 5. 尝试 Antigravity 模型
-            if not image_generated and self.image_client:
-                antigravity_models = [
-                    {"model": "gemini-3-flash-image", "name": "Gemini 3 Flash"},
-                    {"model": "flux-1.1-pro", "name": "Flux 1.1 Pro"},
-                    {"model": "flux-schnell", "name": "Flux Schnell"},
-                    {"model": "dall-e-3", "name": "DALL-E 3"},
-                ]
-                for model_info in antigravity_models:
-                    if image_generated:
-                        break
-                    try:
-                        print(f"    [5/7] {model_info['name']}...")
-                        response = self.image_client.images.generate(
-                            model=model_info["model"],
-                            prompt=img_prompt,
-                            size="1024x1024",
-                            n=1,
-                        )
-                        if hasattr(response, 'data') and len(response.data) > 0:
-                            b64_json = getattr(response.data[0], 'b64_json', None)
-                            if b64_json:
-                                save_image(base64.b64decode(b64_json), model_info['name'])
-                    except Exception as e:
-                        print(f"    [SKIP] {model_info['name']}: {str(e)[:40]}")
-
-            # 6. 尝试 CogView-3-flash (智谱AI)
+            # 7. 尝试 CogView-3-flash (智谱AI)
             if not image_generated:
                 try:
-                    print(f"    [6/7] CogView-3-flash...")
+                    print(f"    [7/8] CogView-3-flash...")
                     from config import get_zhipuai_client
                     zhipu_client = get_zhipuai_client()
                     if zhipu_client:
@@ -1384,9 +1435,9 @@ class ToutiaoArticleGenerator:
                 except Exception as e:
                     print(f"    [WARN] CogView: {str(e)[:60]}")
 
-            # 7. 最后备选：Pollinations.ai
+            # 8. 最后备选：Pollinations.ai
             if not image_generated:
-                print(f"    [7/7] Pollinations...")
+                print(f"    [8/8] Pollinations...")
                 try:
                     encoded_prompt = urllib.parse.quote(img_prompt[:200])
                     pollinations_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}"
@@ -1402,7 +1453,7 @@ class ToutiaoArticleGenerator:
         return generated_images
 
     def _generate_contextual_prompts(self, theme, content, style, num_images=3):
-        """使用AI大模型根据文章内容智能生成上下文相关的图片提示词
+        """使用AI大模型根据文章内容智能生成上下文相关的图片提示词（改进版）
 
         Args:
             theme: 文章主题
@@ -1411,102 +1462,131 @@ class ToutiaoArticleGenerator:
             num_images: 需要生成的图片数量
         """
 
+        # 输入参数日志
+        print(f"[DEBUG _generate_contextual_prompts] num_images = {num_images}")
+        print(f"[DEBUG _generate_contextual_prompts] theme = {theme[:50]}...")
+        print(f"[DEBUG _generate_contextual_prompts] style = {style}")
+        print(f"[DEBUG _generate_contextual_prompts] content length = {len(content)}")
+
         # 风格映射
         style_desc = {
             "realistic": "realistic photography, high quality, professional lighting",
             "artistic": "artistic style, creative, elegant composition",
             "cartoon": "cartoon illustration, colorful, friendly style",
             "technical": "technical diagram, flowchart, architecture diagram, clean infographic style",
+            "watercolor": "watercolor painting style, soft and elegant",
+            "ink": "Chinese ink painting style, traditional artistic",
             "auto": "professional quality visualization"
         }.get(style, "realistic photography, high quality")
 
-        # 使用AI生成与内容相关的配图提示词
-        ai_prompt = f"""请根据以下文章内容，为{num_images}张配图生成英文提示词(prompt)。
+        # 将文章分成段落（按双换行符分割）
+        paragraphs = [p.strip() for p in content.split('\n\n') if p.strip()]
+
+        print(f"[DEBUG] Article has {len(paragraphs)} paragraphs, need {num_images} images")
+
+        # 智能选择插入位置：均匀分布在文章中
+        # 如果段落少于图片数，允许重复使用段落
+        insert_positions = []
+
+        if len(paragraphs) == 0:
+            # 没有段落，使用默认位置
+            insert_positions = list(range(num_images))
+        elif num_images <= len(paragraphs):
+            # 图片数 <= 段落数，选择均匀分布的位置
+            if num_images == 1:
+                insert_positions = [len(paragraphs) // 2]
+            elif num_images == 2:
+                insert_positions = [0, len(paragraphs) - 1]
+            else:
+                # 均匀分布
+                for i in range(num_images):
+                    pos = int((i + 1) * len(paragraphs) / (num_images + 1)) - 1
+                    pos = max(0, min(pos, len(paragraphs) - 1))
+                    insert_positions.append(pos)
+        else:
+            # 图片数 > 段落数，循环使用段落
+            for i in range(num_images):
+                pos = i % len(paragraphs)
+                insert_positions.append(pos)
+
+        # 确保位置在有效范围内
+        insert_positions = [max(0, min(p, len(paragraphs) - 1)) for p in insert_positions]
+
+        print(f"[DEBUG] Selected insert positions: {insert_positions}")
+
+        # 为每个选定位置生成提示词
+        image_prompts = []
+
+        for idx, pos in enumerate(insert_positions):
+            paragraph = paragraphs[pos]
+            # 取段落的前200字作为上下文
+            context = paragraph[:200] if len(paragraph) > 200 else paragraph
+
+            print(f"[IMAGE {idx + 1}] Position {pos + 1}/{len(paragraphs)}, context: {safe_print_text(context, 50)}...")
+
+            # 为这个位置生成AI提示词
+            ai_prompt = f"""请根据以下文章段落，生成1个配图的英文提示词。
 
 文章主题: {theme}
 
-文章内容摘要（前1500字）:
-{content[:1500]}
+当前段落内容（用于生成配图）:
+{context}
+
+这是第{idx + 1}张配图，总共需要{num_images}张。
+段落位置: 第{pos + 1}段，共{len(paragraphs)}段
 
 配图风格要求: {style_desc}
 
-请生成{num_images}个配图的英文提示词，要求：
-- 第1张图：概括文章核心概念或主题的场景图
-- 后续图片：展示文章中提到的关键细节、场景或应用
-
-每个提示词要求：
+请生成1个英文提示词，要求：
 - 使用英文，简洁明了（50词以内）
-- 包含具体的视觉元素描述
+- 具体描绘该段落的核心场景或概念
+- 包含视觉元素描述
 - 符合指定的配图风格
-- 与文章段落内容紧密相关
 
-请直接输出{num_images}行，每行一个提示词，格式如下：
-1. [第1张图的英文提示词]
-2. [第2张图的英文提示词]
-...
-"""
+请直接输出1行提示词，不要添加序号。"""
 
-        try:
-            print("[AI] Generating contextual image prompts...")
+            try:
+                # 使用ZhipuAI生成该位置的提示词
+                response = self.text_client.messages.create(
+                    model="glm-4-flash",  # 使用更快的模型
+                    max_tokens=200,
+                    messages=[{"role": "user", "content": ai_prompt}]
+                )
 
-            # 使用ZhipuAI生成提示词
-            response = self.text_client.messages.create(
-                model="glm-4.6",
-                max_tokens=500,
-                messages=[{"role": "user", "content": ai_prompt}]
-            )
+                ai_response = response.content[0].text.strip()
+                print(f"[AI] Response for image {idx + 1}: {safe_print_text(ai_response, 80)}...")
 
-            ai_response = response.content[0].text.strip()
-            print(f"[AI] Response received: {ai_response[:100]}...")
-
-            # 解析AI返回的3个提示词
-            lines = ai_response.strip().split('\n')
-            prompts = []
-
-            for line in lines:
-                # 移除行号前缀（如 "1. ", "2. ", "3. "）
-                cleaned = re.sub(r'^\d+\.\s*', '', line).strip()
+                # 清理并添加提示词
+                cleaned = re.sub(r'^\d+\.\s*', '', ai_response).strip()
                 if cleaned and len(cleaned) > 10:
-                    # 添加风格后缀
                     prompt_with_style = f"{cleaned}, {style_desc}"
-                    prompts.append((prompt_with_style, f"context_img{len(prompts)+1}"))
+                    image_prompts.append((prompt_with_style, f"context_img{idx + 1}_pos{pos + 1}"))
+                else:
+                    # AI返回无效，使用降级方案
+                    raise ValueError("Invalid AI response")
 
-            # 确保有num_images个提示词
-            if len(prompts) < num_images:
-                # 补充默认提示词
-                default_prompts = [
-                    (f"{theme} main concept visualization, {style_desc}", "scene_main"),
-                    (f"{theme} detailed process flow, {style_desc}", "scene_detail"),
-                    (f"{theme} application scenario, {style_desc}", "scene_lifestyle"),
-                    (f"{theme} key elements close-up, {style_desc}", "scene_closeup"),
-                    (f"{theme} environment atmosphere, {style_desc}", "scene_atmosphere"),
-                    (f"{theme} cultural context, {style_desc}", "scene_culture"),
-                    (f"{theme} emotional expression, {style_desc}", "scene_emotion"),
-                    (f"{theme} artistic interpretation, {style_desc}", "scene_artistic"),
-                    (f"{theme} story moment, {style_desc}", "scene_story"),
-                    (f"{theme} final impression, {style_desc}", "scene_final"),
+            except Exception as e:
+                print(f"[WARN] AI prompt generation failed for image {idx + 1}: {e}, using fallback")
+                # 降级方案：基于主题和位置的简单提示词
+                fallback_templates = [
+                    f"{theme} overview scene, {style_desc}",
+                    f"{theme} detailed view, {style_desc}",
+                    f"{theme} application scenario, {style_desc}",
+                    f"{theme} close-up shot, {style_desc}",
+                    f"{theme} atmosphere view, {style_desc}",
+                    f"{theme} cultural context, {style_desc}",
+                    f"{theme} emotional moment, {style_desc}",
+                    f"{theme} artistic interpretation, {style_desc}",
+                    f"{theme} story scene, {style_desc}",
+                    f"{theme} final impression, {style_desc}",
                 ]
-                while len(prompts) < num_images and len(prompts) < len(default_prompts):
-                    prompts.append(default_prompts[len(prompts)])
+                fallback_prompt = fallback_templates[idx % len(fallback_templates)]
+                image_prompts.append((fallback_prompt, f"fallback_img{idx + 1}"))
 
-            return prompts[:num_images]
+        print(f"[DEBUG] Generated {len(image_prompts)} image prompts")
+        print(f"[DEBUG] Returning first {min(num_images, len(image_prompts))} prompts (requested {num_images})")
 
-        except Exception as e:
-            print(f"[WARN] AI prompt generation failed: {e}, using fallback")
-            # 降级方案：基于关键词的简单提示词
-            fallback_prompts = [
-                (f"{theme} concept overview, {style_desc}", "scene_main"),
-                (f"{theme} detailed view, {style_desc}", "scene_detail"),
-                (f"{theme} application scene, {style_desc}", "scene_lifestyle"),
-                (f"{theme} close-up shot, {style_desc}", "scene_closeup"),
-                (f"{theme} atmosphere, {style_desc}", "scene_atmosphere"),
-                (f"{theme} cultural background, {style_desc}", "scene_culture"),
-                (f"{theme} emotional moment, {style_desc}", "scene_emotion"),
-                (f"{theme} artistic view, {style_desc}", "scene_artistic"),
-                (f"{theme} story scene, {style_desc}", "scene_story"),
-                (f"{theme} final view, {style_desc}", "scene_final"),
-            ]
-            return fallback_prompts[:num_images]
+        return image_prompts[:num_images]
 
     def _generate_image_prompts(self, theme, style):
         """根据主题生成配图提示词"""
@@ -1726,8 +1806,15 @@ class ToutiaoArticleGenerator:
         # 确定图片插入点
         image_insert_points = []
         if num_images > 0 and num_paragraphs > 0:
-            # 在文章的 1/4, 1/2, 3/4 位置插入图片
-            insert_ratios = [0.25, 0.5, 0.75][:num_images]
+            # 动态计算均匀分布的插入位置
+            if num_images == 1:
+                insert_ratios = [0.5]
+            elif num_images == 2:
+                insert_ratios = [0.33, 0.66]
+            else:
+                # 多张图片：均匀分布在文章中
+                insert_ratios = [(i + 1) / (num_images + 1) for i in range(num_images)]
+
             image_insert_points = [int(num_paragraphs * r) for r in insert_ratios]
 
         current_paragraph = 0

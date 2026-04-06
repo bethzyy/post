@@ -183,6 +183,11 @@ TOOL_DESCRIPTIONS = {
             "is_document": True,
             "category": "article/二十四节气色彩",
             "readme_file": "article/二十四节气色彩/配图文档生成说明.md"
+        },
+        "他山之石.html": {
+            "description": "💎 他山之石 (技术概念科普文档：埋点、域名、RPA等)",
+            "is_document": True,
+            "category": "article/他山之石"
         }
     }
 }
@@ -322,11 +327,14 @@ def index():
 def view_article(filename):
     """查看生成的文章HTML文件"""
     article_dir = BASE_DIR / 'article'
-    return send_from_directory(article_dir, filename)
+    response = send_from_directory(article_dir, filename)
+    response.headers['Content-Disposition'] = 'inline'
+    return response
 
 @app.route('/view/document/<path:doc_path>')
 def view_document(doc_path):
-    """查看文档库中的HTML文件"""
+    """查看文档库中的HTML/MHTML文件"""
+    from flask import Response
     # doc_path格式如: article/二十四节气色彩/二十四节气与中国传统色彩.html
     full_path = BASE_DIR / doc_path
     if not full_path.exists():
@@ -335,7 +343,27 @@ def view_document(doc_path):
     # 获取文件所在目录和文件名
     parent_dir = full_path.parent
     filename = full_path.name
-    return send_from_directory(parent_dir, filename)
+
+    # 根据文件扩展名设置MIME类型
+    ext = filename.lower().split('.')[-1] if '.' in filename else ''
+    mime_types = {
+        'html': 'text/html',
+        'htm': 'text/html',
+        'mhtml': 'application/x-mimearchive',
+        'mht': 'application/x-mimearchive',
+        'css': 'text/css',
+        'js': 'application/javascript',
+        'json': 'application/json',
+        'xml': 'application/xml',
+        'txt': 'text/plain',
+        'md': 'text/markdown'
+    }
+    mimetype = mime_types.get(ext, 'application/octet-stream')
+
+    response = send_from_directory(parent_dir, filename, mimetype=mimetype)
+    # 设置Content-Disposition为inline，确保浏览器打开而不是下载
+    response.headers['Content-Disposition'] = 'inline'
+    return response
 
 @app.route('/view/readme/<path:doc_path>')
 def view_readme(doc_path):
@@ -1149,12 +1177,12 @@ def main():
     print("=" * 80)
     print()
     print("当前目录:", BASE_DIR)
-    print("启动Web服务器: http://localhost:5000")
+    print("启动Web服务器: http://localhost:5001")
     print("=" * 80)
     print()
 
     # 启动Flask服务器(关闭debug模式,避免运行时修改文件导致重启)
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5001, debug=False)
 
 if __name__ == '__main__':
     main()

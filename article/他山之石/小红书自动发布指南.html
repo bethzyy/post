@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小红书自动发布指南</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #ff2442 0%, #ff6b6b 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section h2 {
+            color: #ff2442;
+            font-size: 24px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #ff2442;
+            display: flex;
+            align-items: center;
+        }
+        .section h2 .icon {
+            margin-right: 10px;
+            font-size: 28px;
+        }
+        .section h3 {
+            color: #333;
+            font-size: 18px;
+            margin: 20px 0 10px;
+            padding-left: 15px;
+            border-left: 4px solid #ff2442;
+        }
+        .step-box {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+        .step-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 14px;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .warning-box strong {
+            color: #856404;
+        }
+        .info-box {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .info-box strong {
+            color: #0c5460;
+        }
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .success-box strong {
+            color: #155724;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th {
+            background: #ff2442;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        .tag {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 2px;
+            font-family: "Consolas", monospace;
+        }
+        .dialog-example {
+            background: #f1f3f5;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .dialog-example .user {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .dialog-example .assistant {
+            color: #28a745;
+            font-weight: 600;
+            margin: 15px 0 8px;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            color: #6c757d;
+            font-size: 14px;
+            border-top: 1px solid #dee2e6;
+        }
+        .highlight {
+            background: linear-gradient(120deg, #ffd700 0%, #ffed4e 100%);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        a {
+            color: #ff2442;
+            text-decoration: none;
+            border-bottom: 1px dotted #ff2442;
+        }
+        a:hover {
+            color: #e62039;
+            border-bottom-style: solid;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 小红书自动发布指南</h1>
+            <div class="subtitle">将今日头条文章一键发布到小红书的完整教程</div>
+        </div>
+
+        <div class="content">
+            <!-- 概述 -->
+            <div class="section">
+                <h2><span class="icon">📖</span>概述</h2>
+                <p>本指南介绍如何使用 Claude Desktop 配合小红书 MCP 服务器，将今日头条文章自动发布到小红书平台。通过 MCP (Model Context Protocol) 工具，您可以：</p>
+                <ul>
+                    <li><span class="highlight">自动化发布</span>：无需手动复制粘贴，一键完成发布</li>
+                    <li><span class="highlight">智能适配</span>：自动调整标题长度、内容格式</li>
+                    <li><span class="highlight">批量管理</span>：高效处理多篇文章的迁移</li>
+                    <li><span class="highlight">安全合规</span>：内置敏感词检测和频率控制</li>
+                </ul>
+            </div>
+
+            <!-- 前期准备 -->
+            <div class="section">
+                <h2><span class="icon">🔧</span>前期准备</h2>
+
+                <h3>1. 安装小红书 MCP</h3>
+                <div class="step-box">
+                    <span class="step-number">1</span><strong>下载可执行文件</strong><br>
+                    访问 <a href="https://github.com/xpzouying/xiaohongshu-mcp/releases" target="_blank">GitHub Releases</a> 下载对应平台的版本：
+                    <ul>
+                        <li><code>xiaohongshu-mcp-windows-amd64.exe</code> (Windows)</li>
+                        <li><code>xiaohongshu-mcp-darwin-amd64</code> (macOS Intel)</li>
+                        <li><code>xiaohongshu-mcp-darwin-arm64</code> (macOS Apple Silicon)</li>
+                        <li><code>xiaohongshu-mcp-linux-amd64</code> (Linux)</li>
+                    </ul>
+                </div>
+
+                <div class="step-box">
+                    <span class="step-number">2</span><strong>放置文件</strong><br>
+                    下载后重命名为 <code>xiaohongshu-mcp.exe</code> (Windows) 或 <code>xiaohongshu-mcp</code> (macOS/Linux)，放入目录：<br>
+                    <code>C:\D\CAIE_tool\MyAIProduct\mcp-servers\xiaohongshu\</code>
+                </div>
+
+                <h3>2. 配置 Cookie</h3>
+                <div class="info-box">
+                    <strong>获取 Cookie 详细指南：</strong><br>
+                    运行命令 <code>python manage.py --guide</code> 查看完整教程
+                </div>
+
+                <p>简要步骤：</p>
+                <ol>
+                    <li>打开浏览器，登录 <a href="https://www.xiaohongshu.com" target="_blank">小红书网页版</a></li>
+                    <li>按 <strong>F12</strong> 打开开发者工具</li>
+                    <li>进入 <strong>Application</strong> → <strong>Cookies</strong> → <code>https://www.xiaohongshu.com</code></li>
+                    <li>复制以下 4 个 Cookie 值：
+                        <ul>
+                            <li><code>web_session</code> - 长字符串</li>
+                            <li><code>webId</code> - UUID 格式</li>
+                            <li><code>a1</code> - 长字符串</li>
+                            <li><code>webBuild</code> - 版本号（如 4.55.2）</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <div class="step-box">
+                    <span class="step-number">3</span><strong>编辑配置文件</strong><br>
+                    编辑 <code>config.json</code>，填入 Cookie 值：
+                </div>
+
+                <pre>{
+  "cookies": {
+    "web_session": "你的值",
+    "webId": "你的值",
+    "a1": "你的值",
+    "webBuild": "你的值"
+  },
+  "publishSettings": {
+    "maxDailyPosts": 3,
+    "minIntervalMinutes": 120
+  }
+}</pre>
+
+                <div class="warning-box">
+                    <strong>安全提醒：</strong>Cookie 有效期约 7 天，请妥善保管 <code>config.json</code> 文件，不要上传到公共仓库。
+                </div>
+
+                <h3>3. 配置 Claude Desktop</h3>
+                <p>编辑 Claude Desktop 配置文件：</p>
+
+                <p><strong>Windows:</strong> <code>%APPDATA%\Claude\claude_desktop_config.json</code></p>
+                <pre>{
+  "mcpServers": {
+    "xiaohongshu": {
+      "command": "C:\\D\\CAIE_tool\\MyAIProduct\\mcp-servers\\xiaohongshu\\xiaohongshu-mcp.exe",
+      "args": ["--config", "C:\\D\\CAIE_tool\\MyAIProduct\\mcp-servers\\xiaohongshu\\config.json"]
+    }
+  }
+}</pre>
+
+                <p><strong>macOS/Linux:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></p>
+                <pre>{
+  "mcpServers": {
+    "xiaohongshu": {
+      "command": "/path/to/mcp-servers/xiaohongshu/xiaohongshu-mcp",
+      "args": ["--config", "/path/to/mcp-servers/xiaohongshu/config.json"]
+    }
+  }
+}</pre>
+
+                <div class="success-box">
+                    <strong>完成后重启 Claude Desktop 即可使用！</strong>
+                </div>
+            </div>
+
+            <!-- 文章获取 -->
+            <div class="section">
+                <h2><span class="icon">📄</span>文章获取</h2>
+
+                <h3>从今日头条获取内容</h3>
+                <p>有以下几种方式获取今日头条文章内容：</p>
+
+                <div class="step-box">
+                    <strong>方法 1: 直接访问 URL</strong><br>
+                    在浏览器中打开今日头条文章链接，手动复制内容。<br>
+                    示例：<code>https://www.toutiao.com/article/7609279580456731188/</code>
+                </div>
+
+                <div class="step-box">
+                    <strong>方法 2: 使用本地 HTML 文件</strong><br>
+                    如果您已经通过其他工具生成了今日头条格式的 HTML 文件，可以直接读取文件内容。
+                </div>
+
+                <div class="step-box">
+                    <strong>方法 3: 使用 toutiao-cnt skill</strong><br>
+                    使用 Claude Code 的 toutiao-cnt skill 自动生成或转换文章格式。
+                </div>
+
+                <h3>内容格式转换要点</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>项目</th>
+                            <th>今日头条</th>
+                            <th>小红书</th>
+                            <th>转换建议</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>标题长度</td>
+                            <td>≤ 30 字</td>
+                            <td>≤ 20 字</td>
+                            <td>精简标题，保留关键词</td>
+                        </tr>
+                        <tr>
+                            <td>正文长度</td>
+                            <td>无限制</td>
+                            <td>≤ 1000 字</td>
+                            <td>提炼要点，分段精简</td>
+                        </tr>
+                        <tr>
+                            <td>图片数量</td>
+                            <td>无限制</td>
+                            <td>≤ 9 张</td>
+                            <td>精选最相关图片</td>
+                        </tr>
+                        <tr>
+                            <td>话题标签</td>
+                            <td>无限制</td>
+                            <td>#标签格式</td>
+                            <td>添加 #话题 标签</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 自动发布流程 -->
+            <div class="section">
+                <h2><span class="icon">🚀</span>自动发布流程</h2>
+
+                <h3>可用 MCP 工具</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>工具名称</th>
+                            <th>功能</th>
+                            <th>参数</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>create_post</code></td>
+                            <td>创建笔记</td>
+                            <td><code>title</code>, <code>content</code>, <code>images[]</code>, <code>topics[]</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>upload_image</code></td>
+                            <td>上传图片</td>
+                            <td><code>image_path</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>get_user_info</code></td>
+                            <td>获取用户信息</td>
+                            <td>无</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_post_stats</code></td>
+                            <td>获取笔记数据</td>
+                            <td><code>post_id</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>check_sensitive_words</code></td>
+                            <td>敏感词检测</td>
+                            <td><code>content</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>实际操作示例</h3>
+
+                <div class="dialog-example">
+                    <div class="user">👤 用户：请帮我将这篇今日头条文章发布到小红书：</div>
+                    [粘贴文章内容或提供URL]<br><br>
+
+                    要求：<br>
+                    - 标题：[简短标题，不超过20字]<br>
+                    - 话题：<span class="tag">#标签1</span> <span class="tag">#标签2</span><br>
+                    - 图片：/path/to/image1.jpg, /path/to/image2.jpg<br><br>
+
+                    <div class="assistant">🤖 Claude：我来帮您将文章发布到小红书。首先让我调整格式...</div><br>
+
+                    [Claude 自动调用 create_post 工具完成发布]
+                </div>
+
+                <div class="info-box">
+                    <strong>提示：</strong>Claude 会自动调整内容格式以符合小红书的要求，包括标题长度、正文长度等。
+                </div>
+            </div>
+
+            <!-- 内容适配 -->
+            <div class="section">
+                <h2><span class="icon">✏️</span>内容适配</h2>
+
+                <h3>标题调整（≤ 20字）</h3>
+                <ul>
+                    <li>保留核心关键词</li>
+                    <li>使用吸引人的表达</li>
+                    <li>适当使用表情符号</li>
+                    <li>示例：
+                        <ul>
+                            <li>原标题：「深度学习在自然语言处理中的应用研究」(17字)</li>
+                            <li>调整后：「AINLP：深度学习的NLP应用」(15字)</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h3>正文调整（≤ 1000字）</h3>
+                <ul>
+                    <li>提炼核心观点</li>
+                    <li>删除冗余内容</li>
+                    <li>使用分段提升可读性</li>
+                    <li>添加小标题和要点列表</li>
+                </ul>
+
+                <h3>话题标签添加</h3>
+                <p>小红书话题标签格式：<code>#话题名称</code></p>
+                <p>常用话题示例：</p>
+                <p>
+                    <span class="tag">#干货分享</span>
+                    <span class="tag">#学习笔记</span>
+                    <span class="tag">#职场经验</span>
+                    <span class="tag">#技术分享</span>
+                    <span class="tag">#AI工具</span>
+                    <span class="tag">#效率提升</span>
+                </p>
+
+                <h3>图片处理建议</h3>
+                <ul>
+                    <li>格式：支持 JPG、PNG</li>
+                    <li>大小：建议 < 10MB</li>
+                    <li>数量：最多 9 张</li>
+                    <li>比例：建议 3:4 或 1:1</li>
+                    <li>质量：清晰、高对比度</li>
+                </ul>
+            </div>
+
+            <!-- 常见问题 -->
+            <div class="section">
+                <h2><span class="icon">❓</span>常见问题</h2>
+
+                <h3>Cookie 过期处理</h3>
+                <div class="warning-box">
+                    <strong>症状：</strong>发布失败，提示未登录或认证失败
+                </div>
+                <p><strong>解决方法：</strong></p>
+                <ol>
+                    <li>检查 Cookie 状态：<code>python manage.py --check</code></li>
+                    <li>更新 Cookie：<code>python manage.py --update</code></li>
+                    <li>按照提示重新输入 Cookie 值</li>
+                </ol>
+
+                <h3>发布失败排查</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>错误提示</th>
+                            <th>可能原因</th>
+                            <th>解决方法</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>认证失败</td>
+                            <td>Cookie 无效或过期</td>
+                            <td>更新 Cookie</td>
+                        </tr>
+                        <tr>
+                            <td>标题过长</td>
+                            <td>标题超过 20 字</td>
+                            <td>精简标题</td>
+                        </tr>
+                        <tr>
+                            <td>内容过长</td>
+                            <td>正文超过 1000 字</td>
+                            <td>精简内容</td>
+                        </tr>
+                        <tr>
+                            <td>图片上传失败</td>
+                            <td>图片格式或大小问题</td>
+                            <td>压缩图片或更换格式</td>
+                        </tr>
+                        <tr>
+                            <td>包含敏感词</td>
+                            <td>内容触发审核规则</td>
+                            <td>使用敏感词预检工具</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>频率限制建议</h3>
+                <div class="warning-box">
+                    <strong>重要：</strong>为避免账号风险，请严格遵守频率限制
+                </div>
+                <ul>
+                    <li>每日发布 ≤ 3 篇</li>
+                    <li>发布间隔 > 2 小时</li>
+                    <li>避免同时操作多个账号</li>
+                    <li>如提示操作频繁，请等待 24 小时后重试</li>
+                </ul>
+            </div>
+
+            <!-- 最佳实践 -->
+            <div class="section">
+                <h2><span class="icon">💡</span>最佳实践</h2>
+
+                <h3>发布频率控制</h3>
+                <div class="success-box">
+                    <strong>建议频率：</strong><br>
+                    每日 1-2 篇，选择用户活跃时段发布（如 9:00-11:00, 18:00-21:00）
+                </div>
+
+                <h3>内容合规检查</h3>
+                <ul>
+                    <li>发布前使用敏感词预检</li>
+                    <li>避免硬性营销词汇</li>
+                    <li>确保内容真实可信</li>
+                    <li>遵守社区规范和法律法规</li>
+                </ul>
+
+                <h3>话题标签优化</h3>
+                <ul>
+                    <li>选择 3-5 个相关话题标签</li>
+                    <li>结合热门话题提升曝光</li>
+                    <li>使用垂直领域精准标签</li>
+                    <li>定期调整标签策略</li>
+                </ul>
+
+                <h3>内容质量提升</h3>
+                <ul>
+                    <li>标题吸引人但不夸张</li>
+                    <li>配图高质量且相关</li>
+                    <li>内容结构清晰易读</li>
+                    <li>互动回应评论和私信</li>
+                </ul>
+            </div>
+
+            <!-- 管理工具命令 -->
+            <div class="section">
+                <h2><span class="icon">⌨️</span>管理工具命令</h2>
+
+                <p>小红书 MCP 提供了统一的管理工具 <code>manage.py</code>：</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>命令</th>
+                            <th>功能</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>python manage.py</code></td>
+                            <td>运行完整诊断</td>
+                        </tr>
+                        <tr>
+                            <td><code>python manage.py --check</code></td>
+                            <td>检查 Cookie 状态</td>
+                        </tr>
+                        <tr>
+                            <td><code>python manage.py --update</code></td>
+                            <td>更新 Cookie（交互式）</td>
+                        </tr>
+                        <tr>
+                            <td><code>python manage.py --guide</code></td>
+                            <td>显示 Cookie 获取指南</td>
+                        </tr>
+                        <tr>
+                            <td><code>python manage.py --config</code></td>
+                            <td>显示 Claude Desktop 配置</td>
+                        </tr>
+                        <tr>
+                            <td><code>python manage.py --tools</code></td>
+                            <td>显示可用的 MCP 工具</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>工作目录</h3>
+                <pre>cd C:\D\CAIE_tool\MyAIProduct\mcp-servers\xiaohongshu</pre>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            <p>小红书自动发布指南 | 最后更新：2026-03-04</p>
+            <p>相关工具：<a href="https://github.com/xpzouying/xiaohongshu-mcp" target="_blank">xiaohongshu-mcp</a> | <a href="https://www.haha.ai/xiaohongshu-mcp" target="_blank">官方文档</a></p>
+        </div>
+    </div>
+</body>
+</html>
