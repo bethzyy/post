@@ -1,36 +1,45 @@
-# 环境变量文件 - 包含敏感信息
+# Environment & secrets
 .env
-*.env
-!*.example.env
+.env.*
+!.env.example
+!.env.production.example
 
-# Python缓存
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-
-# 虚拟环境
+.venv/
 venv/
 env/
-ENV/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
 
 # IDE
-.vscode/
 .idea/
+.vscode/
 *.swp
 *.swo
 
-# 生成可执行文件
-*.exe
+# OS
+.DS_Store
+Thumbs.db
 
-# 生成的图片和测试输出
+# Logs
+*.log
+
+# Debug
+*.pyc
+*.env
+!*.example.env
+ENV/
+*.exe
 generated_images/
 picture/test_*.py
 picture/test_*.png
-
-# 临时文件
-*.log
 *.tmp
-.DS_Store
-
 nul
